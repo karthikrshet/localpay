@@ -56,7 +56,21 @@ importers:
 
   packages/scenarios: {}
 
-  packages/server: {}
+  packages/server:
+    dependencies:
+      '@localpay/core':
+        specifier: workspace:*
+        version: link:../core
+      '@localpay/provider-razorpay':
+        specifier: workspace:*
+        version: link:../provider-razorpay
+      fastify:
+        specifier: ^5.12.7
+        version: 5.12.7
+    devDependencies:
+      razorpay:
+        specifier: 2.9.8
+        version: 2.9.8
 
   packages/shims: {}
 
