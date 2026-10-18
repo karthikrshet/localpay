@@ -3,6 +3,7 @@
 import { customerRoutes } from './routes/customers.ts';
 import { orderRoutes } from './routes/orders.ts';
 import { paymentLinkRoutes } from './payment-links/routes.ts';
+import { subscriptionRoutes } from './subscriptions/routes.ts';
 import { paymentRoutes } from './routes/payments.ts';
 import { refundRoutes } from './routes/refunds.ts';
 
@@ -20,6 +21,8 @@ export { toWireCustomer } from './routes/customers.ts';
 export { paymentLinkRoutes };
 export * from './payment-links/serializer.ts';
 export { escapeHtml, paymentLinkPages } from './payment-links/page.ts';
+export { subscriptionRoutes };
+export * from './subscriptions/serializer.ts';
 
 /** Every route group LocalPay serves for this provider. */
-export const allRoutes = [orderRoutes, paymentRoutes, refundRoutes, customerRoutes, paymentLinkRoutes] as const;
+export const allRoutes = [orderRoutes, paymentRoutes, refundRoutes, customerRoutes, paymentLinkRoutes, subscriptionRoutes] as const;

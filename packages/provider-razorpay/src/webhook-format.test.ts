@@ -58,6 +58,23 @@ describe('payment link webhooks', () => {
   });
 });
 
+describe('subscription webhooks', () => {
+  it('sends charged with subscription and payment, and status changes with the subscription', () => {
+    const engine = createEngine({ seed: 'sub-hooks' });
+    const plan = engine.createPlan({ period: 'monthly', interval: 1, item: { name: 'Pro', amount: 1000 } });
+    const sub = engine.createSubscription({ planId: plan.id, totalCount: 1 });
+    engine.authenticateSubscription(sub.id, { outcome: { kind: 'success' } });
+    const messages = engine.events.flatMap((e) => {
+      const m = toWebhook(e, ACCOUNT);
+      return m ? [m] : [];
+    });
+    const names = messages.map((m) => m.name).filter((n) => n.startsWith('subscription.'));
+    expect(names).toEqual(['subscription.authenticated', 'subscription.activated', 'subscription.charged', 'subscription.completed']);
+    const charged = messages.find((m) => m.name === 'subscription.charged')?.payload as { contains: string[] };
+    expect(charged.contains).toEqual(['subscription', 'payment']);
+  });
+});
+
 describe('razorpayWebhookFormat headers', () => {
   it('signs the raw body so the official SDK accepts it', () => {
     const format = razorpayWebhookFormat(ACCOUNT);
