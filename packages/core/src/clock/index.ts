@@ -63,7 +63,7 @@ const UNIT_MS: Record<string, number> = { s: 1000, m: 60_000, h: 3_600_000, d: 8
 
 /** Parses durations such as "45s", "30m", "2h", "3d", "1w" or "1d12h" into milliseconds. */
 export function parseDuration(text: string): number {
-  const parts = text.trim().match(/^(?:\d+[smhdw])+$/) ? text.trim().match(/\d+[smhdw]/g) : null;
-  if (!parts) throw new RangeError(`invalid duration "${text}" (use e.g. 45s, 30m, 2h, 3d, 1w)`);
-  return parts.reduce((total, part) => total + Number(part.slice(0, -1)) * (UNIT_MS[part.slice(-1)] ?? 0), 0);
+  const trimmed = text.trim();
+  if (!/^(?:\d+[smhdw])+$/.test(trimmed)) throw new RangeError(`invalid duration "${text}" (use e.g. 45s, 30m, 2h, 3d, 1w)`);
+  return (trimmed.match(/\d+[smhdw]/g) ?? []).reduce((total, part) => total + Number(part.slice(0, -1)) * (UNIT_MS[part.slice(-1)] ?? 0), 0);
 }
