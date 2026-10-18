@@ -36,6 +36,14 @@ describe('createLocalPay', () => {
     expect((await fetch(`${url}/_localpay/health`)).status).toBe(200);
   });
 
+  it('mounts the dashboard API behind the session token', async () => {
+    const server = await start({}, { dashboardDir: null });
+    expect((await server.app.inject({ url: '/_localpay/api/session' })).statusCode).toBe(401);
+    const response = await server.app.inject({ url: '/_localpay/api/session', headers: { authorization: `Bearer ${server.adminAuth.token}` } });
+    expect(response.json()).toMatchObject({ accountId: 'acc_LocalPayDemo01' });
+    expect(server.dashboardUrl('http://127.0.0.1:4010')).toBe(`http://127.0.0.1:4010/?token=${server.adminAuth.token}`);
+  });
+
   it('keeps data across restarts with persist', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'localpay-persist-'));
     try {

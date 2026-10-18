@@ -3,6 +3,12 @@ import { createEngine, createFileEventStore, createMemoryEventStore, createOffse
 import { allRoutes, checkoutApi, razorpayApi, razorpayWebhookFormat } from '@localpay/provider-razorpay';
 import { createDispatcher, type Dispatcher, type Sender, type WebhookTarget } from '@localpay/webhooks';
 import Fastify, { type FastifyInstance } from 'fastify';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createAdminAuth, type AdminAuth } from './admin/auth.ts';
+import { dashboard } from './admin/dashboard.ts';
+import { adminApi } from './admin/routes.ts';
 import { defaultCheckoutScript, withConfig, type CheckoutScriptLoader } from './checkout-script.ts';
 import { resolveConfig, type LocalPayConfig } from './config.ts';
 
@@ -13,6 +19,10 @@ export interface LocalPay {
   config: LocalPayConfig;
   /** Live list; edit it to add or remove webhook targets at runtime. */
   webhookTargets: WebhookTarget[];
+  /** Session token for the dashboard and the CLI. */
+  adminAuth: AdminAuth;
+  /** The link to print: opens the dashboard and stores the session cookie. */
+  dashboardUrl(baseUrl: string): string;
   /** Starts listening and the scheduler; resolves to the base URL. */
   listen(): Promise<string>;
   /** Runs due engine work and sends due webhooks once (tests use this instead of the timer). */
@@ -24,6 +34,18 @@ export interface LocalPayDependencies {
   /** Replaces the HTTP sender for webhooks (tests). */
   send?: Sender;
   checkoutScript?: CheckoutScriptLoader;
+  /** Directory with the built dashboard (index.html, assets/). */
+  dashboardDir?: string | null;
+}
+
+/** Finds the built dashboard next to the @localpay/dashboard package, if installed and built. */
+export function findDashboardDir(): string | null {
+  try {
+    const dir = join(dirname(fileURLToPath(import.meta.resolve('@localpay/dashboard/package.json'))), 'dist');
+    return existsSync(join(dir, 'index.html')) ? dir : null;
+  } catch {
+    return null;
+  }
 }
 
 export const INTERNAL_PREFIX = '/_localpay';
@@ -74,6 +96,10 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
     return reply.type('application/javascript; charset=utf-8').header('cache-control', 'no-store').send(await checkoutScript);
   });
 
+  const adminAuth = createAdminAuth(config.dashboardPassword);
+  await app.register(adminApi, { prefix: `${INTERNAL_PREFIX}/api`, engine, dispatcher, webhookTargets, auth: adminAuth, accountId: config.accountId, keys: config.keys });
+  await app.register(dashboard, { auth: adminAuth, dashboardDir: deps.dashboardDir === undefined ? findDashboardDir() : deps.dashboardDir });
+
   app.get(`${INTERNAL_PREFIX}/health`, (_request, reply) => reply.send({ ok: true, name: 'LocalPay', time: engine.now() }));
 
   let timer: NodeJS.Timeout | null = null;
@@ -89,6 +115,8 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
     dispatcher,
     config,
     webhookTargets,
+    adminAuth,
+    dashboardUrl: (baseUrl) => `${baseUrl}/?token=${adminAuth.token}`,
     tick,
     async listen() {
       const address = await app.listen({ port: config.port, host: config.host });
