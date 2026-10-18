@@ -25,6 +25,7 @@ export function OrdersPage() {
   return (
     <Card title="Orders" actions={<SearchBox value={query} onChange={setQuery} label="Search id, receipt, notes" />}>
       {error && <ErrorBox message={error} />}
+      {!data && !error && <Empty>Loading…</Empty>}
       {data && data.items.length === 0 && <Empty>No orders yet. Create one with POST /v1/orders.</Empty>}
       {data && data.items.length > 0 && (
         <Table head={['Order', 'Amount', 'Status', 'Attempts', 'Receipt', 'Created']}>

@@ -86,6 +86,7 @@ export function WebhooksPage() {
       </Card>
       <Card title="Deliveries">
         {(error ?? deliveries.error) && <ErrorBox message={error ?? deliveries.error ?? ''} />}
+        {!deliveries.data && !deliveries.error && <Empty>Loading…</Empty>}
         {deliveries.data?.items.length === 0 && <Empty>No deliveries yet. Pay for an order to see webhooks arrive here.</Empty>}
         {deliveries.data && deliveries.data.items.length > 0 && (
           <Table head={['Event', 'Status', 'HTTP', 'Latency', 'Attempts', 'Notes', 'Created']}>

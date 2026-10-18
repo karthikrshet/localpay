@@ -11,6 +11,7 @@ export function PaymentsPage() {
   return (
     <Card title="Payments" actions={<SearchBox value={query} onChange={setQuery} label="Search id, order, email, VPA" />}>
       {error && <ErrorBox message={error} />}
+      {!data && !error && <Empty>Loading…</Empty>}
       {data && data.items.length === 0 && <Empty>No payments yet.</Empty>}
       {data && data.items.length > 0 && (
         <Table head={['Payment', 'Method', 'Amount', 'Status', '']}>
