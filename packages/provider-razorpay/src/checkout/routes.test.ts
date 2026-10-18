@@ -2,6 +2,7 @@ import { createEngine } from '@localpay/core';
 import Fastify from 'fastify';
 import { describe, expect, it } from 'vitest';
 import { verifyCheckoutSignature } from '../signatures.ts';
+import { verifySubscriptionSignature } from '../subscriptions/serializer.ts';
 import { TEST_KEY } from '../test-helpers.ts';
 import { checkoutApi, isAllowedOrigin } from './routes.ts';
 
@@ -74,6 +75,27 @@ describe('checkout API', () => {
     expect(details.json()).toMatchObject({ id: order.id, amount: 50000, amount_due: 50000, currency: 'INR' });
     const scenarios = await app.inject({ url: '/_localpay/checkout/scenarios' });
     expect(scenarios.json<{ scenarios: unknown[] }>().scenarios).toHaveLength(5);
+  });
+});
+
+describe('checkout for subscriptions', () => {
+  it('authenticates a subscription and signs payment_id|subscription_id', async () => {
+    const { app, engine } = await setup();
+    const plan = engine.createPlan({ period: 'monthly', interval: 1, item: { name: 'Pro', amount: 49900 } });
+    const sub = engine.createSubscription({ planId: plan.id, totalCount: 6 });
+    const details = await app.inject({ url: `/_localpay/checkout/subscriptions/${sub.id}?key_id=${TEST_KEY.keyId}` });
+    expect(details.json()).toMatchObject({ id: sub.id, amount: 49900, currency: 'INR', plan: 'Pro' });
+    const response = await app.inject({ method: 'POST', url: '/_localpay/checkout/pay', payload: { key_id: TEST_KEY.keyId, subscription_id: sub.id, method: 'card', scenario: 'success' } });
+    const body = response.json<{ razorpay_payment_id: string; razorpay_subscription_id: string; razorpay_signature: string }>();
+    expect(body.razorpay_subscription_id).toBe(sub.id);
+    expect(verifySubscriptionSignature({ paymentId: body.razorpay_payment_id, subscriptionId: sub.id, signature: body.razorpay_signature }, TEST_KEY.keySecret)).toBe(true);
+    expect(engine.getSubscription(sub.id).status).toBe('active');
+  });
+
+  it('needs exactly one of order_id and subscription_id', async () => {
+    const { app } = await setup();
+    const response = await app.inject({ method: 'POST', url: '/_localpay/checkout/pay', payload: { key_id: TEST_KEY.keyId, method: 'card', scenario: 'success' } });
+    expect(response.json()).toMatchObject({ error: { description: 'Send exactly one of order_id or subscription_id.' } });
   });
 });
 

@@ -8,6 +8,7 @@ import { ApiError, badRequest, unauthorized } from '../errors.ts';
 import { toApiError } from '../plugin.ts';
 import { parseWith } from '../schemas.ts';
 import { checkoutSignature } from '../signatures.ts';
+import { subscriptionSignature } from '../subscriptions/serializer.ts';
 import { CHECKOUT_SCENARIOS, MAGIC_VALUES, resolveScenario } from './scenarios.ts';
 
 export interface CheckoutApiOptions {
@@ -25,7 +26,8 @@ export function isAllowedOrigin(origin: string, extra: readonly string[] = []): 
 
 const paySchema = z.strictObject({
   key_id: z.string().min(1),
-  order_id: z.string().min(1),
+  order_id: z.string().min(1).optional(),
+  subscription_id: z.string().min(1).optional(),
   method: z.enum(['upi', 'card', 'netbanking', 'wallet']),
   scenario: z.string().min(1),
   email: z.string().max(254).optional(),
@@ -75,10 +77,37 @@ export const checkoutApi: FastifyPluginCallback<CheckoutApiOptions> = (app, opti
     return reply.send({ id: order.id, amount: order.amount, amount_due: order.amount - order.amountPaid, currency: order.currency, status: order.status, receipt: order.receipt });
   });
 
+  app.get<{ Params: { id: string }; Querystring: { key_id?: string } }>('/subscriptions/:id', (request, reply) => {
+    findKey(request.query.key_id);
+    const subscription = options.engine.getSubscription(request.params.id);
+    const plan = options.engine.getPlan(subscription.planId);
+    return reply.send({ id: subscription.id, amount: plan.item.amount * subscription.quantity, currency: plan.item.currency, status: subscription.status, plan: plan.item.name });
+  });
+
   app.post('/pay', (request, reply) => {
     const body = parseWith(paySchema, request.body);
     const key = findKey(body.key_id);
-    const order = options.engine.getOrder(body.order_id);
+    if ((body.order_id === undefined) === (body.subscription_id === undefined)) {
+      throw badRequest('Send exactly one of order_id or subscription_id.', { field: 'order_id' });
+    }
+
+    if (body.subscription_id) {
+      const subscription = options.engine.getSubscription(body.subscription_id);
+      const plan = options.engine.getPlan(subscription.planId);
+      const scenario = resolveScenario(body.scenario, { amount: plan.item.amount * subscription.quantity, method: body.method, vpa: body.vpa ?? null });
+      if (!scenario) throw badRequest(`Unknown checkout scenario "${body.scenario}".`, { field: 'scenario' });
+      const { payment } = options.engine.authenticateSubscription(subscription.id, { method: body.method, outcome: scenario.outcome });
+      if (payment.status === 'failed' && payment.error) {
+        return reply.send({ error: { ...payment.error, metadata: { payment_id: payment.id, subscription_id: subscription.id } } });
+      }
+      return reply.send({
+        razorpay_payment_id: payment.id,
+        razorpay_subscription_id: subscription.id,
+        razorpay_signature: subscriptionSignature(payment.id, subscription.id, key.keySecret),
+      });
+    }
+
+    const order = options.engine.getOrder(body.order_id ?? '');
     const scenario = resolveScenario(body.scenario, { amount: order.amount - order.amountPaid, method: body.method, vpa: body.vpa ?? null });
     if (!scenario) throw badRequest(`Unknown checkout scenario "${body.scenario}".`, { field: 'scenario' });
 
