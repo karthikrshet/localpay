@@ -17,7 +17,9 @@
     "record-fixtures": "node --experimental-strip-types --no-warnings scripts/record-fixtures.ts",
     "test:compat": "vitest run fixtures",
     "test:e2e": "playwright test",
-    "localpay": "node --experimental-strip-types --no-warnings packages/cli/src/bin.ts"
+    "localpay": "node --experimental-strip-types --no-warnings packages/cli/src/bin.ts",
+    "build": "pnpm --filter @localpay/checkout build && pnpm --filter @localpay/dashboard build && pnpm --filter localpay build",
+    "smoke:package": "node --experimental-strip-types --no-warnings scripts/smoke-package.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
