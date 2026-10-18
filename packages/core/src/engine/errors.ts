@@ -17,7 +17,10 @@ export type EngineErrorReason =
   | 'refund_exceeds_payment'
   | 'refund_not_pending'
   | 'time_not_controllable'
-  | 'customer_exists';
+  | 'customer_exists'
+  | 'duplicate_reference_id'
+  | 'invalid_expiry'
+  | 'payment_link_inactive';
 
 export class EngineError extends Error {
   readonly reason: EngineErrorReason;

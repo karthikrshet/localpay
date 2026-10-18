@@ -81,6 +81,9 @@ const DESCRIPTIONS: Record<EngineErrorReason, string> = {
   refund_not_pending: 'The refund is not in a pending state',
   time_not_controllable: 'Time travel is not enabled for this server',
   customer_exists: 'Customer already exists for the merchant',
+  duplicate_reference_id: 'The reference_id has already been used for another payment link',
+  invalid_expiry: 'The expire_by time must be in the future',
+  payment_link_inactive: 'The payment link is no longer active',
 };
 
 export function fromEngineError(error: EngineError): ApiError {

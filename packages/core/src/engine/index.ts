@@ -4,10 +4,11 @@ import { createEngineBase, type EngineBase, type EngineOptions } from './base.ts
 import { createCustomerOps, type CustomerOps } from './customers.ts';
 import { EngineError } from './errors.ts';
 import { createOrderOps, type OrderOps } from './orders.ts';
+import { createPaymentLinkOps, type PaymentLinkOps } from './payment-links.ts';
 import { createPaymentOps, type PaymentOps } from './payments.ts';
 import { createRefundOps, type RefundOps } from './refunds.ts';
 
-export interface Engine extends EngineBase, OrderOps, PaymentOps, RefundOps, CustomerOps {
+export interface Engine extends EngineBase, OrderOps, PaymentOps, RefundOps, CustomerOps, PaymentLinkOps {
   /** Runs every time-driven transition that is due now. Returns how many ran. */
   tick(): number;
   /** Moves emulator time forward (needs a controllable clock), then ticks. */
@@ -22,11 +23,25 @@ export function createEngine(options: EngineOptions = {}): Engine {
   const payments = createPaymentOps(base, orders);
   const refunds = createRefundOps(base, payments);
   const customers = createCustomerOps(base);
+  const paymentLinks = createPaymentLinkOps(base, orders);
 
-  const tick = (): number => refunds.processDueRefunds();
+  // Links hook into the payment flow: refuse payments on closed links, advance them on capture.
+  const attempt = payments.attemptPayment.bind(payments);
+  payments.attemptPayment = (input) => {
+    paymentLinks.assertPayable(input.orderId);
+    return attempt(input);
+  };
+  const capture = payments.capturePayment.bind(payments);
+  payments.capturePayment = (id, input) => {
+    const captured = capture(id, input);
+    paymentLinks.afterCapture(captured);
+    return captured;
+  };
+
+  const tick = (): number => refunds.processDueRefunds() + paymentLinks.expireDuePaymentLinks();
 
   // Two calls: Object.assign is only typed for up to three sources.
-  const withOps = Object.assign(Object.assign(base, orders, payments), refunds, customers);
+  const withOps = Object.assign(Object.assign(base, orders, payments), refunds, customers, paymentLinks);
   return Object.assign(withOps, {
     tick,
     advanceTime(ms: number): number {
@@ -47,3 +62,4 @@ export { amountDue, type CreateOrderInput } from './orders.ts';
 export type { PaymentAttemptInput, PaymentFilter, PaymentOutcome } from './payments.ts';
 export type { CreateRefundInput, RefundFilter } from './refunds.ts';
 export type { CustomerInput } from './customers.ts';
+export type { PaymentLinkInput, PaymentLinkPatch } from './payment-links.ts';

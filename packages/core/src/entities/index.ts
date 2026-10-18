@@ -96,3 +96,33 @@ export interface Customer {
   notes: Notes;
   createdAt: UnixSeconds;
 }
+
+export type PaymentLinkStatus = 'created' | 'partially_paid' | 'paid' | 'expired' | 'cancelled';
+
+export interface PaymentLink {
+  id: string;
+  amount: Paise;
+  amountPaid: Paise;
+  currency: string;
+  description: string | null;
+  referenceId: string | null;
+  status: PaymentLinkStatus;
+  acceptPartial: boolean;
+  firstMinPartialAmount: Paise | null;
+  customer: { name: string | null; email: string | null; contact: string | null };
+  notify: { sms: boolean; email: boolean };
+  reminderEnable: boolean;
+  notes: Notes;
+  callbackUrl: string | null;
+  callbackMethod: 'get' | null;
+  expireBy: UnixSeconds | null;
+  expiredAt: UnixSeconds | null;
+  cancelledAt: UnixSeconds | null;
+  /** Internal order that payments on this link are made against. */
+  orderId: string;
+  paymentIds: string[];
+  /** Key id that created the link; its secret signs the callback. */
+  keyId: string | null;
+  createdAt: UnixSeconds;
+  updatedAt: UnixSeconds;
+}

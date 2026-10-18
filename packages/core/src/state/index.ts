@@ -1,5 +1,5 @@
 // The read model: current entities, built by folding events in order.
-import type { Customer, Order, Payment, Refund } from '../entities/index.ts';
+import type { Customer, Order, Payment, PaymentLink, Refund } from '../entities/index.ts';
 import type { AnyEvent } from '../events/types.ts';
 
 export interface State {
@@ -7,6 +7,7 @@ export interface State {
   payments: Map<string, Payment>;
   refunds: Map<string, Refund>;
   customers: Map<string, Customer>;
+  paymentLinks: Map<string, PaymentLink>;
 }
 
 /** Event data key → state collection. Add a row when adding an entity. */
@@ -15,10 +16,11 @@ export const ENTITY_COLLECTIONS = {
   payment: 'payments',
   refund: 'refunds',
   customer: 'customers',
+  paymentLink: 'paymentLinks',
 } as const satisfies Record<string, keyof State>;
 
 export function createState(): State {
-  return { orders: new Map(), payments: new Map(), refunds: new Map(), customers: new Map() };
+  return { orders: new Map(), payments: new Map(), refunds: new Map(), customers: new Map(), paymentLinks: new Map() };
 }
 
 const hasId = (value: unknown): value is { id: string } =>

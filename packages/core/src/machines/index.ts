@@ -1,6 +1,6 @@
 // Allowed status transitions per entity. The engine checks every change against
 // these tables, so an impossible state cannot be reached by any API sequence.
-import type { OrderStatus, PaymentStatus, RefundStatus } from '../entities/index.ts';
+import type { OrderStatus, PaymentLinkStatus, PaymentStatus, RefundStatus } from '../entities/index.ts';
 
 export const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
   created: ['attempted', 'paid'],
@@ -25,7 +25,15 @@ export const REFUND_TRANSITIONS: Record<RefundStatus, readonly RefundStatus[]> =
   failed: [],
 };
 
-const TABLES = { order: ORDER_TRANSITIONS, payment: PAYMENT_TRANSITIONS, refund: REFUND_TRANSITIONS };
+export const PAYMENT_LINK_TRANSITIONS: Record<PaymentLinkStatus, readonly PaymentLinkStatus[]> = {
+  created: ['partially_paid', 'paid', 'expired', 'cancelled'],
+  partially_paid: ['paid', 'expired', 'cancelled'],
+  paid: [],
+  expired: [],
+  cancelled: [],
+};
+
+const TABLES = { order: ORDER_TRANSITIONS, payment: PAYMENT_TRANSITIONS, refund: REFUND_TRANSITIONS, paymentLink: PAYMENT_LINK_TRANSITIONS };
 type Machine = keyof typeof TABLES;
 type StatusOf<M extends Machine> = keyof (typeof TABLES)[M] & string;
 
