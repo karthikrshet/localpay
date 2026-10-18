@@ -21,6 +21,7 @@ const fakeApi = (): CheckoutApi & { calls: Parameters<CheckoutApi['pay']>[0][] }
         { id: 'success', label: 'Pay successfully', effect: 'fires payment.captured' },
         { id: 'bank_down', label: 'Fail: bank down', effect: 'fires payment.failed' },
       ]),
+    subscription: () => Promise.resolve({ id: 'sub_1', amount: 29900, amount_due: 29900, currency: 'INR', status: 'created' }),
     pay: (input) => {
       calls.push(input);
       return Promise.resolve(input.scenario === 'success' ? SUCCESS : FAILURE);
@@ -115,6 +116,17 @@ describe('checkout.js', () => {
     expect(form?.action).toBe('http://localhost:3000/paid');
     expect(new FormData(form ?? undefined).get('razorpay_signature')).toBe('sig');
     expect(submit).toHaveBeenCalled();
+  });
+
+  it('authenticates subscriptions with subscription_id', async () => {
+    const handler = vi.fn();
+    const { api } = await open({ order_id: undefined, subscription_id: 'sub_1', handler });
+    expect(root()?.textContent).toContain('₹299.00');
+    expect(root()?.textContent).toContain('Subscription');
+    button('Pay successfully')?.click();
+    await flush();
+    expect(api.calls[0]).toMatchObject({ subscriptionId: 'sub_1' });
+    expect(api.calls[0]).not.toHaveProperty('orderId');
   });
 
   it('explains a missing order_id instead of failing silently', async () => {

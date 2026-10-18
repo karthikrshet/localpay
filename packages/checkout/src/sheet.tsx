@@ -37,11 +37,12 @@ export function Sheet({ options, api, onSuccess, onFailure, onDismiss }: SheetPr
   const sheet = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!options.order_id) {
-      setProblem('LocalPay checkout needs an order_id. Create the order on your server with POST /v1/orders.');
+    if (!options.order_id && !options.subscription_id) {
+      setProblem('LocalPay checkout needs an order_id (POST /v1/orders) or a subscription_id (POST /v1/subscriptions).');
       return;
     }
-    Promise.all([api.order(options.order_id, options.key), api.scenarios()])
+    const details = options.subscription_id ? api.subscription(options.subscription_id, options.key) : api.order(options.order_id ?? '', options.key);
+    Promise.all([details, api.scenarios()])
       .then(([details, list]) => {
         setOrder(details);
         setScenarios(list);
@@ -75,13 +76,13 @@ export function Sheet({ options, api, onSuccess, onFailure, onDismiss }: SheetPr
   };
 
   const pay = async (scenario: Scenario) => {
-    if (!options.order_id || busy) return;
+    if ((!options.order_id && !options.subscription_id) || busy) return;
     setBusy(true);
     setProblem(null);
     try {
       const response = await api.pay({
         keyId: options.key,
-        orderId: options.order_id,
+        ...(options.subscription_id ? { subscriptionId: options.subscription_id } : { orderId: options.order_id ?? '' }),
         method,
         scenario: scenario.id,
         ...(options.prefill?.email && { email: options.prefill.email }),
@@ -103,8 +104,9 @@ export function Sheet({ options, api, onSuccess, onFailure, onDismiss }: SheetPr
 
   const amount = order ? (options.amount !== undefined ? Number(options.amount) : order.amount_due) : null;
   const copyId = () => {
-    if (!options.order_id) return;
-    void navigator.clipboard?.writeText(options.order_id).then(() => setCopied(true));
+    const id = options.subscription_id ?? options.order_id;
+    if (!id) return;
+    void navigator.clipboard?.writeText(id).then(() => setCopied(true));
   };
 
   return (
@@ -126,11 +128,11 @@ export function Sheet({ options, api, onSuccess, onFailure, onDismiss }: SheetPr
           </button>
         </div>
         {amount !== null && order && <div class="lp-amount">{formatMoney(amount, options.currency ?? order.currency)}</div>}
-        {options.order_id && (
+        {(options.subscription_id ?? options.order_id) && (
           <div class="lp-id">
-            <span>Order</span>
-            <span class="lp-mono">{options.order_id}</span>
-            <button class="lp-copy" type="button" onClick={copyId} aria-label="Copy order id">
+            <span>{options.subscription_id ? 'Subscription' : 'Order'}</span>
+            <span class="lp-mono">{options.subscription_id ?? options.order_id}</span>
+            <button class="lp-copy" type="button" onClick={copyId} aria-label="Copy id">
               {copied ? 'Copied' : 'Copy'}
             </button>
           </div>

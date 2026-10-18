@@ -4,7 +4,10 @@ export type Method = 'upi' | 'card' | 'netbanking' | 'wallet';
 
 export interface SuccessResponse {
   razorpay_payment_id: string;
-  razorpay_order_id: string;
+  /** Set for order payments. */
+  razorpay_order_id?: string;
+  /** Set for subscription checkouts. */
+  razorpay_subscription_id?: string;
   razorpay_signature: string;
 }
 
@@ -14,7 +17,7 @@ export interface CheckoutError {
   source: string;
   step: string;
   reason: string;
-  metadata: { payment_id?: string; order_id?: string };
+  metadata: { payment_id?: string; order_id?: string; subscription_id?: string };
 }
 
 export interface FailureResponse {
@@ -24,6 +27,8 @@ export interface FailureResponse {
 export interface CheckoutOptions {
   key: string;
   order_id?: string;
+  /** Use instead of order_id to authenticate a subscription. */
+  subscription_id?: string;
   amount?: number | string;
   currency?: string;
   name?: string;
