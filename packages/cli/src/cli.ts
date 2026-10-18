@@ -1,9 +1,11 @@
 // `localpay` commands. main() returns an exit code; `start` also returns the running
 // server so tests (and embedders) can stop it.
 import { spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { createLocalPay, type LocalPay } from '@localpay/server';
+import { createLocalPay, type LocalPay, type LocalPayDependencies } from '@localpay/server';
 import { banner, createStyle } from './banner.ts';
 import { parseStartOptions, UsageError } from './options.ts';
 import { callServer, readSession, removeSession, writeSession } from './session.ts';
@@ -58,6 +60,13 @@ LOCALPAY_KEY_ID + LOCALPAY_KEY_SECRET, LOCALPAY_WEBHOOK_URL + LOCALPAY_WEBHOOK_S
 
 LocalPay never moves money and is not affiliated with Razorpay.`;
 
+/** In the published package, the dashboard and checkout.js ship in dist/assets. */
+export function bundledAssets(assetsDir = fileURLToPath(new URL('./assets/', import.meta.url))): LocalPayDependencies {
+  const checkout = `${assetsDir}checkout.js`;
+  if (!existsSync(checkout)) return {};
+  return { dashboardDir: `${assetsDir}dashboard`, checkoutScript: () => readFile(checkout, 'utf8') };
+}
+
 function openBrowser(url: string): void {
   const [command, args] = process.platform === 'win32' ? ['cmd', ['/c', 'start', '""', url]] : [process.platform === 'darwin' ? 'open' : 'xdg-open', [url]];
   spawn(command, args, { stdio: 'ignore', detached: true }).on('error', () => undefined).unref();
@@ -69,7 +78,7 @@ async function start(argv: string[], io: Io): Promise<Result> {
     io.out(HELP);
     return { code: 0 };
   }
-  const server = await createLocalPay(options.config);
+  const server = await createLocalPay(options.config, bundledAssets());
   const url = await server.listen();
   const port = Number(new URL(url).port);
   writeSession(port, { url, token: server.adminAuth.token, pid: process.pid }, io.env);
