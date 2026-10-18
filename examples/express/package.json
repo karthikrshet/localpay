@@ -1,0 +1,18 @@
+{
+  "name": "localpay-example-express",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Express shop that takes test payments through LocalPay. Copy the patterns, not the secrets.",
+  "scripts": {
+    "start": "node --experimental-strip-types --no-warnings server.js"
+  },
+  "dependencies": {
+    "@localpay/shim-node": "workspace:*",
+    "express": "^5.3.0",
+    "razorpay": "2.9.8"
+  },
+  "devDependencies": {
+    "@localpay/server": "workspace:*"
+  }
+}
