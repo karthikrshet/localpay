@@ -65,6 +65,27 @@ describe('payment link page', () => {
   });
 });
 
+describe('subscription page', () => {
+  it('renders the plan and opens checkout with subscription_id', async () => {
+    const { app, engine } = await setup();
+    const plan = engine.createPlan({ period: 'monthly', interval: 1, item: { name: 'Pro <plan>', amount: 49900 } });
+    const sub = engine.createSubscription({ planId: plan.id, totalCount: 12 });
+    const body = (await app.inject({ url: `/s/${sub.id}` })).body;
+    expect(body).toContain('Pro &lt;plan&gt;');
+    expect(body).toContain('12 payments, every month');
+    expect(body).toContain(`data-subscription="${sub.id}"`);
+    expect(body).toContain('id="pay"');
+    engine.authenticateSubscription(sub.id, { outcome: { kind: 'success' } });
+    expect((await app.inject({ url: `/s/${sub.id}` })).body).toContain('This subscription is active.');
+    expect((await app.inject({ url: '/s/sub_missing000000000' })).statusCode).toBe(404);
+  });
+
+  it('page script handles subscriptions', async () => {
+    const { app } = await setup();
+    expect((await app.inject({ url: '/_localpay/checkout/plink.js' })).body).toContain('subscription_id: subscription');
+  });
+});
+
 describe('escapeHtml', () => {
   it('escapes the five HTML-significant characters', () => {
     expect(escapeHtml(`<a href="x" onclick='y'>&</a>`)).toBe('&lt;a href=&quot;x&quot; onclick=&#39;y&#39;&gt;&amp;&lt;/a&gt;');

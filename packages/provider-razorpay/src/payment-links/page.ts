@@ -1,6 +1,7 @@
-// The hosted page behind a payment link's short_url (/l/<id>). It opens the test
-// checkout for the link's order, then redirects to callback_url with signed params.
-import type { Engine, PaymentLink } from '@localpay/core';
+// Hosted pages behind short_url values: /l/<id> for payment links (opens checkout for the
+// link's order, then redirects to callback_url with signed params) and /s/<id> for
+// subscriptions (opens checkout with subscription_id).
+import type { Engine, PaymentLink, Plan, Subscription } from '@localpay/core';
 import type { FastifyPluginCallback, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import type { ApiKey } from '../auth.ts';
@@ -39,14 +40,7 @@ export function renderLinkPage(link: PaymentLink, keyId: string): string {
   const attr = (name: string, value: string) => ` data-${name}="${escapeHtml(value)}"`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Payment link · LocalPay</title>
-<style>
-body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#0F172A;background:#F8FAFC}
-.banner{background:#FEF3C7;color:#78350F;font-weight:600;font-size:13px;text-align:center;padding:8px}
-main{max-width:420px;margin:40px auto;padding:24px;background:#fff;border:1px solid #E2E8F0;border-radius:12px}
-h1{font-size:18px;margin:0 0 4px}.amount{font-size:30px;font-weight:700;margin:12px 0}.muted{color:#475569;font-size:14px}
-button{width:100%;font:inherit;font-weight:600;padding:12px;border:0;border-radius:8px;background:#2563EB;color:#fff;cursor:pointer}
-button:hover{background:#1D4ED8}#status{min-height:1.5em;margin-top:12px}
-</style></head>
+${PAGE_STYLE}</head>
 <body><div class="banner">TEST MODE · LocalPay · no real money moves</div>
 <main id="plink"${attr('id', link.id)}${attr('key', keyId)}${attr('order', link.orderId)}${attr('description', link.description ?? '')}>
 <h1>${escapeHtml(link.description ?? 'Payment request')}</h1>
@@ -59,6 +53,37 @@ ${closed ? '' : '<script src="/v1/checkout.js"></script><script src="/_localpay/
 </body></html>`;
 }
 
+const PAGE_STYLE = `<style>
+body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#0F172A;background:#F8FAFC}
+.banner{background:#FEF3C7;color:#78350F;font-weight:600;font-size:13px;text-align:center;padding:8px}
+main{max-width:420px;margin:40px auto;padding:24px;background:#fff;border:1px solid #E2E8F0;border-radius:12px}
+h1{font-size:18px;margin:0 0 4px}.amount{font-size:30px;font-weight:700;margin:12px 0}.muted{color:#475569;font-size:14px}
+button{width:100%;font:inherit;font-weight:600;padding:12px;border:0;border-radius:8px;background:#2563EB;color:#fff;cursor:pointer}
+button:hover{background:#1D4ED8}#status{min-height:1.5em;margin-top:12px}
+</style>`;
+
+const PERIOD_UNIT: Record<Plan['period'], string> = { daily: 'day', weekly: 'week', monthly: 'month', yearly: 'year' };
+
+export function renderSubscriptionPage(subscription: Subscription, plan: Plan, keyId: string): string {
+  const amount = formatAmount(plan.item.amount * subscription.quantity, plan.item.currency);
+  const unit = PERIOD_UNIT[plan.period];
+  const every = plan.interval === 1 ? unit : `${plan.interval} ${unit}s`;
+  const open = subscription.status === 'created';
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Subscription · LocalPay</title>
+${PAGE_STYLE}</head>
+<body><div class="banner">TEST MODE · LocalPay · no real money moves</div>
+<main id="plink" data-subscription="${escapeHtml(subscription.id)}" data-key="${escapeHtml(keyId)}" data-description="${escapeHtml(plan.item.name)}">
+<h1>${escapeHtml(plan.item.name)}</h1>
+<p class="muted">${subscription.totalCount} payments, every ${escapeHtml(every)}</p>
+<div class="amount">${escapeHtml(amount)}</div>
+${open ? `<button id="pay" type="button">Authorize subscription</button><p id="status" role="status"></p>` : `<p role="status">This subscription is ${escapeHtml(subscription.status)}.</p>`}
+<p class="muted">LocalPay is an independent test tool, not affiliated with Razorpay.</p>
+</main>
+${open ? '<script src="/v1/checkout.js"></script><script src="/_localpay/checkout/plink.js"></script>' : ''}
+</body></html>`;
+}
+
 /** Served as a file so the page needs no inline script. */
 export const LINK_PAGE_SCRIPT = `(() => {
   const el = document.getElementById('plink');
@@ -66,11 +91,17 @@ export const LINK_PAGE_SCRIPT = `(() => {
   const status = document.getElementById('status');
   if (!el || !button) return;
   button.addEventListener('click', () => {
+    const subscription = el.dataset.subscription;
     const rzp = new window.Razorpay({
       key: el.dataset.key,
-      order_id: el.dataset.order,
+      ...(subscription ? { subscription_id: subscription } : { order_id: el.dataset.order }),
       description: el.dataset.description,
       handler: async (response) => {
+        if (subscription) {
+          status.textContent = 'Subscription authorized.';
+          button.remove();
+          return;
+        }
         const result = await (await fetch(location.pathname + '/complete', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
@@ -102,6 +133,14 @@ export const paymentLinkPages: FastifyPluginCallback<PaymentLinkPageOptions> = (
     const link = engine.findPaymentLink(request.params.id);
     if (!link) return html(reply, 404, '<!doctype html><title>Not found</title><p>This payment link does not exist.</p>');
     return html(reply, 200, renderLinkPage(link, keyFor(link).keyId));
+  });
+
+  app.get<{ Params: { id: string } }>('/s/:id', (request, reply) => {
+    const subscription = engine.findSubscription(request.params.id);
+    if (!subscription) return html(reply, 404, '<!doctype html><title>Not found</title><p>This subscription does not exist.</p>');
+    const key = keys[0];
+    if (!key) throw badRequest('LocalPay has no API key configured.');
+    return html(reply, 200, renderSubscriptionPage(subscription, engine.getPlan(subscription.planId), key.keyId));
   });
 
   app.post<{ Params: { id: string } }>('/l/:id/complete', (request, reply) => {
