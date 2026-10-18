@@ -1,9 +1,17 @@
 {
-  "name": "@localpay/shims",
+  "name": "@localpay/shim-node",
   "version": "0.0.0",
+  "description": "Point the official Razorpay Node SDK at a local LocalPay server. Independent project, not affiliated with Razorpay.",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "peerDependencies": {
+    "razorpay": "^2.9.0"
+  },
+  "devDependencies": {
+    "@localpay/server": "workspace:*",
+    "razorpay": "^2.9.8"
   }
 }

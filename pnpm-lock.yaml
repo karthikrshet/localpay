@@ -72,7 +72,14 @@ importers:
         specifier: 2.9.8
         version: 2.9.8
 
-  packages/shims: {}
+  packages/shims:
+    devDependencies:
+      '@localpay/server':
+        specifier: workspace:*
+        version: link:../server
+      razorpay:
+        specifier: ^2.9.8
+        version: 2.9.8
 
   packages/webhooks: {}
 
