@@ -12,6 +12,7 @@
     "@localpay/core": "workspace:*",
     "@localpay/dashboard": "workspace:*",
     "@localpay/provider-razorpay": "workspace:*",
+    "@localpay/scenarios": "workspace:*",
     "@localpay/webhooks": "workspace:*",
     "fastify": "^5.12.7",
     "zod": "^4.6.7"

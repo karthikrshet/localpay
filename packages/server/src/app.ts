@@ -38,6 +38,8 @@ export interface LocalPayDependencies {
   dashboardDir?: string | null;
   /** Fixed dashboard session token, for browser tests. Random when omitted. */
   adminToken?: string;
+  /** Directory of gallery scenarios; the scenarios package's own gallery when omitted. */
+  galleryDir?: string;
 }
 
 /** Finds the built dashboard next to the @localpay/dashboard package, if installed and built. */
@@ -102,7 +104,7 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
   });
 
   const adminAuth = createAdminAuth(config.dashboardPassword, deps.adminToken);
-  await app.register(adminApi, { prefix: `${INTERNAL_PREFIX}/api`, engine, dispatcher, webhookTargets, auth: adminAuth, accountId: config.accountId, keys: config.keys });
+  await app.register(adminApi, { prefix: `${INTERNAL_PREFIX}/api`, engine, dispatcher, webhookTargets, auth: adminAuth, accountId: config.accountId, keys: config.keys, ...(deps.galleryDir && { galleryDir: deps.galleryDir }) });
   await app.register(dashboard, { auth: adminAuth, dashboardDir: deps.dashboardDir === undefined ? findDashboardDir() : deps.dashboardDir });
 
   app.get(`${INTERNAL_PREFIX}/health`, (_request, reply) => reply.send({ ok: true, name: 'LocalPay', time: engine.now() }));

@@ -193,6 +193,9 @@ importers:
       '@localpay/provider-razorpay':
         specifier: workspace:*
         version: link:../provider-razorpay
+      '@localpay/scenarios':
+        specifier: workspace:*
+        version: link:../scenarios
       '@localpay/webhooks':
         specifier: workspace:*
         version: link:../webhooks

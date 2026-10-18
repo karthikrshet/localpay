@@ -6,6 +6,7 @@ import { BlockedTargetError, validateTargetUrl, type Dispatcher, type FaultConfi
 import type { FastifyPluginCallback, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { checkAdminRequest, type AdminAuth } from './auth.ts';
+import { scenarioRoutes } from './scenarios.ts';
 
 export interface AdminApiOptions {
   engine: Engine;
@@ -14,6 +15,8 @@ export interface AdminApiOptions {
   auth: AdminAuth;
   accountId: string;
   keys: readonly { keyId: string; keySecret: string }[];
+  /** Directory of gallery scenarios (YAML). */
+  galleryDir?: string;
 }
 
 class AdminError extends Error {
@@ -182,6 +185,8 @@ export const adminApi: FastifyPluginCallback<AdminApiOptions> = (app, options, d
     engine.reset();
     return reply.send({ ok: true });
   });
+
+  scenarioRoutes(app, { engine, dispatcher, ...(options.galleryDir && { galleryDir: options.galleryDir }) });
 
   app.get('/stream', (request, reply) => {
     reply.hijack();
