@@ -42,3 +42,21 @@ jobs:
         with:
           node-version: 22
       - run: node --experimental-strip-types scripts/check-commit-msg.ts --range "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+
+  sdk-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install razorpay
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm vitest run scripts/spike/python.test.ts
+        env:
+          LOCALPAY_PYTHON: python
