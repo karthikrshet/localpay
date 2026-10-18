@@ -2,6 +2,7 @@
 import type { ControllableClock } from '../clock/index.ts';
 import { createEngineBase, type EngineBase, type EngineOptions } from './base.ts';
 import { createCustomerOps, type CustomerOps } from './customers.ts';
+import { createDisputeOps, type DisputeOps } from './disputes.ts';
 import { EngineError } from './errors.ts';
 import { createOrderOps, type OrderOps } from './orders.ts';
 import { createPaymentLinkOps, type PaymentLinkOps } from './payment-links.ts';
@@ -9,7 +10,7 @@ import { createPaymentOps, type PaymentOps } from './payments.ts';
 import { createRefundOps, type RefundOps } from './refunds.ts';
 import { createSubscriptionOps, type SubscriptionOps } from './subscriptions.ts';
 
-export interface Engine extends EngineBase, OrderOps, PaymentOps, RefundOps, CustomerOps, PaymentLinkOps, SubscriptionOps {
+export interface Engine extends EngineBase, OrderOps, PaymentOps, RefundOps, CustomerOps, PaymentLinkOps, SubscriptionOps, DisputeOps {
   /** Runs every time-driven transition that is due now. Returns how many ran. */
   tick(): number;
   /** Moves emulator time forward (needs a controllable clock), then ticks. */
@@ -26,6 +27,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
   const customers = createCustomerOps(base);
   const paymentLinks = createPaymentLinkOps(base, orders);
   const subscriptions = createSubscriptionOps(base, orders, payments);
+  const disputes = createDisputeOps(base, payments);
 
   // Links hook into the payment flow: refuse payments on closed links, advance them on capture.
   const attempt = payments.attemptPayment.bind(payments);
@@ -40,10 +42,10 @@ export function createEngine(options: EngineOptions = {}): Engine {
     return captured;
   };
 
-  const tick = (): number => refunds.processDueRefunds() + paymentLinks.expireDuePaymentLinks() + subscriptions.chargeDueSubscriptions();
+  const tick = (): number => refunds.processDueRefunds() + paymentLinks.expireDuePaymentLinks() + subscriptions.chargeDueSubscriptions() + disputes.expireDueDisputes();
 
   // Two calls: Object.assign is only typed for up to three sources.
-  const withOps = Object.assign(Object.assign(base, orders, payments), Object.assign(refunds, customers, paymentLinks), subscriptions);
+  const withOps = Object.assign(Object.assign(base, orders, payments), Object.assign(refunds, customers, paymentLinks), Object.assign(subscriptions, disputes));
   return Object.assign(withOps, {
     tick,
     advanceTime(ms: number): number {
@@ -67,3 +69,4 @@ export type { CustomerInput } from './customers.ts';
 export type { PaymentLinkInput, PaymentLinkPatch } from './payment-links.ts';
 export { addPeriod } from './periods.ts';
 export { MAX_CHARGE_ATTEMPTS, type PlanInput, type SubscriptionInput } from './subscriptions.ts';
+export { DEFAULT_RESPOND_DAYS, type RaiseDisputeInput } from './disputes.ts';

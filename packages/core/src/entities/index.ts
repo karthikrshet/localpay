@@ -163,3 +163,28 @@ export interface Subscription {
   paymentIds: string[];
   createdAt: UnixSeconds;
 }
+
+export type DisputeStatus = 'open' | 'under_review' | 'won' | 'lost';
+
+export interface DisputeEvidence {
+  summary?: string;
+  shippingProof?: string[];
+  billingProof?: string[];
+  others?: string[];
+}
+
+export interface Dispute {
+  id: string;
+  paymentId: string;
+  amount: Paise;
+  currency: string;
+  amountDeducted: Paise;
+  reasonCode: string;
+  reasonDescription: string;
+  respondBy: UnixSeconds;
+  status: DisputeStatus;
+  phase: 'chargeback';
+  evidence: DisputeEvidence | null;
+  createdAt: UnixSeconds;
+  resolvedAt: UnixSeconds | null;
+}

@@ -23,7 +23,8 @@ export type EngineErrorReason =
   | 'payment_link_inactive'
   | 'invalid_plan'
   | 'subscription_not_authenticatable'
-  | 'subscription_ended';
+  | 'subscription_ended'
+  | 'dispute_not_open';
 
 export class EngineError extends Error {
   readonly reason: EngineErrorReason;

@@ -87,6 +87,7 @@ const DESCRIPTIONS: Record<EngineErrorReason, string> = {
   invalid_plan: 'The plan is invalid',
   subscription_not_authenticatable: 'The subscription cannot be authenticated in its current state',
   subscription_ended: 'The subscription has already ended',
+  dispute_not_open: 'The dispute cannot be changed in its current state',
 };
 
 export function fromEngineError(error: EngineError): ApiError {
