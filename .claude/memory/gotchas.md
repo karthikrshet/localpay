@@ -23,3 +23,5 @@ Razorpay and SDK quirks found in testing. One dated line each, with where it was
 - 2026-10-19 · Astro 7 requires Node >= 22.22; docs/site pins Astro 6.4 + Starlight 0.39 (last pair for Astro 6 without markdown-satteri).
 - 2026-10-19 · @fastify/static 10 passes a FastifyReply (not a raw response) to setHeaders: use reply.header().
 - 2026-10-19 · Shell gotcha in our own tooling: a `$C ... && \` chain followed by a heredoc and another `$C` line runs the last line even if the chain failed. Use `set -e` in multi-commit shell blocks.
+- 2026-10-19 · Bundling `yaml` into the ESM CLI breaks on `require('process')`; packages/cli/build.ts adds a createRequire banner. The package smoke test caught it.
+- 2026-10-19 · Our Bash tool rejects some large heredoc blocks containing apostrophes with "unexpected EOF"; write patch scripts to the scratchpad with the file tool and run them instead.
