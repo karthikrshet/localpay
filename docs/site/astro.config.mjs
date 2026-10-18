@@ -23,6 +23,7 @@ export default defineConfig({
             { slug: 'guides/signatures' },
             { slug: 'guides/webhooks' },
             { slug: 'guides/payment-links' },
+            { slug: 'guides/scenarios' },
             { slug: 'guides/test-values' },
             { slug: 'guides/time-travel' },
           ],

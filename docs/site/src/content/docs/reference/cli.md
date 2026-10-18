@@ -9,6 +9,8 @@ localpay status [--port N]        show what a running server holds
 localpay reset [--port N]         delete all data in a running server
 localpay time [--port N]          show emulator time
 localpay time advance <duration>  fast-forward, e.g. 1h, 3d, 1w
+localpay scenario list            list the built-in scenario gallery
+localpay scenario run <file|id>   run a YAML scenario; exit code 1 if it fails
 localpay help | --version
 ```
 
