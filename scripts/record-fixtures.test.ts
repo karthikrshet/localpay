@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assertTestCredentials, MissingReference, resolveTemplate, toFixture } from './record-fixtures.ts';
+import { assertTestCredentials, MissingReference, resolveBody, resolveTemplate, toFixture } from './record-fixtures.ts';
 
 describe('assertTestCredentials', () => {
   it('accepts test keys', () => {
@@ -24,6 +24,13 @@ describe('resolveTemplate', () => {
   it('fails clearly on unresolvable references', () => {
     expect(() => resolveTemplate('/v1/payments/{env.PAYMENT_ID}', responses, {})).toThrow(MissingReference);
     expect(() => resolveTemplate('/{order-create.nested}', responses, {})).toThrow(/cannot resolve/);
+  });
+});
+
+describe('resolveBody', () => {
+  it('resolves nested templates and keeps numbers numeric', () => {
+    const body = { amount: '{env.AMOUNT}', currency: 'INR', notes: { ref: 'order {env.REF}' } };
+    expect(resolveBody(body, {}, { AMOUNT: '50000', REF: 'a b' })).toEqual({ amount: 50000, currency: 'INR', notes: { ref: 'order a b' } });
   });
 });
 

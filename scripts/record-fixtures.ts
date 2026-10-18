@@ -52,6 +52,19 @@ export function resolveTemplate(text: string, responses: Record<string, unknown>
   });
 }
 
+/** Resolves templates inside a JSON body. A string that is exactly one {ref} keeps the value's type. */
+export function resolveBody(value: unknown, responses: Record<string, unknown>, env: NodeJS.ProcessEnv): unknown {
+  if (typeof value === 'string') {
+    const resolved = decodeURIComponent(resolveTemplate(value, responses, env));
+    return /^\{[^}]+\}$/.test(value) && /^-?\d+$/.test(resolved) ? Number(resolved) : resolved;
+  }
+  if (Array.isArray(value)) return value.map((v) => resolveBody(v, responses, env));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, resolveBody(v, responses, env)]));
+  }
+  return value;
+}
+
 export function toFixture(spec: RequestSpec, path: string, status: number, body: unknown, now: Date): Fixture {
   return {
     name: spec.name,
@@ -70,8 +83,10 @@ async function record(specFile: string, outDir: string): Promise<void> {
   mkdirSync(outDir, { recursive: true });
   for (const spec of specs) {
     let path: string;
+    let body: unknown;
     try {
       path = resolveTemplate(spec.path, responses, process.env);
+      body = spec.body === undefined ? undefined : resolveBody(spec.body, responses, process.env);
     } catch (error) {
       if (spec.optional && error instanceof MissingReference) {
         console.log(`skip     ${spec.name} (${error.message})`);
@@ -84,11 +99,12 @@ async function record(specFile: string, outDir: string): Promise<void> {
     const response = await fetch(url, {
       method: spec.method,
       headers: { authorization: spec.name.startsWith('auth-') ? 'Basic invalid' : auth, 'content-type': 'application/json' },
-      ...(spec.body !== undefined && { body: JSON.stringify(spec.body) }),
+      ...(body !== undefined && { body: JSON.stringify(body) }),
     });
-    const body: unknown = await response.json();
-    responses[spec.name] = body;
-    writeFileSync(join(outDir, `${spec.name}.json`), `${JSON.stringify(toFixture(spec, path, response.status, body, new Date()), null, 2)}\n`);
+    const responseBody: unknown = await response.json();
+    responses[spec.name] = responseBody;
+    const fixture = toFixture({ ...spec, body }, path, response.status, responseBody, new Date());
+    writeFileSync(join(outDir, `${spec.name}.json`), `${JSON.stringify(fixture, null, 2)}\n`);
     console.log(`recorded ${spec.name} → ${response.status}`);
   }
   console.log(`\nNext: pnpm scrub-fixtures ${outDir}, review every file, then move them to fixtures/razorpay/.`);
