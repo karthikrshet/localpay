@@ -16,7 +16,8 @@
     "scrub-fixtures": "node --experimental-strip-types --no-warnings scripts/scrub-fixtures.ts",
     "record-fixtures": "node --experimental-strip-types --no-warnings scripts/record-fixtures.ts",
     "test:compat": "vitest run fixtures",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "localpay": "node --experimental-strip-types --no-warnings packages/cli/src/bin.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
