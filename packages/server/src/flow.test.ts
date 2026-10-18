@@ -73,7 +73,8 @@ describe('order → checkout → webhooks → refund', () => {
     localpay.engine.advanceTime(3_600_000);
     await waitFor(() => received.some((r) => r.event === 'refund.processed'));
     expect(localpay.engine.getRefund(refund.id).status).toBe('processed');
-    expect(localpay.dispatcher.list().every((d) => d.status === 'delivered')).toBe(true);
+    // The receiver can see the last webhook a moment before the dispatcher records the 200.
+    await waitFor(() => localpay?.dispatcher.list().every((d) => d.status === 'delivered') ?? false);
   });
 
   it('serves checkout.js without authentication and with the origin config', async () => {
