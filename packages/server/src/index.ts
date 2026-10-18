@@ -1,3 +1,3 @@
-// @localpay/server — Fastify app that wires core and providers together.
-// Phase 0 placeholder; implementation starts in a later phase (see docs/PLAN.md).
-export {};
+// @localpay/server — Fastify app wiring core and providers together.
+export * from './app.ts';
+export * from './config.ts';
