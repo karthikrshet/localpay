@@ -11,7 +11,9 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "spike": "node --experimental-strip-types scripts/spike/create-order.ts"
+    "spike": "node --experimental-strip-types scripts/spike/create-order.ts",
+    "check-secrets": "node --experimental-strip-types --no-warnings scripts/check-secrets.ts",
+    "scrub-fixtures": "node --experimental-strip-types --no-warnings scripts/scrub-fixtures.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
