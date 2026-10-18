@@ -12,6 +12,7 @@ pnpm install
 pnpm lint
 pnpm typecheck
 pnpm test
+git config core.hooksPath .githooks   # checks commit messages locally
 ```
 
 ## Rules
@@ -22,7 +23,8 @@ architecture rules, conventions and the never-do list.
 ## Pull requests
 
 - One change per PR, with tests. Update docs/compat.md if you touch an endpoint, field or event.
-- Conventional Commits (`feat:`, `fix:`, `docs:` ...).
+- Conventional Commits (`feat:`, `fix:`, `docs:` ...). CI rejects PRs whose commits do not match;
+  scripts/check-commit-msg.ts has the exact rules.
 - Sign off every commit (Developer Certificate of Origin): `git commit -s`. There is no CLA.
 - Never paste text from Razorpay's documentation, and never commit real keys or customer data.
 
