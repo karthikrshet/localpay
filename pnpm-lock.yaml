@@ -160,7 +160,21 @@ importers:
         specifier: 2.9.8
         version: 2.9.8
 
-  packages/scenarios: {}
+  packages/scenarios:
+    dependencies:
+      '@localpay/core':
+        specifier: workspace:*
+        version: link:../core
+      yaml:
+        specifier: ^2.9.1
+        version: 2.9.1
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@localpay/provider-razorpay':
+        specifier: workspace:*
+        version: link:../provider-razorpay
 
   packages/server:
     dependencies:
