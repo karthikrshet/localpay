@@ -7,8 +7,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@localpay/checkout": "workspace:*",
     "@localpay/core": "workspace:*",
     "@localpay/provider-razorpay": "workspace:*",
+    "@localpay/webhooks": "workspace:*",
     "fastify": "^5.12.7"
   },
   "devDependencies": {

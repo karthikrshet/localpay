@@ -76,12 +76,18 @@ importers:
 
   packages/server:
     dependencies:
+      '@localpay/checkout':
+        specifier: workspace:*
+        version: link:../checkout
       '@localpay/core':
         specifier: workspace:*
         version: link:../core
       '@localpay/provider-razorpay':
         specifier: workspace:*
         version: link:../provider-razorpay
+      '@localpay/webhooks':
+        specifier: workspace:*
+        version: link:../webhooks
       fastify:
         specifier: ^5.12.7
         version: 5.12.7

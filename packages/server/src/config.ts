@@ -1,5 +1,15 @@
 // Server configuration with safe defaults: loopback only, test keys only.
 import { isTestKeyId, type ApiKey } from '@localpay/provider-razorpay';
+import { BlockedTargetError, validateTargetUrl, type FaultConfig } from '@localpay/webhooks';
+
+export interface WebhookConfig {
+  url: string;
+  secret: string;
+  /** Only these events; all when omitted. */
+  events?: string[];
+}
+
+export const DEFAULT_WEBHOOK_SECRET = 'localpay_webhook_secret';
 
 /** Shipped demo credentials. Public on purpose: they only ever work against LocalPay. */
 export const DEMO_KEY: ApiKey = { keyId: 'rzp_test_LocalPayDemo01', keySecret: 'localpay_demo_secret' };
@@ -18,6 +28,13 @@ export interface LocalPayConfig {
   autoCapture: boolean;
   /** Seconds before a pending refund is processed. */
   refundDelaySeconds: number;
+  /** account_id in webhook envelopes. */
+  accountId: string;
+  webhooks: WebhookConfig[];
+  /** Webhook failure injection. */
+  faults: Partial<FaultConfig>;
+  /** Origins besides localhost allowed to load and use checkout.js. */
+  allowedOrigins: string[];
 }
 
 export const DEFAULT_CONFIG: LocalPayConfig = {
@@ -30,6 +47,10 @@ export const DEFAULT_CONFIG: LocalPayConfig = {
   persist: null,
   autoCapture: true,
   refundDelaySeconds: 5,
+  accountId: 'acc_LocalPayDemo01',
+  webhooks: [],
+  faults: {},
+  allowedOrigins: [],
 };
 
 export class ConfigError extends Error {
@@ -58,5 +79,16 @@ export function resolveConfig(overrides: Partial<LocalPayConfig> = {}): LocalPay
     if (!key.keySecret) throw new ConfigError(`key ${key.keyId} has no secret`);
   }
   if (!Number.isInteger(config.refundDelaySeconds) || config.refundDelaySeconds < 0) throw new ConfigError('refundDelaySeconds must be a non-negative integer');
+  for (const webhook of config.webhooks) {
+    try {
+      validateTargetUrl(webhook.url);
+    } catch (error) {
+      throw new ConfigError(error instanceof BlockedTargetError ? error.message : `invalid webhook URL ${webhook.url}`);
+    }
+    if (!webhook.secret) throw new ConfigError(`webhook ${webhook.url} needs a secret`);
+  }
+  for (const origin of config.allowedOrigins) {
+    if (!/^https?:\/\/[^/]+$/.test(origin)) throw new ConfigError(`allowed origin must look like https://host[:port], got ${origin}`);
+  }
   return config;
 }

@@ -24,6 +24,13 @@ describe('resolveConfig', () => {
     expect(() => resolveConfig({ keys: [{ keyId: 'lp_test_x', keySecret: '' }] })).toThrow(/no secret/);
   });
 
+  it('validates webhook targets and allowed origins', () => {
+    expect(() => resolveConfig({ webhooks: [{ url: 'http://169.254.169.254/x', secret: 's' }] })).toThrow(/blocked/);
+    expect(() => resolveConfig({ webhooks: [{ url: 'http://localhost:3000/hook', secret: '' }] })).toThrow(/needs a secret/);
+    expect(resolveConfig({ webhooks: [{ url: 'http://localhost:3000/hook', secret: 's' }] }).webhooks).toHaveLength(1);
+    expect(() => resolveConfig({ allowedOrigins: ['https://shop.test/path'] })).toThrow(/allowed origin/);
+  });
+
   it('validates the port', () => {
     expect(() => resolveConfig({ port: 70000 })).toThrow(/invalid port/);
   });
