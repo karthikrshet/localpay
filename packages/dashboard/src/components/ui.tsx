@@ -3,11 +3,11 @@ import { useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import type { LocalPayEvent } from '../types.ts';
 
 const TONES: Record<string, string> = {
-  good: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300',
-  warn: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300',
-  bad: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300',
-  info: 'bg-teal-100 text-teal-900 dark:bg-teal-950 dark:text-teal-300',
-  neutral: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+  good: 'bg-green-100 text-green-800',
+  warn: 'bg-amber-100 text-amber-900',
+  bad: 'bg-red-100 text-red-800',
+  info: 'bg-teal-100 text-teal-900',
+  neutral: 'bg-slate-100 text-slate-700',
 };
 
 const STATUS_TONE: Record<string, keyof typeof TONES> = {
@@ -58,7 +58,7 @@ export function Button({ variant = 'secondary', className = '', ...props }: Butt
   const styles = {
     primary: 'bg-lp-primary text-white hover:bg-lp-primary-hover border-transparent',
     secondary: 'bg-lp-surface text-lp-ink hover:border-lp-primary border-lp-border',
-    danger: 'bg-lp-surface text-red-700 dark:text-red-400 hover:border-red-500 border-lp-border',
+    danger: 'bg-lp-surface text-red-700 hover:border-red-500 border-lp-border',
   }[variant];
   return <button type="button" className={`rounded-md border px-3 py-1.5 text-sm font-medium disabled:opacity-50 ${styles} ${className}`} {...props} />;
 }
@@ -83,7 +83,7 @@ export function JsonView({ value }: { value: unknown }) {
 
 export function ErrorBox({ message }: { message: string }) {
   return (
-    <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+    <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-800">
       {message}
     </p>
   );

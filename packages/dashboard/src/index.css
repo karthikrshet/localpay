@@ -8,25 +8,13 @@
   --color-lp-ink: #0F172A;
   --color-lp-muted: #64748B;
   --color-lp-surface: #FFFFFF;
-  --color-lp-canvas: #F6F8FA;
+  --color-lp-canvas: #F8FAFC;
   --color-lp-border: #E2E8F0;
   --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-/* Dark theme mirrors the tokens. */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-lp-primary: #2DB5B3;
-    --color-lp-primary-hover: #4FD1CF;
-    --color-lp-ink: #E2E8F0;
-    --color-lp-muted: #94A3B8;
-    --color-lp-surface: #0F172A;
-    --color-lp-canvas: #020617;
-    --color-lp-border: #1E293B;
-    color-scheme: dark;
-  }
-}
-
+/* Light only: a clean white interface. */
+:root { color-scheme: light; }
 html { font-size: 14px; }
-body { @apply bg-lp-canvas text-lp-ink font-sans antialiased; }
+body { @apply bg-white text-lp-ink font-sans antialiased; }

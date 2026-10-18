@@ -96,7 +96,7 @@ export function App() {
               <span className="h-3.5 w-3.5 rounded-full bg-lp-accent" aria-hidden="true" />
               LocalPay
             </Link>
-            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-300">TEST MODE · no real money</span>
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900">TEST MODE · no real money</span>
             <nav aria-label="Main" className="flex flex-wrap gap-1">
               {NAV.map((item) => {
                 const active = item.to === '/' ? path === '/' : path.startsWith(item.to);

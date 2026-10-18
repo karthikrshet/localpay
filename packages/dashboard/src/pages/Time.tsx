@@ -58,7 +58,7 @@ export function TimePage() {
         </Button>
       </form>
       {message && (
-        <p role="status" className="mt-3 text-green-800 dark:text-green-300">
+        <p role="status" className="mt-3 text-green-800">
           {message}
         </p>
       )}

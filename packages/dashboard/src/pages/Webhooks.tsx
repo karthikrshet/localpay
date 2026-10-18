@@ -41,7 +41,7 @@ function DeliveryDetail({ delivery, onAction }: { delivery: Delivery; onAction: 
                     #{index + 1} · {formatMs(attempt.at)} · {attempt.statusCode ?? 'no response'}
                     {attempt.latencyMs !== null && ` · ${attempt.latencyMs} ms`}
                   </div>
-                  {attempt.error && <div className="text-red-700 dark:text-red-400">{attempt.error}</div>}
+                  {attempt.error && <div className="text-red-700">{attempt.error}</div>}
                   {attempt.responseBody && <pre className="mt-1 overflow-x-auto whitespace-pre-wrap font-mono">{attempt.responseBody}</pre>}
                 </li>
               ))}
