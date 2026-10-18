@@ -1,0 +1,52 @@
+// Allowed status transitions per entity. The engine checks every change against
+// these tables, so an impossible state cannot be reached by any API sequence.
+import type { OrderStatus, PaymentStatus, RefundStatus } from '../entities/index.ts';
+
+export const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
+  created: ['attempted', 'paid'],
+  attempted: ['paid'],
+  paid: [],
+};
+
+export const PAYMENT_TRANSITIONS: Record<PaymentStatus, readonly PaymentStatus[]> = {
+  created: ['authorized', 'failed'],
+  // authorized → refunded: an uncaptured payment is released back to the customer.
+  authorized: ['captured', 'failed', 'refunded'],
+  captured: ['refunded'],
+  // failed → authorized: "late authorization", when the bank confirms after a timeout.
+  failed: ['authorized'],
+  refunded: [],
+};
+
+export const REFUND_TRANSITIONS: Record<RefundStatus, readonly RefundStatus[]> = {
+  pending: ['processed', 'failed'],
+  processed: [],
+  failed: [],
+};
+
+const TABLES = { order: ORDER_TRANSITIONS, payment: PAYMENT_TRANSITIONS, refund: REFUND_TRANSITIONS };
+type Machine = keyof typeof TABLES;
+type StatusOf<M extends Machine> = keyof (typeof TABLES)[M] & string;
+
+export class InvalidTransitionError extends Error {
+  readonly machine: Machine;
+  readonly from: string;
+  readonly to: string;
+  constructor(machine: Machine, from: string, to: string) {
+    super(`${machine} cannot move from ${from} to ${to}`);
+    this.name = 'InvalidTransitionError';
+    this.machine = machine;
+    this.from = from;
+    this.to = to;
+  }
+}
+
+export function canTransition<M extends Machine>(machine: M, from: StatusOf<M>, to: StatusOf<M>): boolean {
+  if (from === to) return true;
+  const table = TABLES[machine] as Record<string, readonly string[]>;
+  return table[from]?.includes(to) ?? false;
+}
+
+export function assertTransition<M extends Machine>(machine: M, from: StatusOf<M>, to: StatusOf<M>): void {
+  if (!canTransition(machine, from, to)) throw new InvalidTransitionError(machine, from, to);
+}
