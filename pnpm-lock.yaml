@@ -68,7 +68,14 @@ importers:
         specifier: ^21.0.3
         version: 21.0.3
 
-  packages/cli: {}
+  packages/cli:
+    dependencies:
+      '@localpay/core':
+        specifier: workspace:*
+        version: link:../core
+      '@localpay/server':
+        specifier: workspace:*
+        version: link:../server
 
   packages/core:
     devDependencies:
@@ -138,6 +145,9 @@ importers:
       '@localpay/core':
         specifier: workspace:*
         version: link:../core
+      '@localpay/dashboard':
+        specifier: workspace:*
+        version: link:../dashboard
       '@localpay/provider-razorpay':
         specifier: workspace:*
         version: link:../provider-razorpay

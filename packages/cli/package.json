@@ -1,9 +1,21 @@
 {
-  "name": "@localpay/cli",
+  "name": "localpay",
   "version": "0.0.0",
+  "description": "Razorpay-compatible local payment emulator for testing. Independent project, not affiliated with Razorpay. Never moves money.",
   "private": true,
   "type": "module",
+  "bin": {
+    "localpay": "./src/bin.ts"
+  },
   "exports": {
     ".": "./src/index.ts"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@localpay/core": "workspace:*",
+    "@localpay/server": "workspace:*"
   }
 }

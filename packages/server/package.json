@@ -10,6 +10,7 @@
     "@fastify/static": "^10.1.6",
     "@localpay/checkout": "workspace:*",
     "@localpay/core": "workspace:*",
+    "@localpay/dashboard": "workspace:*",
     "@localpay/provider-razorpay": "workspace:*",
     "@localpay/webhooks": "workspace:*",
     "fastify": "^5.12.7",
