@@ -15,6 +15,17 @@ describe('createEngine', () => {
     expect(engine.getRefund(refund.id).status).toBe('pending');
   });
 
+  it('updates notes on payments and refunds through events', () => {
+    const engine = createEngine({ seed: 'notes' });
+    const order = engine.createOrder({ amount: 100 });
+    const payment = engine.attemptPayment({ orderId: order.id, method: 'upi', outcome: { kind: 'success' } });
+    const refund = engine.createRefund(payment.id);
+    expect(engine.updatePaymentNotes(payment.id, { a: 1 }).notes).toEqual({ a: 1 });
+    expect(engine.updateRefundNotes(refund.id, { b: 'x' }).notes).toEqual({ b: 'x' });
+    expect(engine.events.slice(-2).map((e) => e.type)).toEqual(['payment.updated', 'refund.updated']);
+    expect(engine.getPayment(payment.id).notes).toEqual({ a: 1 });
+  });
+
   it('advanceTime() moves the clock, logs it and processes due refunds', () => {
     const engine = createEngine({ seed: 'time' });
     const order = engine.createOrder({ amount: 100 });

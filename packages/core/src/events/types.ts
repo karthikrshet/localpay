@@ -9,9 +9,11 @@ export interface EventMap {
   'payment.authorized': { payment: Payment };
   'payment.captured': { payment: Payment };
   'payment.failed': { payment: Payment };
+  'payment.updated': { payment: Payment };
   'refund.created': { refund: Refund; payment: Payment };
   'refund.processed': { refund: Refund; payment: Payment };
   'refund.failed': { refund: Refund; payment: Payment };
+  'refund.updated': { refund: Refund };
   'clock.advanced': { from: number; to: number };
 }
 

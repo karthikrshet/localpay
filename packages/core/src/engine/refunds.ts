@@ -52,6 +52,12 @@ export function createRefundOps(ctx: EngineContext, payments: PaymentOps) {
       return filter.paymentId ? all.filter((r) => r.paymentId === filter.paymentId) : all;
     },
 
+    updateRefundNotes(id: string, notes: Notes): Refund {
+      const refund: Refund = { ...getRefund(id), notes };
+      ctx.emit('refund.updated', { refund });
+      return refund;
+    },
+
     createRefund(paymentId: string, input: CreateRefundInput = {}): Refund {
       const payment = payments.getPayment(paymentId);
       if (payment.status === 'refunded') throw new EngineError('payment_fully_refunded', `payment ${paymentId} has been fully refunded`);

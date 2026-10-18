@@ -47,6 +47,12 @@ export function createPaymentOps(ctx: EngineContext, orders: OrderOps) {
       return filter.orderId ? all.filter((p) => p.orderId === filter.orderId) : all;
     },
 
+    updatePaymentNotes(id: string, notes: Notes): Payment {
+      const payment: Payment = { ...getPayment(id), notes };
+      ctx.emit('payment.updated', { payment });
+      return payment;
+    },
+
     /** Runs one checkout attempt against an order: authorize (and maybe capture) or fail. */
     attemptPayment(input: PaymentAttemptInput): Payment {
       const order = orders.getOrder(input.orderId);
