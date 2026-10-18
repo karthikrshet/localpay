@@ -8,16 +8,27 @@ export interface State {
   refunds: Map<string, Refund>;
 }
 
+/** Event data key → state collection. Add a row when adding an entity. */
+export const ENTITY_COLLECTIONS = {
+  order: 'orders',
+  payment: 'payments',
+  refund: 'refunds',
+} as const satisfies Record<string, keyof State>;
+
 export function createState(): State {
   return { orders: new Map(), payments: new Map(), refunds: new Map() };
 }
 
+const hasId = (value: unknown): value is { id: string } =>
+  typeof value === 'object' && value !== null && typeof (value as { id?: unknown }).id === 'string';
+
 /** Upserts every entity snapshot the event carries. Insertion order = creation order. */
 export function applyEvent(state: State, event: AnyEvent): void {
-  const data = event.data;
-  if ('order' in data) state.orders.set(data.order.id, data.order);
-  if ('payment' in data) state.payments.set(data.payment.id, data.payment);
-  if ('refund' in data) state.refunds.set(data.refund.id, data.refund);
+  const data = event.data as Record<string, unknown>;
+  for (const [key, collection] of Object.entries(ENTITY_COLLECTIONS)) {
+    const entity = data[key];
+    if (hasId(entity)) (state[collection] as Map<string, unknown>).set(entity.id, entity);
+  }
 }
 
 /** Empties every collection in place, keeping references held elsewhere valid. */
