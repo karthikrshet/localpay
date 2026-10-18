@@ -14,10 +14,12 @@
     "spike": "node --experimental-strip-types scripts/spike/create-order.ts",
     "check-secrets": "node --experimental-strip-types --no-warnings scripts/check-secrets.ts",
     "scrub-fixtures": "node --experimental-strip-types --no-warnings scripts/scrub-fixtures.ts",
-    "record-fixtures": "node --experimental-strip-types --no-warnings scripts/record-fixtures.ts"
+    "record-fixtures": "node --experimental-strip-types --no-warnings scripts/record-fixtures.ts",
+    "test:compat": "vitest run fixtures"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@localpay/server": "workspace:*",
     "@types/node": "^22.20.5",
     "eslint": "^10.13.0",
     "globals": "^17.13.0",

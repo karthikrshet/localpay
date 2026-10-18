@@ -1,0 +1,23 @@
+{
+  "name": "error-order-not-found",
+  "provenance": "hand-written",
+  "recorded_at": "2026-10-19",
+  "request": {
+    "method": "GET",
+    "path": "/v1/orders/order_DoesNotExist00"
+  },
+  "response": {
+    "status": 400,
+    "body": {
+      "error": {
+        "code": "BAD_REQUEST_ERROR",
+        "description": "The id provided does not exist",
+        "source": "business",
+        "step": "payment_initiation",
+        "reason": "NA",
+        "metadata": {},
+        "field": "id"
+      }
+    }
+  }
+}

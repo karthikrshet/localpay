@@ -1,0 +1,38 @@
+{
+  "name": "refund-create-partial",
+  "provenance": "hand-written",
+  "recorded_at": "2026-10-19",
+  "request": {
+    "method": "POST",
+    "path": "/v1/payments/pay_RAnL0aBc4dEf5G/refund",
+    "body": {
+      "amount": 100,
+      "speed": "normal",
+      "notes": {
+        "reason": "contract-test"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "id": "rfnd_RAnM1bCd2eFg3H",
+      "entity": "refund",
+      "amount": 100,
+      "currency": "INR",
+      "payment_id": "pay_RAnL0aBc4dEf5G",
+      "notes": {
+        "reason": "contract-test"
+      },
+      "receipt": null,
+      "acquirer_data": {
+        "arn": null
+      },
+      "created_at": 1760800000,
+      "batch_id": null,
+      "status": "pending",
+      "speed_processed": null,
+      "speed_requested": "normal"
+    }
+  }
+}

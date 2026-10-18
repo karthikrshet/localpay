@@ -1,0 +1,28 @@
+{
+  "name": "error-order-unknown-field",
+  "provenance": "hand-written",
+  "recorded_at": "2026-10-19",
+  "request": {
+    "method": "POST",
+    "path": "/v1/orders",
+    "body": {
+      "amount": 10000,
+      "currency": "INR",
+      "colour": "red"
+    }
+  },
+  "response": {
+    "status": 400,
+    "body": {
+      "error": {
+        "code": "BAD_REQUEST_ERROR",
+        "description": "colour is/are not required and should not be sent",
+        "source": "business",
+        "step": "payment_initiation",
+        "reason": "input_validation_failed",
+        "metadata": {},
+        "field": "colour"
+      }
+    }
+  }
+}

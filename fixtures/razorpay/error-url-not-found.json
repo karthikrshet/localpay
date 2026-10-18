@@ -1,0 +1,22 @@
+{
+  "name": "error-url-not-found",
+  "provenance": "hand-written",
+  "recorded_at": "2026-10-19",
+  "request": {
+    "method": "GET",
+    "path": "/v1/does-not-exist"
+  },
+  "response": {
+    "status": 400,
+    "body": {
+      "error": {
+        "code": "BAD_REQUEST_ERROR",
+        "description": "The requested URL was not found on the server.",
+        "source": "business",
+        "step": "payment_initiation",
+        "reason": "NA",
+        "metadata": {}
+      }
+    }
+  }
+}

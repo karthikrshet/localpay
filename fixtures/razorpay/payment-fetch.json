@@ -1,0 +1,45 @@
+{
+  "name": "payment-fetch",
+  "provenance": "hand-written",
+  "recorded_at": "2026-10-19",
+  "request": {
+    "method": "GET",
+    "path": "/v1/payments/pay_RAnL0aBc4dEf5G"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "id": "pay_RAnL0aBc4dEf5G",
+      "entity": "payment",
+      "amount": 50000,
+      "currency": "INR",
+      "status": "captured",
+      "order_id": "order_RAnK9zYx8wVu7T",
+      "invoice_id": null,
+      "international": false,
+      "method": "upi",
+      "amount_refunded": 0,
+      "refund_status": null,
+      "captured": true,
+      "description": null,
+      "card_id": null,
+      "bank": null,
+      "wallet": null,
+      "vpa": "customer@upi",
+      "email": "customer@example.com",
+      "contact": "+919999999999",
+      "notes": [],
+      "fee": 1180,
+      "tax": 180,
+      "error_code": null,
+      "error_description": null,
+      "error_source": null,
+      "error_step": null,
+      "error_reason": null,
+      "acquirer_data": {
+        "rrn": "123456789012"
+      },
+      "created_at": 1760800000
+    }
+  }
+}

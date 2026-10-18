@@ -1,0 +1,27 @@
+{
+  "name": "error-order-amount-too-low",
+  "provenance": "hand-written",
+  "recorded_at": "2026-10-19",
+  "request": {
+    "method": "POST",
+    "path": "/v1/orders",
+    "body": {
+      "amount": 10,
+      "currency": "INR"
+    }
+  },
+  "response": {
+    "status": 400,
+    "body": {
+      "error": {
+        "code": "BAD_REQUEST_ERROR",
+        "description": "The amount must be atleast INR 1.00",
+        "source": "business",
+        "step": "payment_initiation",
+        "reason": "input_validation_failed",
+        "metadata": {},
+        "field": "amount"
+      }
+    }
+  }
+}
