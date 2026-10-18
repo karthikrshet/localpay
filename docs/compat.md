@@ -33,6 +33,11 @@ and the record-fixture skill), so nothing below is marked supported.
 | GET /v1/customers/:id | partial | |
 | GET /v1/customers | partial | |
 | PUT /v1/customers/:id | partial | |
+| POST /v1/payment_links | partial | Hosted page at `short_url`; no UPI links, reminders or notifications |
+| GET /v1/payment_links/:id | partial | |
+| GET /v1/payment_links | partial | Returns `{ payment_links: [...] }`; filters `payment_id`, `reference_id` |
+| PATCH /v1/payment_links/:id | partial | `reference_id`, `expire_by`, `notes`, `accept_partial` |
+| POST /v1/payment_links/:id/cancel | partial | |
 
 ## Behaviour
 
@@ -49,6 +54,7 @@ and the record-fixture skill), so nothing below is marked supported.
 | Checkout signature `order_id\|payment_id` | partial | HMAC-SHA256 hex with the key secret |
 | Webhook retries | partial | 5 attempts: now, +5s, +30s, +2m, +10m (real gateway retries for longer) |
 | Test UPI IDs `success@razorpay` / `failure@razorpay` | partial | Force success / insufficient funds |
+| Payment link callback signature | partial | HMAC of `link_id\|reference_id\|status\|payment_id`; unverified against a recording |
 
 ## Webhook events
 
@@ -61,6 +67,10 @@ and the record-fixture skill), so nothing below is marked supported.
 | refund.created | partial | Signed with X-Razorpay-Signature; X-Razorpay-Event-Id set |
 | refund.processed | partial | Signed with X-Razorpay-Signature; X-Razorpay-Event-Id set |
 | refund.failed | partial | Signed with X-Razorpay-Signature; X-Razorpay-Event-Id set |
+| payment_link.paid | partial | Contains payment_link, payment, order |
+| payment_link.partially_paid | partial | Contains payment_link, payment, order |
+| payment_link.expired | partial | |
+| payment_link.cancelled | partial | |
 
 ## SDK connection
 
