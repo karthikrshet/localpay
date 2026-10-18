@@ -88,7 +88,9 @@ describe('localpay CLI', () => {
 
   it('generates a dashboard password for public binding and survives a read-only session dir', async () => {
     const s = io();
-    s.io.env = { LOCALPAY_HOME: join(home, 'missing', '\u0000bad'), LOCALPAY_HOST: '0.0.0.0', LOCALPAY_ALLOW_PUBLIC: '1' };
+    // A regular file where the session directory should be: mkdir fails like on a read-only fs.
+    writeFileSync(join(home, 'not-a-dir'), '');
+    s.io.env = { LOCALPAY_HOME: join(home, 'not-a-dir'), LOCALPAY_HOST: '0.0.0.0', LOCALPAY_ALLOW_PUBLIC: '1' };
     const started = await main(['start', '--port', '0'], s.io);
     running.push(started);
     expect(started.server?.config.dashboardPassword).toMatch(/^[\w-]{16}$/);
