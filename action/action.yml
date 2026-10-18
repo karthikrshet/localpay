@@ -1,0 +1,87 @@
+name: LocalPay
+description: Start a LocalPay server (Razorpay-compatible payment emulator) in the background for tests. Not affiliated with Razorpay.
+author: LocalPay contributors
+branding:
+  icon: credit-card
+  color: blue
+
+inputs:
+  version:
+    description: localpay version to run from npm (e.g. 0.1.0). Ignored when `package` is set.
+    default: latest
+  package:
+    description: Install from this tarball or path instead of npm (used to test unreleased builds).
+    default: ''
+  port:
+    description: Port to listen on.
+    default: '4010'
+  webhook:
+    description: Webhook URL(s) to deliver to, one per line.
+    default: ''
+  webhook-secret:
+    description: Secret for X-Razorpay-Signature.
+    default: localpay_webhook_secret
+  args:
+    description: Extra flags for `localpay start`, e.g. "--no-auto-capture --seed ci".
+    default: ''
+  scenario:
+    description: Optional scenario file or gallery id to run once the server is up. The step fails if it fails.
+    default: ''
+
+outputs:
+  url:
+    description: Base URL to give your SDK, e.g. http://127.0.0.1:4010
+    value: ${{ steps.start.outputs.url }}
+  key-id:
+    description: Demo key id.
+    value: rzp_test_LocalPayDemo01
+  key-secret:
+    description: Demo key secret.
+    value: localpay_demo_secret
+
+runs:
+  using: composite
+  steps:
+    - name: Install LocalPay
+      shell: bash
+      env:
+        LP_VERSION: ${{ inputs.version }}
+        LP_PACKAGE: ${{ inputs.package }}
+      run: |
+        mkdir -p "$RUNNER_TEMP/localpay" && cd "$RUNNER_TEMP/localpay"
+        echo '{"name":"localpay-action","private":true}' > package.json
+        npm install --no-audit --no-fund "${LP_PACKAGE:-localpay@$LP_VERSION}"
+    - name: Start LocalPay
+      id: start
+      shell: bash
+      env:
+        LP_PORT: ${{ inputs.port }}
+        LP_WEBHOOKS: ${{ inputs.webhook }}
+        LP_SECRET: ${{ inputs.webhook-secret }}
+        LP_ARGS: ${{ inputs.args }}
+      run: |
+        flags=(--port "$LP_PORT" --webhook-secret "$LP_SECRET")
+        while IFS= read -r url; do [ -n "$url" ] && flags+=(--webhook "$url"); done <<< "$LP_WEBHOOKS"
+        read -r -a extra <<< "$LP_ARGS"
+        export LOCALPAY_HOME="$RUNNER_TEMP/localpay/home"
+        nohup node "$RUNNER_TEMP/localpay/node_modules/localpay/dist/localpay.js" start "${flags[@]}" "${extra[@]}" > "$RUNNER_TEMP/localpay/server.log" 2>&1 &
+        for i in $(seq 1 30); do
+          if curl -sf "http://127.0.0.1:$LP_PORT/_localpay/health" > /dev/null; then
+            echo "url=http://127.0.0.1:$LP_PORT" >> "$GITHUB_OUTPUT"
+            echo "LOCALPAY_URL=http://127.0.0.1:$LP_PORT" >> "$GITHUB_ENV"
+            echo "LOCALPAY_HOME=$LOCALPAY_HOME" >> "$GITHUB_ENV"
+            echo "LocalPay is up on port $LP_PORT"
+            exit 0
+          fi
+          sleep 1
+        done
+        cat "$RUNNER_TEMP/localpay/server.log"
+        echo "::error::LocalPay did not start"
+        exit 1
+    - name: Run scenario
+      if: inputs.scenario != ''
+      shell: bash
+      env:
+        LP_PORT: ${{ inputs.port }}
+        LP_SCENARIO: ${{ inputs.scenario }}
+      run: node "$RUNNER_TEMP/localpay/node_modules/localpay/dist/localpay.js" scenario run "$LP_SCENARIO" --port "$LP_PORT"

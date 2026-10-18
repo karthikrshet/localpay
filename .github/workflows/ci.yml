@@ -127,3 +127,25 @@ jobs:
           test "$(docker inspect -f '{{.Config.User}}' lp)" = "nonroot"
           docker logs lp | grep -q 'generated dashboard password'
           docker rm -f lp
+
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter localpay pack --pack-destination "$RUNNER_TEMP/pkg"
+      - id: tarball
+        run: echo "path=$(ls "$RUNNER_TEMP"/pkg/*.tgz)" >> "$GITHUB_OUTPUT"
+      - uses: ./action
+        id: localpay
+        with:
+          package: ${{ steps.tarball.outputs.path }}
+          args: --seed action-ci
+          scenario: 02-upi-timeout-then-retry
+      - run: curl -sf -u "${{ steps.localpay.outputs.key-id }}:${{ steps.localpay.outputs.key-secret }}" "$LOCALPAY_URL/v1/orders"
