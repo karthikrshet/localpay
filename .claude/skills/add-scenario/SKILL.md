@@ -1,18 +1,18 @@
 ---
 name: add-scenario
-description: Add a YAML test scenario to LocalPay with its expected event sequence and a gallery entry.
+description: Add a YAML test scenario to LocalPay's gallery with its expectations, and keep it deterministic.
 ---
-1. Write the scenario as packages/scenarios/gallery/<name>.yaml. Give it a
-   seed so IDs and timing are deterministic, and describe one situation a
-   developer actually hits (e.g. "UPI timeout then late success").
-2. Use only behaviour LocalPay already supports; if a step needs a missing
-   endpoint or event, add that first (add-endpoint / add-webhook-event).
-3. Write the expected event sequence next to it (<name>.expected.json):
-   ordered event names, entity statuses after each step, and webhook
-   deliveries including deliberate duplicates or reordering.
-4. Add a test that runs the scenario with the runner and compares the
-   recorded events to the expected sequence exactly.
-5. Run it twice with the same seed; the outputs must be identical.
-6. Add it to the scenario gallery in the docs with a one-line "use this when".
-7. pnpm lint && pnpm test must pass.
-8. Add a changeset; update .claude/memory/progress.md.
+1. Write packages/scenarios/gallery/NN-short-name.yaml. Give it a `seed` so ids and
+   weighted outcomes are deterministic, and a `description` (one or two sentences: the
+   situation a developer hits and what their app should do).
+2. Use only step types the schema supports (packages/scenarios/src/schema.ts). If the
+   scenario needs a missing endpoint or event, add that first (add-endpoint /
+   add-webhook-event).
+3. Add an `expect:` block: `events_include` for the events that matter, in order, and
+   status counts (`orders`, `payments`, `refunds`, `payment_links`). Use exact `events`
+   only when the full sequence is the point of the scenario.
+4. pnpm vitest run packages/scenarios — gallery.test.ts runs every file twice and fails
+   if expectations fail or the two runs differ. Update its count if it checks one.
+5. Add the scenario to the gallery table in docs/site/src/content/docs/guides/scenarios.md.
+6. pnpm lint && pnpm test must pass.
+7. Add a changeset; update .claude/memory/progress.md.
