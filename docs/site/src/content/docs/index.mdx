@@ -1,0 +1,41 @@
+---
+title: LocalPay
+description: Test your Razorpay integration offline. No keys, no ngrok, every edge case one click away.
+template: splash
+hero:
+  tagline: Test your Razorpay integration offline. No keys, no ngrok, every edge case one click away.
+  actions:
+    - text: Quickstart
+      link: /quickstart/
+      icon: right-arrow
+    - text: Compatibility matrix
+      link: /reference/compatibility/
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="Same SDKs, one changed line" icon="puzzle">
+    Point the official Node or Python SDK at `http://127.0.0.1:4010`. Orders, payments,
+    captures and refunds behave like test mode.
+  </Card>
+  <Card title="A checkout you can script" icon="laptop">
+    Swap one script tag. The popup has buttons for success, failures, UPI timeouts and
+    authorize-only, so every path is one click away.
+  </Card>
+  <Card title="Webhooks without tunnels" icon="rocket">
+    Signed webhooks go straight to `localhost`. Replay, duplicate, reorder or unsign them
+    to prove your handler is idempotent.
+  </Card>
+  <Card title="Made for CI" icon="seti:config">
+    No secrets, no network. Seeded IDs and an injectable clock make runs repeatable,
+    and time travel turns days into milliseconds.
+  </Card>
+</CardGrid>
+
+:::caution[Not a payment gateway]
+LocalPay never moves money and never talks to a bank, NPCI or Razorpay. It is an
+independent open-source project, not affiliated with or endorsed by Razorpay. Always test
+against Razorpay's real test mode before going live.
+:::

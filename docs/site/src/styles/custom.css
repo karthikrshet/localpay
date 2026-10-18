@@ -1,0 +1,10 @@
+/* LocalPay palette on a white page: blue #2563EB, never Razorpay's colours. */
+:root,
+:root[data-theme='light'] {
+  --sl-color-accent-low: #DBEAFE;
+  --sl-color-accent: #2563EB;
+  --sl-color-accent-high: #1E3A8A;
+  --sl-color-white: #0F172A;
+  --sl-color-black: #FFFFFF;
+  color-scheme: light;
+}
