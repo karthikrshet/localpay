@@ -18,11 +18,14 @@
     "test:compat": "vitest run fixtures",
     "test:e2e": "playwright test",
     "localpay": "node --experimental-strip-types --no-warnings packages/cli/src/bin.ts",
-    "build": "pnpm --filter @localpay/checkout build && pnpm --filter @localpay/dashboard build && pnpm --filter localpay build",
-    "smoke:package": "node --experimental-strip-types --no-warnings scripts/smoke-package.ts"
+    "build": "pnpm --filter @localpay/checkout build && pnpm --filter @localpay/dashboard build && pnpm --filter localpay build && pnpm --filter @localpay/shim-node build",
+    "smoke:package": "node --experimental-strip-types --no-warnings scripts/smoke-package.ts",
+    "changeset": "changeset"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
     "@eslint/js": "^10.0.1",
     "@localpay/server": "workspace:*",
     "@playwright/test": "^1.64.1",

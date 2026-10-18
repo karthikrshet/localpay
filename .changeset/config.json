@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": ["@changesets/changelog-github", { "repo": "localpay/localpay" }],
+  "commit": false,
+  "fixed": [["localpay", "@localpay/shim-node"]],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "privatePackages": { "version": false, "tag": false },
+  "ignore": []
+}
