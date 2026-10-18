@@ -1,0 +1,75 @@
+name: Compatibility (nightly)
+
+# Catches drift before users do: new SDK releases, and changes in the real API's
+# response shapes (only when the maintainer's test-mode secrets are configured).
+on:
+  schedule:
+    - cron: '30 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sdk-node-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @localpay/shim-node add -D razorpay@latest
+      - run: pnpm vitest run packages/shims scripts/spike/spike.test.ts
+
+  sdk-python-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install --upgrade razorpay
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm vitest run scripts/spike/python.test.ts
+        env:
+          LOCALPAY_PYTHON: python
+
+  upstream-drift:
+    runs-on: ubuntu-latest
+    env:
+      RZP_KEY_ID: ${{ secrets.RZP_TEST_KEY_ID }}
+      RZP_KEY_SECRET: ${{ secrets.RZP_TEST_KEY_SECRET }}
+      PAYMENT_ID: ${{ secrets.RZP_TEST_PAYMENT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.RZP_KEY_ID != ''
+      - uses: actions/setup-node@v4
+        if: env.RZP_KEY_ID != ''
+        with:
+          node-version: 22
+      - name: Record and scrub
+        if: env.RZP_KEY_ID != ''
+        run: |
+          node --experimental-strip-types scripts/record-fixtures.ts fixtures/requests/core.json .fixture-recordings
+          node --experimental-strip-types scripts/scrub-fixtures.ts .fixture-recordings
+      - name: Compare with committed fixtures
+        id: drift
+        if: env.RZP_KEY_ID != ''
+        run: node --experimental-strip-types scripts/check-drift.ts .fixture-recordings > drift.md
+      - name: Open an issue on drift
+        if: failure() && steps.drift.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue create --title "Upstream API drift detected ($(date -u +%F))" --label compat-gap --body-file drift.md
+      - name: Skip without secrets
+        if: env.RZP_KEY_ID == ''
+        run: echo "RZP_TEST_KEY_ID is not set; skipping upstream recording."
