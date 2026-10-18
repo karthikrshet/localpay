@@ -19,6 +19,7 @@ export { customerRoutes, orderRoutes, paymentRoutes, refundRoutes };
 export { toWireCustomer } from './routes/customers.ts';
 export { paymentLinkRoutes };
 export * from './payment-links/serializer.ts';
+export { escapeHtml, paymentLinkPages } from './payment-links/page.ts';
 
 /** Every route group LocalPay serves for this provider. */
 export const allRoutes = [orderRoutes, paymentRoutes, refundRoutes, customerRoutes, paymentLinkRoutes] as const;
