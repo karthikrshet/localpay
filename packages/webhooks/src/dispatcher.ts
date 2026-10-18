@@ -181,12 +181,17 @@ export function createDispatcher(options: DispatcherOptions) {
     tick(): Promise<number> {
       if (running) return running;
       running = (async () => {
-        const now = options.clock.now();
-        const due = [...deliveries.values()]
-          .filter((d) => isOpen(d) && d.nextAttemptAt !== null && d.nextAttemptAt <= now)
-          .sort((a, b) => (a.nextAttemptAt ?? 0) - (b.nextAttemptAt ?? 0));
-        for (const delivery of due) await attempt(delivery);
-        return due.length;
+        let sent = 0;
+        // Loop: deliveries enqueued while this pass was sending are picked up too.
+        for (;;) {
+          const now = options.clock.now();
+          const due = [...deliveries.values()]
+            .filter((d) => isOpen(d) && d.nextAttemptAt !== null && d.nextAttemptAt <= now)
+            .sort((a, b) => (a.nextAttemptAt ?? 0) - (b.nextAttemptAt ?? 0));
+          if (due.length === 0) return sent;
+          for (const delivery of due) await attempt(delivery);
+          sent += due.length;
+        }
       })().finally(() => {
         running = null;
       });

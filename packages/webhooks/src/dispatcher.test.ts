@@ -139,6 +139,15 @@ describe('dispatcher', () => {
     expect(seen).toContain('delivered');
   });
 
+  it('also sends deliveries enqueued while a tick is running', async () => {
+    const { dispatcher, sent, event } = setup();
+    dispatcher.enqueue(event());
+    const running = dispatcher.tick();
+    dispatcher.enqueue(event());
+    expect(await running).toBe(2);
+    expect(sent).toHaveLength(2);
+  });
+
   it('does not run two ticks at once', async () => {
     const { dispatcher, sent, event } = setup();
     dispatcher.enqueue(event());
