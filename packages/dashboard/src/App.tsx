@@ -110,6 +110,7 @@ export function App() {
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-6">
+          <h1 className="sr-only">{`LocalPay · ${NAV.find((n) => (n.to === '/' ? path === '/' : path.startsWith(n.to)))?.label ?? 'Dashboard'}`}</h1>
           {error && <ErrorBox message={error} />}
           {session ? route(path, session) : !error && <Empty>Loading…</Empty>}
         </main>
