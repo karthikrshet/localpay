@@ -113,3 +113,17 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter localpay-docs build
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f docker/Dockerfile -t localpay:ci .
+      - name: Run read-only as non-root and call the API
+        run: |
+          docker run -d --name lp --read-only -p 127.0.0.1:4010:4010 localpay:ci
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4010/_localpay/health && break; sleep 1; done
+          curl -sf -u rzp_test_LocalPayDemo01:localpay_demo_secret -H 'content-type: application/json' -d '{"amount":50000}' http://127.0.0.1:4010/v1/orders
+          test "$(docker inspect -f '{{.Config.User}}' lp)" = "nonroot"
+          docker logs lp | grep -q 'generated dashboard password'
+          docker rm -f lp
