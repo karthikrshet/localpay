@@ -20,6 +20,11 @@ export function applyEvent(state: State, event: AnyEvent): void {
   if ('refund' in data) state.refunds.set(data.refund.id, data.refund);
 }
 
+/** Empties every collection in place, keeping references held elsewhere valid. */
+export function clearState(state: State): void {
+  for (const collection of Object.values(state) as Map<string, unknown>[]) collection.clear();
+}
+
 export function replay(events: Iterable<AnyEvent>): State {
   const state = createState();
   for (const event of events) applyEvent(state, event);
