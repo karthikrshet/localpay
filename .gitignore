@@ -13,3 +13,7 @@ coverage/
 
 # raw fixture recordings (unscrubbed; never commit)
 .fixture-recordings/
+
+# Playwright
+test-results/
+playwright-report/

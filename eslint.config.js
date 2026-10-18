@@ -20,6 +20,8 @@ export default tseslint.config(
     },
   },
   { files: ['**/*.js'], ...tseslint.configs.disableTypeChecked },
+  // Browser tests run callbacks inside the page (page.evaluate).
+  { files: ['examples/**/*.e2e.js'], languageOptions: { globals: { ...globals.browser, ...globals.node } } },
 
   // Architecture rules from AGENTS.md (dependency-cruiser will back these up later).
   {
