@@ -1,3 +1,4 @@
-// @localpay/webhooks — Webhook dispatcher: queue, retries, replay, SSRF guard.
-// Phase 0 placeholder; implementation starts in a later phase (see docs/PLAN.md).
-export {};
+// @localpay/webhooks — dispatcher: queue, retries, replay, failure injection, SSRF guard.
+export * from './dispatcher.ts';
+export * from './sender.ts';
+export * from './ssrf.ts';
