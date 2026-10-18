@@ -13,8 +13,13 @@ It never moves money, never calls Razorpay, and never accepts live keys.
 - pnpm install · pnpm lint · pnpm typecheck · pnpm test
 - pnpm test:compat — contract tests: replay fixtures/requests/core.json against LocalPay
 - pnpm check-secrets · pnpm scrub-fixtures <path> · pnpm record-fixtures <spec> (maintainer only)
+- pnpm build — checkout.js, dashboard, the bundled `localpay` CLI and the Node shim
+- pnpm test:e2e — Playwright browser tests (needs pnpm build first)
+- pnpm localpay [start|status|reset|time] — run the CLI from source
+- pnpm smoke:package — pack, install and run `localpay` like a user (after pnpm build)
+- pnpm --filter localpay-docs build — docs site
+- pnpm changeset — record a user-visible change
 - pnpm spike — Phase 0 SDK base-URL spike (scripts/spike)
-- Not wired yet: pnpm dev · pnpm build
 
 ## Architecture rules
 - packages/core has zero imports from other packages.
@@ -39,6 +44,8 @@ It never moves money, never calls Razorpay, and never accepts live keys.
 
 ## Never
 - Never add Razorpay logos, colours or the word "Razorpay" to UI branding.
+- UI is light-only with primary blue #2563EB (decisions.md); no inline styles in the
+  dashboard (its CSP forbids them).
 - Never accept keys starting rzp_live_.
 - Never log secrets or full request headers.
 - Never commit fixtures that have not passed scripts/scrub-fixtures.
