@@ -5,6 +5,7 @@
   },
   "include": [
     "packages/*/src/**/*.ts",
+    "packages/cli/build.ts",
     "scripts/**/*.ts",
     "fixtures/**/*.ts",
     "*.config.ts"

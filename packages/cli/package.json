@@ -2,20 +2,45 @@
   "name": "localpay",
   "version": "0.0.0",
   "description": "Razorpay-compatible local payment emulator for testing. Independent project, not affiliated with Razorpay. Never moves money.",
-  "private": true,
+  "keywords": [
+    "payments",
+    "emulator",
+    "mock",
+    "testing",
+    "upi",
+    "razorpay-compatible",
+    "webhooks",
+    "offline"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/localpay/localpay.git",
+    "directory": "packages/cli"
+  },
   "type": "module",
   "bin": {
-    "localpay": "./src/bin.ts"
+    "localpay": "./dist/localpay.js"
   },
-  "exports": {
-    ".": "./src/index.ts"
-  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "engines": {
     "node": ">=22"
   },
-  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node --experimental-strip-types --no-warnings build.ts"
+  },
   "dependencies": {
+    "@fastify/static": "^10.1.6",
+    "fastify": "^5.12.7",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
     "@localpay/core": "workspace:*",
-    "@localpay/server": "workspace:*"
-  }
+    "@localpay/server": "workspace:*",
+    "esbuild": "^0.28.2"
+  },
+  "private": false
 }
