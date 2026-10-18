@@ -38,6 +38,12 @@ and the record-fixture skill), so nothing below is marked supported.
 | GET /v1/payment_links | partial | Returns `{ payment_links: [...] }`; filters `payment_id`, `reference_id` |
 | PATCH /v1/payment_links/:id | partial | `reference_id`, `expire_by`, `notes`, `accept_partial` |
 | POST /v1/payment_links/:id/cancel | partial | |
+| POST /v1/plans | partial | |
+| GET /v1/plans/:id, GET /v1/plans | partial | Item id is derived from the plan id |
+| POST /v1/subscriptions | partial | No add-ons or offers |
+| GET /v1/subscriptions/:id, GET /v1/subscriptions | partial | `plan_id` filter |
+| POST /v1/subscriptions/:id/cancel | partial | `cancel_at_cycle_end` supported |
+| PATCH /v1/subscriptions/:id, pause, resume | missing | |
 
 ## Behaviour
 
@@ -54,6 +60,7 @@ and the record-fixture skill), so nothing below is marked supported.
 | Checkout signature `order_id\|payment_id` | partial | HMAC-SHA256 hex with the key secret |
 | Webhook retries | partial | 5 attempts: now, +5s, +30s, +2m, +10m (real gateway retries for longer) |
 | Test UPI IDs `success@razorpay` / `failure@razorpay` | partial | Force success / insufficient funds |
+| Subscription checkout signature | partial | HMAC of `payment_id\|subscription_id` |
 | Payment link callback signature | partial | HMAC of `link_id\|reference_id\|status\|payment_id`; unverified against a recording |
 
 ## Webhook events
@@ -71,6 +78,7 @@ and the record-fixture skill), so nothing below is marked supported.
 | payment_link.partially_paid | partial | Contains payment_link, payment, order |
 | payment_link.expired | partial | |
 | payment_link.cancelled | partial | |
+| subscription.authenticated / activated / charged / pending / halted / cancelled / completed / updated | partial | `charged` contains subscription and payment |
 
 ## SDK connection
 
