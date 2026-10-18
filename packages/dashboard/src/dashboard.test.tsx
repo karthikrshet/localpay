@@ -78,6 +78,21 @@ describe('App', () => {
     expect((replay?.init?.headers as Record<string, string>)['x-localpay-csrf']).toBe('csrf-1');
   });
 
+  it('runs a gallery scenario and shows its steps and checks', async () => {
+    const calls = mockApi({
+      '/session': SESSION,
+      '/scenarios': { items: [{ id: '01-happy-path', name: 'Happy path', description: 'A customer pays an order by UPI.', yaml: 'name: Happy path' }] },
+      '/scenarios/run': { name: 'Happy path', ok: true, steps: [{ at: '1', step: 'order', ok: true, detail: 'order_1' }], checks: [{ name: 'orders.paid', ok: true, detail: 'expected 1, got 1' }], summary: { orders: { paid: 1 } }, events: [{ seq: 1, id: 'evt_1', type: 'order.created' }] },
+    });
+    render(<App />);
+    await screen.findByText('rzp_test_LocalPayDemo01');
+    act(() => navigate('/scenarios'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run' }));
+    expect(await screen.findByText('expected 1, got 1')).toBeTruthy();
+    expect(screen.getByText('passed')).toBeTruthy();
+    expect(JSON.parse(calls.find((c) => c.url.endsWith('/scenarios/run'))?.init?.body as string)).toEqual({ id: '01-happy-path' });
+  });
+
   it('shows the API error when the session is missing', async () => {
     mockApi({});
     render(<App />);

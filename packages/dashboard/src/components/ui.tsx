@@ -11,9 +11,9 @@ const TONES: Record<string, string> = {
 };
 
 const STATUS_TONE: Record<string, keyof typeof TONES> = {
-  paid: 'good', captured: 'good', processed: 'good', delivered: 'good',
-  attempted: 'warn', authorized: 'warn', pending: 'warn', retrying: 'warn',
-  failed: 'bad', refunded: 'info', created: 'neutral',
+  paid: 'good', captured: 'good', processed: 'good', delivered: 'good', passed: 'good',
+  attempted: 'warn', authorized: 'warn', pending: 'warn', retrying: 'warn', partially_paid: 'warn',
+  failed: 'bad', expired: 'bad', cancelled: 'neutral', refunded: 'info', created: 'neutral',
 };
 
 export function Badge({ status }: { status: string }) {

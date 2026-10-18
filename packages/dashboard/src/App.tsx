@@ -1,9 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { api, LiveContext, setCsrf } from './api.ts';
-import { Card, Empty, ErrorBox } from './components/ui.tsx';
+import { Empty, ErrorBox } from './components/ui.tsx';
 import { Home } from './pages/Home.tsx';
 import { OrderDetail, OrdersPage } from './pages/Orders.tsx';
 import { PaymentDetail, PaymentsPage } from './pages/Payments.tsx';
+import { ScenariosPage } from './pages/Scenarios.tsx';
 import { SettingsPage } from './pages/Settings.tsx';
 import { TimePage } from './pages/Time.tsx';
 import { WebhooksPage } from './pages/Webhooks.tsx';
@@ -57,11 +58,7 @@ export function route(path: string, session: Session): ReactNode {
     case '/webhooks':
       return <WebhooksPage />;
     case '/scenarios':
-      return (
-        <Card title="Scenarios">
-          <Empty>The scenario runner arrives with the scenario engine.</Empty>
-        </Card>
-      );
+      return <ScenariosPage />;
     case '/time':
       return <TimePage />;
     case '/settings':
