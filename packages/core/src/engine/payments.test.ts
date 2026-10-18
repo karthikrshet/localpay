@@ -113,6 +113,16 @@ describe('capture', () => {
     expect(() => payments.capturePayment(failed.id, { amount: 100 })).toThrow(expect.objectContaining({ reason: 'payment_not_authorized' }) as Error);
   });
 
+  it('refuses to capture a second payment once the order is paid', () => {
+    // Found by the property test: authorize A, pay B (auto-captured), then capture A.
+    const { orders, payments } = setup();
+    const order = orders.createOrder({ amount: 100 });
+    const first = payments.attemptPayment({ orderId: order.id, method: 'upi', outcome: { kind: 'authorize_only' } });
+    payments.attemptPayment({ orderId: order.id, method: 'upi', outcome: { kind: 'success' } });
+    expect(() => payments.capturePayment(first.id, { amount: 100 })).toThrow(expect.objectContaining({ reason: 'order_already_paid' }) as Error);
+    expect(orders.getOrder(order.id).amountPaid).toBe(100);
+  });
+
   it('reports unknown payments', () => {
     const { payments } = setup();
     expect(() => payments.capturePayment('pay_missing00000000', { amount: 1 })).toThrow(expect.objectContaining({ reason: 'not_found' }) as Error);

@@ -118,13 +118,20 @@ export function createPaymentOps(ctx: EngineContext, orders: OrderOps) {
         throw new EngineError('currency_mismatch', 'currency does not match the payment currency', 'currency');
       }
 
+      // Two payments can be authorized against one order; only one may settle it.
+      const order = payment.orderId ? orders.getOrder(payment.orderId) : null;
+      if (order && order.amountPaid + payment.amount > order.amount) {
+        throw order.status === 'paid'
+          ? new EngineError('order_already_paid', `order ${order.id} is already paid`)
+          : new EngineError('amount_exceeds_amount_due', 'capturing this payment would exceed the amount due on the order', 'amount');
+      }
+
       const { fee, tax } = computeFee(payment.amount, ctx.config.fees);
       assertTransition('payment', payment.status, 'captured');
       const captured: Payment = { ...payment, status: 'captured', captured: true, fee, tax, capturedAt: ctx.now() };
       ctx.emit('payment.captured', { payment: captured });
 
-      if (captured.orderId) {
-        const order = orders.getOrder(captured.orderId);
+      if (order) {
         const amountPaid = order.amountPaid + captured.amount;
         const status = amountPaid >= order.amount ? 'paid' : order.status;
         assertTransition('order', order.status, status);
