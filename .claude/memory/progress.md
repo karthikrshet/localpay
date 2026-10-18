@@ -1,5 +1,5 @@
 # Progress
-Phase: 2 — Checkout and webhooks — gate passed (browser purchase test, offline)
+Phase: 3 — Dashboard, CLI, launch prep — code complete; release and the 5-minute stranger test are maintainer steps
 
 ## Done
 - 2026-10-18 Phase 0: skeleton, agent docs, tooling, CI, Node + Python SDK spikes, ADRs 0001–0003
@@ -9,11 +9,12 @@ Phase: 2 — Checkout and webhooks — gate passed (browser purchase test, offli
 - 2026-10-19 server: config with loopback/test-key guards, createLocalPay; shim-node with end-to-end SDK tests
 - 2026-10-19 Fixture tooling: scrubber, secret check (CI), recorder, contract harness with 12 hand-written fixtures
 - 2026-10-19 Phase 2: signatures, webhook format, dispatcher (SSRF guard, retries, replay, fault injection), checkout API + scenarios + magic values, checkout.js (Preact, 9.7 KB gz, axe-clean), server wiring, Express example with Node and Playwright tests
+- 2026-10-19 Phase 3: admin API (session token cookie, CSRF, CSP), React dashboard (light, blue #2563EB), CLI (start/status/reset/time), bundled `localpay` package + smoke test, Starlight docs, Changesets + release workflow, README with screenshots, 10 good first issues, dashboard browser test
 
 ## Next
-1. Phase 3: dashboard, CLI (`localpay start --webhook ...` is already referenced by examples/express/README.md), docs site, release setup
-2. Phase 4: customers, payment links, scenario engine, Docker, GitHub Action
-3. Replace hand-written fixtures with recorded ones (maintainer)
+1. Phase 4: customers, payment links, scenario engine + dashboard Scenarios screen, Docker image, GitHub Action, SDK compat CI
+2. Phase 5: subscriptions, disputes, settlements, record-and-replay, nightly drift job
+3. Maintainer: create the GitHub repo (URLs assume github.com/localpay/localpay), NPM_TOKEN secret, publish v0.1.0, record fixtures, the README GIF, the 5-minute friend test
 
 ## Blockers
 - Phase 1 gate ("all recorded fixtures pass") needs real recordings from the maintainer's test account: run `pnpm record-fixtures fixtures/requests/core.json` with RZP_KEY_ID/RZP_KEY_SECRET, then scrub and review

@@ -20,3 +20,6 @@ Razorpay and SDK quirks found in testing. One dated line each, with where it was
 - 2026-10-19 · Playwright's loader crashes importing Fastify in the test process on Node 22 ("Unexpected module status 3", require(esm)). Start servers in their own process via playwright.config.ts webServer. Seen: examples/express e2e.
 - 2026-10-19 · pnpm 10+ blocks dependency install scripts; esbuild works without its postinstall (binary comes from the optional platform package). pnpm-workspace.yaml sets allowBuilds.esbuild: false.
 - 2026-10-19 · A dispatcher tick that only snapshots due deliveries once leaves deliveries enqueued mid-tick waiting for the next timer; tick now loops until nothing is due.
+- 2026-10-19 · Astro 7 requires Node >= 22.22; docs/site pins Astro 6.4 + Starlight 0.39 (last pair for Astro 6 without markdown-satteri).
+- 2026-10-19 · @fastify/static 10 passes a FastifyReply (not a raw response) to setHeaders: use reply.header().
+- 2026-10-19 · Shell gotcha in our own tooling: a `$C ... && \` chain followed by a heredoc and another `$C` line runs the last line even if the chain failed. Use `set -e` in multi-commit shell blocks.
