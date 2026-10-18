@@ -66,6 +66,22 @@ const customerStep = z.strictObject({
   customer: z.strictObject({ name: z.string().optional(), email: z.string().optional(), contact: z.string().optional(), as: alias.optional() }),
 });
 
+const planStep = z.strictObject({
+  plan: z.strictObject({ name: z.string().default('Plan'), amount, period: z.enum(['daily', 'weekly', 'monthly', 'yearly']), interval: z.number().int().min(1).default(1), as: alias.optional() }),
+});
+
+const subscriptionStep = z.strictObject({
+  subscription: z.strictObject({ plan: ref, total_count: z.number().int().min(1), quantity: z.number().int().min(1).optional(), start_in: duration.optional(), as: alias.optional() }),
+});
+
+const authenticateStep = z.strictObject({
+  authenticate: z.strictObject({ subscription: ref, scenario: z.string().default('success'), method: method.default('card') }),
+});
+
+const cancelSubscriptionStep = z.strictObject({
+  cancel_subscription: z.strictObject({ subscription: ref, at_cycle_end: z.boolean().optional() }),
+});
+
 const faultsStep = z.strictObject({
   webhook_faults: z.strictObject({
     duplicate: z.number().min(0).max(1).optional(),
@@ -87,6 +103,10 @@ export type Step =
   | z.output<typeof cancelLinkStep>
   | z.output<typeof customerStep>
   | z.output<typeof faultsStep>
+  | z.output<typeof planStep>
+  | z.output<typeof subscriptionStep>
+  | z.output<typeof authenticateStep>
+  | z.output<typeof cancelSubscriptionStep>
   | { repeat: { times: number; steps: Step[] } };
 
 const stepSchema: z.ZodType<Step> = z.lazy(() =>
@@ -102,6 +122,10 @@ const stepSchema: z.ZodType<Step> = z.lazy(() =>
     cancelLinkStep,
     customerStep,
     faultsStep,
+    planStep,
+    subscriptionStep,
+    authenticateStep,
+    cancelSubscriptionStep,
     z.strictObject({ repeat: z.strictObject({ times: z.number().int().min(1).max(1000), steps: z.array(stepSchema).min(1) }) }),
   ]),
 );
@@ -123,6 +147,7 @@ export const scenarioSchema = z.strictObject({
       payments: counts.optional(),
       refunds: counts.optional(),
       payment_links: counts.optional(),
+      subscriptions: counts.optional(),
     })
     .optional(),
 });

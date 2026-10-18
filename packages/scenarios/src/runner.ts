@@ -31,10 +31,10 @@ export interface ScenarioResult {
   steps: StepResult[];
   checks: Check[];
   /** Status counts for entities created by this run. */
-  summary: Record<'orders' | 'payments' | 'refunds' | 'payment_links', Record<string, number>>;
+  summary: Record<'orders' | 'payments' | 'refunds' | 'payment_links' | 'subscriptions', Record<string, number>>;
 }
 
-type Kind = 'order' | 'payment' | 'refund' | 'link' | 'customer';
+type Kind = 'order' | 'payment' | 'refund' | 'link' | 'customer' | 'plan' | 'subscription';
 
 class Aliases {
   private readonly named = new Map<string, string>();
@@ -132,6 +132,36 @@ export function runScenario(scenario: Scenario, deps: RunnerDeps): ScenarioResul
       aliases.record('customer', customer.id, c.as);
       return customer.id;
     }
+    if ('plan' in step) {
+      const p = step.plan;
+      const plan = engine.createPlan({ period: p.period, interval: p.interval, item: { name: p.name, amount: p.amount } });
+      aliases.record('plan', plan.id, p.as);
+      return plan.id;
+    }
+    if ('subscription' in step) {
+      const s = step.subscription;
+      const subscription = engine.createSubscription({
+        planId: aliases.resolve('plan', s.plan),
+        totalCount: s.total_count,
+        ...(s.quantity !== undefined && { quantity: s.quantity }),
+        startAt: s.start_in ? engine.now() + parseDuration(s.start_in) / 1000 : null,
+      });
+      aliases.record('subscription', subscription.id, s.as);
+      return subscription.id;
+    }
+    if ('authenticate' in step) {
+      const a = step.authenticate;
+      const subscription = engine.getSubscription(aliases.resolve('subscription', a.subscription));
+      const outcome = deps.resolveOutcome(a.scenario, { amount: engine.authenticationAmount(subscription.id), method: a.method, vpa: null });
+      if (!outcome) throw new EngineError('not_found', `unknown payment scenario "${a.scenario}"`);
+      const result = engine.authenticateSubscription(subscription.id, { method: a.method, outcome });
+      aliases.record('payment', result.payment.id);
+      return `${subscription.id} ${a.scenario} → ${result.subscription.status}`;
+    }
+    if ('cancel_subscription' in step) {
+      const c = step.cancel_subscription;
+      return `${engine.cancelSubscription(aliases.resolve('subscription', c.subscription), { atCycleEnd: c.at_cycle_end ?? false }).status}`;
+    }
     if ('webhook_faults' in step) {
       const f = step.webhook_faults;
       if (!deps.setFaults) return 'skipped: no webhook dispatcher in this run';
@@ -178,7 +208,9 @@ function countBy<T extends { status: string }>(items: T[]): Record<string, numbe
 
 function summarise(engine: Engine, aliases: Aliases): ScenarioResult['summary'] {
   const ids = (kind: Kind) => aliases.created.get(kind) ?? [];
-  const orderIds = new Set(ids('order'));
+  const subscriptions = ids('subscription').map((id) => engine.getSubscription(id));
+  // Subscription charges create their own orders; count those payments too.
+  const orderIds = new Set([...ids('order'), ...subscriptions.flatMap((s) => s.paymentIds.map((p) => engine.getPayment(p).orderId ?? ''))]);
   const payments = engine.listPayments().filter((p) => p.orderId !== null && orderIds.has(p.orderId));
   const paymentIds = new Set(payments.map((p) => p.id));
   return {
@@ -186,6 +218,7 @@ function summarise(engine: Engine, aliases: Aliases): ScenarioResult['summary'] 
     payments: countBy(payments),
     refunds: countBy(engine.listRefunds().filter((r) => paymentIds.has(r.paymentId))),
     payment_links: countBy(ids('link').map((id) => engine.getPaymentLink(id))),
+    subscriptions: countBy(subscriptions),
   };
 }
 
@@ -208,7 +241,7 @@ function checkExpectations(scenario: Scenario, events: AnyEvent[], summary: Scen
     const ok = isSubsequence(expect.events_include, types);
     checks.push({ name: 'events_include', ok, detail: ok ? 'all present in order' : `missing or out of order in ${types.join(', ')}` });
   }
-  for (const key of ['orders', 'payments', 'refunds', 'payment_links'] as const) {
+  for (const key of ['orders', 'payments', 'refunds', 'payment_links', 'subscriptions'] as const) {
     const wanted = expect[key];
     if (!wanted) continue;
     for (const [status, count] of Object.entries(wanted)) {

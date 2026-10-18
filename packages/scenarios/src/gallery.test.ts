@@ -13,8 +13,8 @@ const run = (entry: (typeof gallery)[number]) =>
   });
 
 describe('scenario gallery', () => {
-  it('has ten scenarios with descriptions', () => {
-    expect(gallery).toHaveLength(10);
+  it('has twelve scenarios with descriptions', () => {
+    expect(gallery).toHaveLength(12);
     for (const entry of gallery) expect(entry.description.length).toBeGreaterThan(40);
   });
 

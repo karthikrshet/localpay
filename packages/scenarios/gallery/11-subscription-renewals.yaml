@@ -1,0 +1,12 @@
+name: A subscription renews to completion
+description: A three-month plan is authorized and charged now; time travel runs the next two renewals and the subscription completes. Your subscription.charged handler must extend access each time.
+seed: renewals
+steps:
+  - plan: { name: Pro monthly, amount: 49900, period: monthly, as: pro }
+  - subscription: { plan: pro, total_count: 3, as: sub }
+  - authenticate: { subscription: sub }
+  - advance: 65d
+expect:
+  events_include: [subscription.authenticated, subscription.activated, subscription.charged, subscription.charged, subscription.charged, subscription.completed]
+  subscriptions: { completed: 1 }
+  payments: { captured: 3 }

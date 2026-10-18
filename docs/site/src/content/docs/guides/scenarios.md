@@ -40,6 +40,10 @@ expect:
 | `link` | `amount`, `reference_id`, `description`, `accept_partial`, `expire_in` (e.g. `1d`), `as` |
 | `cancel_link` | `link` |
 | `customer` | `name`, `email`, `contact`, `as` |
+| `plan` | `name`, `amount`, `period` (`daily`, `weekly`, `monthly`, `yearly`), `interval`, `as` |
+| `subscription` | `plan`, `total_count`, `quantity`, `start_in` (e.g. `1d`), `as` |
+| `authenticate` | `subscription`, `scenario` (default `success`), `method` (default `card`) |
+| `cancel_subscription` | `subscription`, `at_cycle_end` |
 | `advance` | a duration: `30s`, `2h`, `3d`, `1w` |
 | `webhook_faults` | `duplicate`, `out_of_order`, `unsigned` (0–1), `delay` (ms) |
 | `repeat` | `times`, `steps` |
@@ -54,7 +58,7 @@ scenarios are the checkout buttons: `success`, `insufficient_funds`, `bank_down`
 | --- | --- |
 | `events` | the exact sequence of event types the run produced |
 | `events_include` | these event types, in this order, with others allowed in between |
-| `orders`, `payments`, `refunds`, `payment_links` | counts by status, for entities this run created |
+| `orders`, `payments`, `refunds`, `payment_links`, `subscriptions` | counts by status, for entities this run created |
 
 A run stops at the first step LocalPay rejects (for example, paying a paid order) and
 reports why.
@@ -73,3 +77,5 @@ reports why.
 | `08-busy-day` | Ten orders, about 30% timeouts, duplicate and reordered webhooks |
 | `09-payment-link-paid-in-parts` | An invoice link paid in two parts |
 | `10-payment-link-expires` | A link expires unpaid after time travel |
+| `11-subscription-renewals` | A three-month subscription renews to completion |
+| `12-subscription-halts` | Renewals fail until the subscription halts |

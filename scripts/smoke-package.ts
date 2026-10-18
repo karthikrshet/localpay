@@ -54,7 +54,7 @@ try {
 
   const token = new URL(dashboard).searchParams.get('token') ?? '';
   const gallery = (await (await fetch(`${base}/_localpay/api/scenarios`, { headers: { authorization: `Bearer ${token}` } })).json()) as { items: unknown[] };
-  check(gallery.items.length === 10, 'scenario gallery is served from bundled assets');
+  check(gallery.items.length >= 10, 'scenario gallery is served from bundled assets');
 
   const login = await fetch(dashboard, { redirect: 'manual' });
   const cookie = login.headers.get('set-cookie')?.split(';')[0] ?? '';

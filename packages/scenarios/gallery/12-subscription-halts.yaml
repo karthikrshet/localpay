@@ -1,0 +1,12 @@
+name: A subscription halts after failed renewals
+description: The mandate is set up for a future start, then every renewal is declined (plan amount ends in paise 13). It goes pending, retries daily and halts after three failures. Your app should pause access, not delete the customer.
+seed: halts
+steps:
+  - plan: { name: Basic, amount: 19913, period: monthly, as: basic }
+  - subscription: { plan: basic, total_count: 12, start_in: 1d, as: sub }
+  - authenticate: { subscription: sub }
+  - advance: 4d
+expect:
+  events_include: [subscription.authenticated, subscription.pending, subscription.halted]
+  subscriptions: { halted: 1 }
+  payments: { failed: 3 }
