@@ -7,8 +7,9 @@ import { createOrderOps, type OrderOps } from './orders.ts';
 import { createPaymentLinkOps, type PaymentLinkOps } from './payment-links.ts';
 import { createPaymentOps, type PaymentOps } from './payments.ts';
 import { createRefundOps, type RefundOps } from './refunds.ts';
+import { createSubscriptionOps, type SubscriptionOps } from './subscriptions.ts';
 
-export interface Engine extends EngineBase, OrderOps, PaymentOps, RefundOps, CustomerOps, PaymentLinkOps {
+export interface Engine extends EngineBase, OrderOps, PaymentOps, RefundOps, CustomerOps, PaymentLinkOps, SubscriptionOps {
   /** Runs every time-driven transition that is due now. Returns how many ran. */
   tick(): number;
   /** Moves emulator time forward (needs a controllable clock), then ticks. */
@@ -24,6 +25,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
   const refunds = createRefundOps(base, payments);
   const customers = createCustomerOps(base);
   const paymentLinks = createPaymentLinkOps(base, orders);
+  const subscriptions = createSubscriptionOps(base, orders, payments);
 
   // Links hook into the payment flow: refuse payments on closed links, advance them on capture.
   const attempt = payments.attemptPayment.bind(payments);
@@ -38,10 +40,10 @@ export function createEngine(options: EngineOptions = {}): Engine {
     return captured;
   };
 
-  const tick = (): number => refunds.processDueRefunds() + paymentLinks.expireDuePaymentLinks();
+  const tick = (): number => refunds.processDueRefunds() + paymentLinks.expireDuePaymentLinks() + subscriptions.chargeDueSubscriptions();
 
   // Two calls: Object.assign is only typed for up to three sources.
-  const withOps = Object.assign(Object.assign(base, orders, payments), refunds, customers, paymentLinks);
+  const withOps = Object.assign(Object.assign(base, orders, payments), Object.assign(refunds, customers, paymentLinks), subscriptions);
   return Object.assign(withOps, {
     tick,
     advanceTime(ms: number): number {
@@ -63,3 +65,5 @@ export type { PaymentAttemptInput, PaymentFilter, PaymentOutcome } from './payme
 export type { CreateRefundInput, RefundFilter } from './refunds.ts';
 export type { CustomerInput } from './customers.ts';
 export type { PaymentLinkInput, PaymentLinkPatch } from './payment-links.ts';
+export { addPeriod } from './periods.ts';
+export { MAX_CHARGE_ATTEMPTS, type PlanInput, type SubscriptionInput } from './subscriptions.ts';
