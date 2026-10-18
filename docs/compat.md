@@ -41,18 +41,22 @@ and the record-fixture skill), so nothing below is marked supported.
 | Auto-capture | partial | On by default; per order with `payment_capture` |
 | Fees | partial | 2% + 18% tax on the fee, set on capture |
 | Capturing a second payment on a paid order | partial | Rejected with `order_already_paid`; real behaviour unverified |
+| Checkout `new Razorpay(options).open()` | partial | `handler`, `on('payment.failed')`, `modal.ondismiss`, `modal.escape`, `callback_url` + `redirect`; no card form; `theme` ignored |
+| Checkout signature `order_id\|payment_id` | partial | HMAC-SHA256 hex with the key secret |
+| Webhook retries | partial | 5 attempts: now, +5s, +30s, +2m, +10m (real gateway retries for longer) |
+| Test UPI IDs `success@razorpay` / `failure@razorpay` | partial | Force success / insufficient funds |
 
 ## Webhook events
 
 | Event | Status | Notes |
 | --- | --- | --- |
-| payment.authorized | missing | Phase 2 |
-| payment.captured | missing | Phase 2 |
-| payment.failed | missing | Phase 2 |
-| order.paid | missing | Phase 2 |
-| refund.created | missing | Phase 2 |
-| refund.processed | missing | Phase 2 |
-| refund.failed | missing | Phase 2 |
+| payment.authorized | partial | Signed with X-Razorpay-Signature; X-Razorpay-Event-Id set |
+| payment.captured | partial | Signed with X-Razorpay-Signature; X-Razorpay-Event-Id set |
+| payment.failed | partial | Signed with X-Razorpay-Signature; X-Razorpay-Event-Id set |
+| order.paid | partial | Signed with X-Razorpay-Signature; X-Razorpay-Event-Id set |
+| refund.created | partial | Signed with X-Razorpay-Signature; X-Razorpay-Event-Id set |
+| refund.processed | partial | Signed with X-Razorpay-Signature; X-Razorpay-Event-Id set |
+| refund.failed | partial | Signed with X-Razorpay-Signature; X-Razorpay-Event-Id set |
 
 ## SDK connection
 
