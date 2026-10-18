@@ -12,3 +12,4 @@ Do not re-argue a decision here; write a new ADR that supersedes it.
 - 2026-10-18 · Dependency direction enforced with ESLint no-restricted-imports for now · cheap; dependency-cruiser can follow · —
 - 2026-10-18 · Node SDK connects by overriding `client.api.rq.defaults.baseURL` (host only, no /v1); ship it as a shim · SDK hard-codes the host · ADR 0003 (to write)
 - 2026-10-18 · Fastify 5 for HTTP; Zod for request validation · inject() tests, encapsulated plugins · ADR 0001
+- 2026-10-18 · Event log is the store (in-memory, --persist appends JSONL); SQLite deferred · no native deps for npx/distroless · ADR 0002
