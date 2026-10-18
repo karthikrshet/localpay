@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "spike": "node --experimental-strip-types scripts/spike/create-order.ts",
     "check-secrets": "node --experimental-strip-types --no-warnings scripts/check-secrets.ts",
-    "scrub-fixtures": "node --experimental-strip-types --no-warnings scripts/scrub-fixtures.ts"
+    "scrub-fixtures": "node --experimental-strip-types --no-warnings scripts/scrub-fixtures.ts",
+    "record-fixtures": "node --experimental-strip-types --no-warnings scripts/record-fixtures.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

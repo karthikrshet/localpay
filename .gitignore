@@ -10,3 +10,6 @@ coverage/
 .DS_Store
 # local Claude Code settings (shared rules live in AGENTS.md and .claude/memory)
 .claude/settings.local.json
+
+# raw fixture recordings (unscrubbed; never commit)
+.fixture-recordings/
