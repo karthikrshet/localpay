@@ -11,5 +11,5 @@ const localpayUrl = await localpay.listen();
 const shop = createShop({ LOCALPAY_URL: localpayUrl });
 shop.app.listen(shopPort, '127.0.0.1', () => {
   localpay.webhookTargets.push({ id: 'shop', url: `http://127.0.0.1:${shopPort}/webhooks`, secret: 'localpay_webhook_secret' });
-  console.log(`LocalPay ${localpayUrl} · shop http://127.0.0.1:${shopPort}`);
+  console.log(`LocalPay ${localpayUrl} · shop http://127.0.0.1:${shopPort} · dashboard ${localpay.dashboardUrl(localpayUrl)}`);
 });
