@@ -2,6 +2,7 @@
 // server so tests (and embedders) can stop it.
 import { spawn } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -35,6 +36,8 @@ Usage
   localpay reset [--port N]         delete all data in a running server
   localpay time [--port N]          show emulator time
   localpay time advance <duration>  fast-forward, e.g. 1h, 3d, 1w [--port N]
+  localpay scenario list            list the built-in scenario gallery [--port N]
+  localpay scenario run <file|id>   run a YAML scenario on a running server [--port N]
   localpay help | --version
 
 Start options
@@ -64,7 +67,7 @@ LocalPay never moves money and is not affiliated with Razorpay.`;
 export function bundledAssets(assetsDir = fileURLToPath(new URL('./assets/', import.meta.url))): LocalPayDependencies {
   const checkout = `${assetsDir}checkout.js`;
   if (!existsSync(checkout)) return {};
-  return { dashboardDir: `${assetsDir}dashboard`, checkoutScript: () => readFile(checkout, 'utf8') };
+  return { dashboardDir: `${assetsDir}dashboard`, galleryDir: `${assetsDir}scenarios`, checkoutScript: () => readFile(checkout, 'utf8') };
 }
 
 function openBrowser(url: string): void {
@@ -131,6 +134,41 @@ async function time(argv: string[], io: Io): Promise<Result> {
   return { code: 0 };
 }
 
+interface ScenarioRun {
+  name: string;
+  ok: boolean;
+  steps: { at: string; step: string; ok: boolean; detail: string }[];
+  checks: { name: string; ok: boolean; detail: string }[];
+  summary: Record<string, Record<string, number>>;
+}
+
+async function scenario(argv: string[], io: Io): Promise<Result> {
+  const { port, rest } = portOf(argv, io);
+  const session = readSession(port, io.env);
+  const [action, target] = rest;
+  if (action === 'list') {
+    const { items } = await callServer<{ items: { id: string; name: string; description: string }[] }>(session, '/scenarios');
+    io.out(items.map((s) => `${s.id.padEnd(34)} ${s.name}`).join('\n'));
+    return { code: 0 };
+  }
+  if (action !== 'run' || !target) throw new UsageError('usage: localpay scenario run <file.yaml | gallery-id>, or localpay scenario list');
+  const file = resolve(io.cwd, target);
+  const body = existsSync(file) ? { yaml: readFileSync(file, 'utf8') } : { id: target };
+  const result = await callServer<ScenarioRun>(session, '/scenarios/run', { method: 'POST', body });
+  const style = createStyle(io.color);
+  const mark = (ok: boolean) => (ok ? style.blue('✓') : style.red('✗'));
+  const lines = [style.bold(result.name)];
+  for (const step of result.steps) lines.push(`  ${mark(step.ok)} ${step.at.padEnd(8)} ${step.step.padEnd(14)} ${step.detail}`);
+  for (const check of result.checks) lines.push(`  ${mark(check.ok)} expect ${check.name}: ${check.detail}`);
+  const counts = Object.entries(result.summary)
+    .filter(([, byStatus]) => Object.keys(byStatus).length > 0)
+    .map(([kind, byStatus]) => `${kind} ${Object.entries(byStatus).map(([s, n]) => `${n} ${s}`).join(', ')}`);
+  if (counts.length) lines.push(style.dim(`  ${counts.join(' · ')}`));
+  lines.push(result.ok ? 'Scenario passed.' : style.red('Scenario failed.'));
+  io.out(lines.join('\n'));
+  return { code: result.ok ? 0 : 1 };
+}
+
 export async function main(argv: string[], io: Io): Promise<Result> {
   const [first, ...rest] = argv;
   try {
@@ -145,6 +183,8 @@ export async function main(argv: string[], io: Io): Promise<Result> {
         return await reset(rest, io);
       case 'time':
         return await time(rest, io);
+      case 'scenario':
+        return await scenario(rest, io);
       case 'help':
       case '--help':
       case '-h':

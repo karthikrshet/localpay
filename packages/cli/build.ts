@@ -29,10 +29,13 @@ export async function buildCli(): Promise<void> {
     target: 'node22',
     external: EXTERNAL,
     legalComments: 'none',
+    // Some bundled CommonJS code (yaml) calls require(); give the ESM bundle one.
+    banner: { js: "import { createRequire as __lpCreateRequire } from 'node:module'; const require = __lpCreateRequire(import.meta.url);" },
   });
   mkdirSync(here('./dist/assets'), { recursive: true });
   cpSync(dashboard, here('./dist/assets/dashboard'), { recursive: true });
   cpSync(checkout, here('./dist/assets/checkout.js'));
+  cpSync(here('../scenarios/gallery'), here('./dist/assets/scenarios'), { recursive: true });
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -65,6 +65,17 @@ describe('localpay CLI', () => {
     expect((await main(['time', 'advance', '1h', '--port', String(port)], t.io)).code).toBe(0);
     expect(t.out[0]).toContain('1 scheduled change(s) ran');
     expect(server.engine.getRefund(refund.id).status).toBe('processed');
+
+    const list = io();
+    expect((await main(['scenario', 'list', '--port', String(port)], list.io)).code).toBe(0);
+    expect(list.out[0]).toContain('01-happy-path');
+    const passed = io();
+    expect((await main(['scenario', 'run', '01-happy-path', '--port', String(port)], passed.io)).code).toBe(0);
+    expect(passed.out[0]).toContain('Scenario passed.');
+    writeFileSync(join(home, 'failing.yaml'), 'name: failing\nsteps:\n  - order: { amount: 100 }\nexpect:\n  orders: { paid: 1 }\n');
+    const failed = io();
+    expect((await main(['scenario', 'run', 'failing.yaml', '--port', String(port)], failed.io)).code).toBe(1);
+    expect(failed.out[0]).toContain('expect orders.paid: expected 1, got 0');
 
     const r = io();
     expect((await main(['reset', '-p', String(port)], r.io)).code).toBe(0);
