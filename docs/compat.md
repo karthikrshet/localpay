@@ -34,7 +34,7 @@ A row may say supported only when a contract test replays a recorded fixture for
 | SDK | Status | How |
 | --- | --- | --- |
 | Node (razorpay 2.9.8) | partial | No host option. Set `client.api.rq.defaults.baseURL = 'http://127.0.0.1:4010'` (host only; the SDK adds /v1). Proven by scripts/spike. |
-| Python | missing | Not checked yet |
+| Python (razorpay 2.0.1) | supported | Official option: `razorpay.Client(auth=(...), base_url="http://127.0.0.1:4010")`. Proven by scripts/spike/python.test.ts. |
 | PHP | missing | Not checked yet |
 | Java | missing | Not checked yet |
 | Go | missing | Not checked yet |

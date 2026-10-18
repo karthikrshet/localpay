@@ -10,3 +10,5 @@ Razorpay and SDK quirks found in testing. One dated line each, with where it was
 - 2026-10-18 · HTTP errors come back to callers as `{ statusCode, error: <envelope.error> }`, so LocalPay's error envelope must sit under a top-level `error` key. Seen: spike error probe.
 - 2026-10-18 · orders.create defaults `currency` to INR client-side, so the server never sees a missing currency from this SDK. Seen: dist/resources/orders.js.
 - 2026-10-18 · The OAuth client uses a second hard-coded host, `https://auth.razorpay.com` (out of scope for MVP). Seen: dist/oAuthTokenClient.js.
+- 2026-10-18 · razorpay-python 2.0.1 supports `razorpay.Client(auth=(id, secret), base_url='http://127.0.0.1:4010')` officially. Host only; resource paths already start with /v1. Seen: razorpay/client.py.
+- 2026-10-18 · razorpay-python picks its exception class from `error.code` (BAD_REQUEST_ERROR → BadRequestError, GATEWAY_ERROR → GatewayError, SERVER_ERROR → ServerError). LocalPay's codes must match these strings exactly. Seen: razorpay/client.py.
