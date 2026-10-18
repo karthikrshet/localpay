@@ -17,3 +17,8 @@ coverage/
 # Playwright
 test-results/
 playwright-report/
+
+# Python
+__pycache__/
+.pytest_cache/
+.venv/
