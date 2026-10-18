@@ -1,3 +1,7 @@
 packages:
   - packages/*
   - scripts/spike
+# Dependency install scripts stay off. esbuild ships its binary as an optional
+# dependency, so its postinstall check is not needed.
+allowBuilds:
+  esbuild: false

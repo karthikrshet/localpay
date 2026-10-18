@@ -8,5 +8,9 @@
     "scripts/**/*.ts",
     "fixtures/**/*.ts",
     "*.config.ts"
+  ],
+  "exclude": [
+    "packages/checkout/**",
+    "packages/dashboard/**"
   ]
 }
