@@ -1,6 +1,6 @@
 // Allowed status transitions per entity. The engine checks every change against
 // these tables, so an impossible state cannot be reached by any API sequence.
-import type { OrderStatus, PaymentLinkStatus, PaymentStatus, RefundStatus } from '../entities/index.ts';
+import type { OrderStatus, PaymentLinkStatus, PaymentStatus, RefundStatus, SubscriptionStatus } from '../entities/index.ts';
 
 export const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
   created: ['attempted', 'paid'],
@@ -33,7 +33,25 @@ export const PAYMENT_LINK_TRANSITIONS: Record<PaymentLinkStatus, readonly Paymen
   cancelled: [],
 };
 
-const TABLES = { order: ORDER_TRANSITIONS, payment: PAYMENT_TRANSITIONS, refund: REFUND_TRANSITIONS, paymentLink: PAYMENT_LINK_TRANSITIONS };
+export const SUBSCRIPTION_TRANSITIONS: Record<SubscriptionStatus, readonly SubscriptionStatus[]> = {
+  created: ['authenticated', 'active', 'cancelled'],
+  authenticated: ['active', 'pending', 'cancelled'],
+  active: ['pending', 'completed', 'cancelled'],
+  // pending: a renewal failed and is being retried.
+  pending: ['active', 'halted', 'completed', 'cancelled'],
+  // halted: retries ran out; a later successful charge reactivates it.
+  halted: ['active', 'completed', 'cancelled'],
+  cancelled: [],
+  completed: [],
+};
+
+const TABLES = {
+  order: ORDER_TRANSITIONS,
+  payment: PAYMENT_TRANSITIONS,
+  refund: REFUND_TRANSITIONS,
+  paymentLink: PAYMENT_LINK_TRANSITIONS,
+  subscription: SUBSCRIPTION_TRANSITIONS,
+};
 type Machine = keyof typeof TABLES;
 type StatusOf<M extends Machine> = keyof (typeof TABLES)[M] & string;
 

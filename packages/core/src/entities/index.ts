@@ -126,3 +126,40 @@ export interface PaymentLink {
   createdAt: UnixSeconds;
   updatedAt: UnixSeconds;
 }
+
+export type PlanPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
+
+export interface Plan {
+  id: string;
+  period: PlanPeriod;
+  interval: number;
+  item: { name: string; amount: Paise; currency: string; description: string | null };
+  notes: Notes;
+  createdAt: UnixSeconds;
+}
+
+export type SubscriptionStatus = 'created' | 'authenticated' | 'active' | 'pending' | 'halted' | 'cancelled' | 'completed';
+
+export interface Subscription {
+  id: string;
+  planId: string;
+  customerId: string | null;
+  status: SubscriptionStatus;
+  quantity: number;
+  totalCount: number;
+  paidCount: number;
+  /** First charge time; null means charge on authentication. */
+  startAt: UnixSeconds | null;
+  /** When the next charge is due; null when nothing is scheduled. */
+  chargeAt: UnixSeconds | null;
+  currentStart: UnixSeconds | null;
+  currentEnd: UnixSeconds | null;
+  endedAt: UnixSeconds | null;
+  /** Failed charges since the last success. */
+  authAttempts: number;
+  cancelAtCycleEnd: boolean;
+  customerNotify: boolean;
+  notes: Notes;
+  paymentIds: string[];
+  createdAt: UnixSeconds;
+}

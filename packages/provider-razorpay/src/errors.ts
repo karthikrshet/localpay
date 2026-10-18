@@ -84,6 +84,9 @@ const DESCRIPTIONS: Record<EngineErrorReason, string> = {
   duplicate_reference_id: 'The reference_id has already been used for another payment link',
   invalid_expiry: 'The expire_by time must be in the future',
   payment_link_inactive: 'The payment link is no longer active',
+  invalid_plan: 'The plan is invalid',
+  subscription_not_authenticatable: 'The subscription cannot be authenticated in its current state',
+  subscription_ended: 'The subscription has already ended',
 };
 
 export function fromEngineError(error: EngineError): ApiError {

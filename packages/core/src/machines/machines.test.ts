@@ -10,6 +10,10 @@ describe('state machines', () => {
     ['payment', 'captured', 'refunded'],
     ['payment', 'failed', 'authorized'],
     ['refund', 'pending', 'processed'],
+    ['subscription', 'created', 'active'],
+    ['subscription', 'active', 'pending'],
+    ['subscription', 'halted', 'active'],
+    ['paymentLink', 'partially_paid', 'paid'],
   ] as const)('allows %s %s → %s', (machine, from, to) => {
     expect(canTransition(machine, from as never, to as never)).toBe(true);
   });
@@ -21,6 +25,9 @@ describe('state machines', () => {
     ['payment', 'refunded', 'authorized'],
     ['refund', 'processed', 'pending'],
     ['refund', 'failed', 'processed'],
+    ['subscription', 'completed', 'active'],
+    ['subscription', 'cancelled', 'active'],
+    ['paymentLink', 'expired', 'paid'],
   ] as const)('forbids %s %s → %s', (machine, from, to) => {
     expect(canTransition(machine, from as never, to as never)).toBe(false);
     expect(() => assertTransition(machine, from as never, to as never)).toThrow(InvalidTransitionError);

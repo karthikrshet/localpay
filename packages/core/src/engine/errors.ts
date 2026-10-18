@@ -20,7 +20,10 @@ export type EngineErrorReason =
   | 'customer_exists'
   | 'duplicate_reference_id'
   | 'invalid_expiry'
-  | 'payment_link_inactive';
+  | 'payment_link_inactive'
+  | 'invalid_plan'
+  | 'subscription_not_authenticatable'
+  | 'subscription_ended';
 
 export class EngineError extends Error {
   readonly reason: EngineErrorReason;
