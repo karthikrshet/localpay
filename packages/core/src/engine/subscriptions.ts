@@ -37,6 +37,8 @@ type StatusEvent =
   | 'subscription.completed'
   | 'subscription.updated';
 const RETRY_AFTER_SECONDS = 86_400;
+/** Authorization amount when the first charge is in the future (₹1). */
+export const MANDATE_AUTH_AMOUNT = 100;
 
 const RENEWAL_FAILURE: PaymentOutcome = {
   kind: 'fail',
@@ -80,7 +82,9 @@ export function createSubscriptionOps(ctx: EngineContext, orders: OrderOps, paym
       if (failed.authAttempts >= MAX_CHARGE_ATTEMPTS) {
         return { subscription: move(current, { ...failed, status: 'halted', chargeAt: null }, 'subscription.halted'), payment };
       }
-      const retry: Subscription = { ...failed, status: 'pending', chargeAt: ctx.now() + RETRY_AFTER_SECONDS };
+      // Retry a day after the missed charge, not after "now": one long time jump then runs
+      // every retry that would have happened, as if the clock had ticked all along.
+      const retry: Subscription = { ...failed, status: 'pending', chargeAt: (current.chargeAt ?? ctx.now()) + RETRY_AFTER_SECONDS };
       return { subscription: move(current, retry, current.status === 'pending' ? 'subscription.updated' : 'subscription.pending'), payment };
     }
 
@@ -156,6 +160,12 @@ export function createSubscriptionOps(ctx: EngineContext, orders: OrderOps, paym
       return subscription;
     },
 
+    /** What checkout charges or authorizes when the subscription is authenticated. */
+    authenticationAmount(id: string): Paise {
+      const subscription = getSubscription(id);
+      return subscription.startAt === null ? chargeAmount(subscription) : MANDATE_AUTH_AMOUNT;
+    },
+
     listSubscriptions: (filter: { planId?: string } = {}): Subscription[] =>
       [...ctx.state.subscriptions.values()].reverse().filter((s) => filter.planId === undefined || s.planId === filter.planId),
 
@@ -171,7 +181,7 @@ export function createSubscriptionOps(ctx: EngineContext, orders: OrderOps, paym
       if (current.startAt === null || input.outcome.kind === 'fail') return charge(current, method, input.outcome.kind === 'fail' ? input.outcome : undefined);
 
       // Future start: a small authorization payment records the mandate; nothing is charged yet.
-      const order = orders.createOrder({ amount: 100, receipt: current.id, autoCapture: false });
+      const order = orders.createOrder({ amount: MANDATE_AUTH_AMOUNT, receipt: current.id, autoCapture: false });
       const payment = payments.attemptPayment({ orderId: order.id, method, outcome: { kind: 'authorize_only' } });
       const subscription = move(current, { ...current, status: 'authenticated', chargeAt: current.startAt, paymentIds: [...current.paymentIds, payment.id] }, 'subscription.authenticated');
       return { subscription, payment };

@@ -41,6 +41,7 @@ describe('subscriptions', () => {
     const { subscription, payment } = engine.authenticateSubscription(sub.id, { outcome: { kind: 'success' } });
     expect(subscription).toMatchObject({ status: 'authenticated', paidCount: 0, chargeAt: sub.startAt });
     expect(payment).toMatchObject({ status: 'authorized', amount: 100 });
+    expect(engine.authenticationAmount(sub.id)).toBe(100);
     engine.advanceTime(9 * DAY);
     expect(engine.getSubscription(sub.id).status).toBe('authenticated');
     engine.advanceTime(DAY);
@@ -68,6 +69,14 @@ describe('subscriptions', () => {
     expect(types(engine)).toEqual(['subscription.created', 'subscription.authenticated', 'subscription.pending', 'subscription.updated', 'subscription.halted']);
     engine.advanceTime(30 * DAY);
     expect(engine.getSubscription(sub.id).status).toBe('halted');
+  });
+
+  it('runs every missed retry in one long time jump', () => {
+    const { engine, plan } = setup(49913);
+    const sub = engine.createSubscription({ planId: plan.id, totalCount: 6, startAt: engine.now() + 86_400 });
+    engine.authenticateSubscription(sub.id, { outcome: { kind: 'success' } });
+    engine.advanceTime(10 * DAY);
+    expect(engine.getSubscription(sub.id)).toMatchObject({ status: 'halted', authAttempts: 3 });
   });
 
   it('cancels now or at the end of the current cycle', () => {

@@ -93,8 +93,8 @@ export const checkoutApi: FastifyPluginCallback<CheckoutApiOptions> = (app, opti
 
     if (body.subscription_id) {
       const subscription = options.engine.getSubscription(body.subscription_id);
-      const plan = options.engine.getPlan(subscription.planId);
-      const scenario = resolveScenario(body.scenario, { amount: plan.item.amount * subscription.quantity, method: body.method, vpa: body.vpa ?? null });
+      // Magic values apply to what is charged now: the first cycle, or the mandate authorization.
+      const scenario = resolveScenario(body.scenario, { amount: options.engine.authenticationAmount(subscription.id), method: body.method, vpa: body.vpa ?? null });
       if (!scenario) throw badRequest(`Unknown checkout scenario "${body.scenario}".`, { field: 'scenario' });
       const { payment } = options.engine.authenticateSubscription(subscription.id, { method: body.method, outcome: scenario.outcome });
       if (payment.status === 'failed' && payment.error) {
