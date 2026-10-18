@@ -75,6 +75,8 @@ function fromEnv(env: NodeJS.ProcessEnv): Partial<LocalPayConfig> {
   const config: Partial<LocalPayConfig> = {};
   if (env.LOCALPAY_PORT) config.port = int('LOCALPAY_PORT', env.LOCALPAY_PORT);
   if (env.LOCALPAY_HOST) config.host = env.LOCALPAY_HOST;
+  if (env.LOCALPAY_ALLOW_PUBLIC === '1' || env.LOCALPAY_ALLOW_PUBLIC === 'true') config.allowPublic = true;
+  if (env.LOCALPAY_DASHBOARD_PASSWORD) config.dashboardPassword = env.LOCALPAY_DASHBOARD_PASSWORD;
   if (env.LOCALPAY_SEED) config.seed = env.LOCALPAY_SEED;
   if (env.LOCALPAY_PERSIST) config.persist = env.LOCALPAY_PERSIST;
   if (env.LOCALPAY_KEY_ID && env.LOCALPAY_KEY_SECRET) config.keys = [{ keyId: env.LOCALPAY_KEY_ID, keySecret: env.LOCALPAY_KEY_SECRET }];

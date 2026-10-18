@@ -86,6 +86,17 @@ describe('localpay CLI', () => {
     expect(existsSync(sessionPath(port, { LOCALPAY_HOME: home }))).toBe(false);
   });
 
+  it('generates a dashboard password for public binding and survives a read-only session dir', async () => {
+    const s = io();
+    s.io.env = { LOCALPAY_HOME: join(home, 'missing', '\u0000bad'), LOCALPAY_HOST: '0.0.0.0', LOCALPAY_ALLOW_PUBLIC: '1' };
+    const started = await main(['start', '--port', '0'], s.io);
+    running.push(started);
+    expect(started.server?.config.dashboardPassword).toMatch(/^[\w-]{16}$/);
+    expect(s.out.join('\n')).toContain('(generated dashboard password)');
+    expect(s.out.join('\n')).toContain('WARNING');
+    expect(s.err.join('\n')).toContain('could not write the session file');
+  });
+
   it('explains when no server is running', async () => {
     const x = io();
     expect((await main(['reset', '--port', '4999'], x.io)).code).toBe(2);

@@ -16,7 +16,7 @@ export function createStyle(enabled: boolean): Style {
 
 const DEMO_SECRET = 'localpay_demo_secret';
 
-export function banner(input: { version: string; url: string; dashboardUrl: string; config: LocalPayConfig }, style: Style): string {
+export function banner(input: { version: string; url: string; dashboardUrl: string; config: LocalPayConfig; generatedPassword?: string | null }, style: Style): string {
   const { url, config } = input;
   const row = (label: string, value: string) => `  ${style.dim(label.padEnd(10))} ${value}`;
   const lines = [
@@ -35,6 +35,7 @@ export function banner(input: { version: string; url: string; dashboardUrl: stri
   for (const hook of config.webhooks) lines.push(row('Webhook', `${hook.url}  ${style.dim(hook.events?.join(', ') ?? 'all events')}`));
   if (config.persist) lines.push(row('Data', config.persist));
   if (config.seed) lines.push(row('Seed', config.seed));
+  if (input.generatedPassword) lines.push(row('Password', `${input.generatedPassword}  ${style.dim('(generated dashboard password)')}`));
   if (config.allowPublic) {
     lines.push('', style.red(`  WARNING: listening on ${config.host}. Anyone who can reach this address can use LocalPay.`), style.red('  It is a test tool: never put it on the public internet.'));
   }

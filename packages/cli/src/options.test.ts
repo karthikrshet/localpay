@@ -46,6 +46,11 @@ describe('parseStartOptions', () => {
     rmSync(join(dir, 'localpay.config.json'));
   });
 
+  it('reads public-binding settings from the environment (Docker)', () => {
+    const { config } = parseStartOptions([], { LOCALPAY_HOST: '0.0.0.0', LOCALPAY_ALLOW_PUBLIC: '1', LOCALPAY_DASHBOARD_PASSWORD: 'pw' }, dir);
+    expect(config).toMatchObject({ host: '0.0.0.0', allowPublic: true, dashboardPassword: 'pw' });
+  });
+
   it('reads keys and a webhook from the environment', () => {
     const { config } = parseStartOptions([], { LOCALPAY_KEY_ID: 'rzp_test_E', LOCALPAY_KEY_SECRET: 'x', LOCALPAY_WEBHOOK_URL: 'http://127.0.0.1:9/w' }, dir);
     expect(config.keys).toEqual([{ keyId: 'rzp_test_E', keySecret: 'x' }]);

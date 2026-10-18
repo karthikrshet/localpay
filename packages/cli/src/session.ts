@@ -30,7 +30,11 @@ export function readSession(port: number, env: NodeJS.ProcessEnv): SessionInfo {
 }
 
 export function removeSession(port: number, env: NodeJS.ProcessEnv): void {
-  rmSync(sessionPath(port, env), { force: true });
+  try {
+    rmSync(sessionPath(port, env), { force: true });
+  } catch {
+    // Nothing to clean up if the session file could not be written in the first place.
+  }
 }
 
 /** Calls the dashboard API of a running server with the session token. */

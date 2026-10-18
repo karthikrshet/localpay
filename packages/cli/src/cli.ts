@@ -1,6 +1,7 @@
 // `localpay` commands. main() returns an exit code; `start` also returns the running
 // server so tests (and embedders) can stop it.
 import { spawn } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { readFile } from 'node:fs/promises';
@@ -81,12 +82,23 @@ async function start(argv: string[], io: Io): Promise<Result> {
     io.out(HELP);
     return { code: 0 };
   }
+  // Public binding needs a dashboard password; generate one rather than refuse (Docker).
+  let generatedPassword: string | null = null;
+  if (options.config.allowPublic && !options.config.dashboardPassword) {
+    generatedPassword = randomBytes(12).toString('base64url');
+    options.config.dashboardPassword = generatedPassword;
+  }
   const server = await createLocalPay(options.config, bundledAssets());
   const url = await server.listen();
   const port = Number(new URL(url).port);
-  writeSession(port, { url, token: server.adminAuth.token, pid: process.pid }, io.env);
+  try {
+    writeSession(port, { url, token: server.adminAuth.token, pid: process.pid }, io.env);
+  } catch (error) {
+    // Read-only filesystems (containers) cannot keep a session file; only the CLI helpers need it.
+    io.err(`localpay: could not write the session file (${error instanceof Error ? error.message : String(error)}); status/reset/time/scenario commands will not find this server.`);
+  }
   const dashboardUrl = server.dashboardUrl(url);
-  io.out(banner({ version: VERSION, url, dashboardUrl, config: server.config }, createStyle(io.color)));
+  io.out(banner({ version: VERSION, url, dashboardUrl, config: server.config, generatedPassword }, createStyle(io.color)));
   if (options.open) openBrowser(dashboardUrl);
   const stop = async () => {
     removeSession(port, io.env);
