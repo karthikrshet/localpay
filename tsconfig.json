@@ -3,5 +3,10 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["packages/*/src/**/*.ts", "scripts/**/*.ts", "*.config.ts"]
+  "include": [
+    "packages/*/src/**/*.ts",
+    "scripts/**/*.ts",
+    "fixtures/**/*.ts",
+    "*.config.ts"
+  ]
 }
