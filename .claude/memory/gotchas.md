@@ -12,3 +12,7 @@ Razorpay and SDK quirks found in testing. One dated line each, with where it was
 - 2026-10-18 · The OAuth client uses a second hard-coded host, `https://auth.razorpay.com` (out of scope for MVP). Seen: dist/oAuthTokenClient.js.
 - 2026-10-18 · razorpay-python 2.0.1 supports `razorpay.Client(auth=(id, secret), base_url='http://127.0.0.1:4010')` officially. Host only; resource paths already start with /v1. Seen: razorpay/client.py.
 - 2026-10-18 · razorpay-python picks its exception class from `error.code` (BAD_REQUEST_ERROR → BadRequestError, GATEWAY_ERROR → GatewayError, SERVER_ERROR → ServerError). LocalPay's codes must match these strings exactly. Seen: razorpay/client.py.
+- 2026-10-19 · Fastify: never `return reply` from a callback-style hook. Reply is thenable, so Fastify treats the hook as async and the request hangs. Send, then `return;`. Seen: provider-razorpay plugin auth hook.
+- 2026-10-19 · Two payments can be authorized on one order; capturing the second after the first settled the order overpaid it. LocalPay now rejects that capture (`order_already_paid`). Real Razorpay may auto-refund instead — unverified. Found by the property test.
+- 2026-10-19 · Under ~30 parallel Vitest workers, cold Fastify/Zod imports can exceed 5s; timeouts are 20s in vitest.config.ts.
+- 2026-10-19 · Error descriptions in provider-razorpay/errors.ts are our wording. Contract tests compare exact descriptions only for fixtures with provenance "recorded".

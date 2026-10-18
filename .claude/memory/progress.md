@@ -1,19 +1,20 @@
 # Progress
-Phase: 0 — Prove it can work (week 1). Do not start Phase 1 until the Phase 0 gate and the open items below are done.
+Phase: 1 — Core engine — code complete; gate needs real fixtures (see Blockers)
 
 ## Done
-- 2026-10-18 Monorepo skeleton per docs/PLAN.md "Repository structure" (9 placeholder packages under packages/)
-- 2026-10-18 AGENTS.md, CLAUDE.md, memory files, 5 skills in .claude/skills/
-- 2026-10-18 pnpm workspaces, TypeScript 5.9 strict, Vitest, ESLint (with architecture import rules), CI (lint + typecheck + test on Node 22 and 24), CodeQL
-- 2026-10-18 LICENSE (Apache-2.0), README, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, GOVERNANCE, issue and PR templates, docs/compat.md
-- 2026-10-18 Node SDK spike (scripts/spike): razorpay 2.9.8 creates an order against a local server via `client.api.rq.defaults.baseURL`. **Phase 0 gate for Node: passed** (spike.test.ts runs in CI)
+- 2026-10-18 Phase 0: skeleton, agent docs, tooling, CI, Node + Python SDK spikes, ADRs 0001–0003
+- 2026-10-19 core: seeded random, ids, injectable clock with time travel, money/fees, entities, state machines, event log (memory + JSONL), engine (orders, payments, capture, refunds, tick)
+- 2026-10-19 Property tests (fast-check) over random API sequences; found and fixed an overpay bug
+- 2026-10-19 provider-razorpay: error envelope, Zod schemas, wire serializers, Basic auth (live keys refused), orders/payments/refunds routes
+- 2026-10-19 server: config with loopback/test-key guards, createLocalPay; shim-node with end-to-end SDK tests
+- 2026-10-19 Fixture tooling: scrubber, secret check (CI), recorder, contract harness with 12 hand-written fixtures
 
 ## Next
-1. Remaining Phase 0 items: Python SDK spike; ADRs 0001 (Fastify), 0002 (SQLite), 0003 (SDK connection strategy)
-2. Maintainer-only: create a Razorpay test account, record ~20 real responses, write scripts/scrub-fixtures and scrub them
-3. Check the name "LocalPay" on npm, GitHub and domains; pick the final name
+1. Phase 2: checkout.js, checkout signature, webhook dispatcher, failure injection, Express example
+2. Phase 3: dashboard, CLI, docs site
+3. Replace hand-written fixtures with recorded ones (maintainer)
 
 ## Blockers
-- Python, PHP, Java, Go SDK base-URL override: unchecked
-- Fixture recording needs the maintainer's own test account and keys (an agent must not handle them)
-- Not yet a GitHub repo, so CI has not run remotely; nothing committed yet
+- Phase 1 gate ("all recorded fixtures pass") needs real recordings from the maintainer's test account: run `pnpm record-fixtures fixtures/requests/core.json` with RZP_KEY_ID/RZP_KEY_SECRET, then scrub and review
+- npm scope @localpay must be registered by the maintainer; unscoped `localpay` was free on 2026-10-18
+- PHP, Java, Go SDK base-URL override: unchecked
