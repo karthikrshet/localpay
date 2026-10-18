@@ -11,15 +11,20 @@ It never moves money, never calls Razorpay, and never accepts live keys.
 
 ## Commands
 - pnpm install · pnpm lint · pnpm typecheck · pnpm test
+- pnpm test:compat — contract tests: replay fixtures/requests/core.json against LocalPay
+- pnpm check-secrets · pnpm scrub-fixtures <path> · pnpm record-fixtures <spec> (maintainer only)
 - pnpm spike — Phase 0 SDK base-URL spike (scripts/spike)
-- Not wired yet (arrive with Phase 1+): pnpm dev · pnpm test:compat · pnpm build
+- Not wired yet: pnpm dev · pnpm build
 
 ## Architecture rules
 - packages/core has zero imports from other packages.
 - Wire format lives only in packages/provider-razorpay.
 - All time comes from core/clock; never call Date.now() directly.
 - All IDs come from core/ids; never generate IDs inline.
-- Every state change emits an event through core/events first.
+- Every state change emits an event through core/events first (engine `emit()`).
+- Events carry full snapshots of every entity they change; state is a fold of the log.
+- Time-driven work (pending refunds, renewals) is derived from state in `tick()`,
+  never from in-memory timers, so it survives restarts and time travel.
 - The import and Date.now() rules are enforced by ESLint (eslint.config.js).
 
 ## Conventions
