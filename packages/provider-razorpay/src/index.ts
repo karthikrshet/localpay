@@ -9,6 +9,7 @@ export * from './errors.ts';
 export * from './plugin.ts';
 export * from './schemas.ts';
 export * from './serializers.ts';
+export * from './signatures.ts';
 export { orderRoutes, paymentRoutes, refundRoutes };
 
 /** Every route group LocalPay serves for this provider. */

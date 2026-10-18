@@ -10,5 +10,8 @@
     "@localpay/core": "workspace:*",
     "fastify": "^5.12.7",
     "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "razorpay": "2.9.8"
   }
 }
