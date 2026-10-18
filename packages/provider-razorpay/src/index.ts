@@ -5,6 +5,8 @@ import { paymentRoutes } from './routes/payments.ts';
 import { refundRoutes } from './routes/refunds.ts';
 
 export * from './auth.ts';
+export * from './checkout/routes.ts';
+export * from './checkout/scenarios.ts';
 export * from './errors.ts';
 export * from './plugin.ts';
 export * from './schemas.ts';
