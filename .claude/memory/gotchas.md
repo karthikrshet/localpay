@@ -17,3 +17,6 @@ Razorpay and SDK quirks found in testing. One dated line each, with where it was
 - 2026-10-19 · Under ~30 parallel Vitest workers, cold Fastify/Zod imports can exceed 5s; timeouts are 20s in vitest.config.ts.
 - 2026-10-19 · Error descriptions in provider-razorpay/errors.ts are our wording. Contract tests compare exact descriptions only for fixtures with provenance "recorded".
 - 2026-10-19 · esbuild 0.28 refuses target safari14 ("Transforming destructuring … is not supported yet"); checkout.js targets es2020/chrome100/firefox100/safari15. Seen: packages/checkout/build.ts.
+- 2026-10-19 · Playwright's loader crashes importing Fastify in the test process on Node 22 ("Unexpected module status 3", require(esm)). Start servers in their own process via playwright.config.ts webServer. Seen: examples/express e2e.
+- 2026-10-19 · pnpm 10+ blocks dependency install scripts; esbuild works without its postinstall (binary comes from the optional platform package). pnpm-workspace.yaml sets allowBuilds.esbuild: false.
+- 2026-10-19 · A dispatcher tick that only snapshots due deliveries once leaves deliveries enqueued mid-tick waiting for the next timer; tick now loops until nothing is due.

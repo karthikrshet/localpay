@@ -1,5 +1,5 @@
 # Progress
-Phase: 1 — Core engine — code complete; gate needs real fixtures (see Blockers)
+Phase: 2 — Checkout and webhooks — gate passed (browser purchase test, offline)
 
 ## Done
 - 2026-10-18 Phase 0: skeleton, agent docs, tooling, CI, Node + Python SDK spikes, ADRs 0001–0003
@@ -8,10 +8,11 @@ Phase: 1 — Core engine — code complete; gate needs real fixtures (see Blocke
 - 2026-10-19 provider-razorpay: error envelope, Zod schemas, wire serializers, Basic auth (live keys refused), orders/payments/refunds routes
 - 2026-10-19 server: config with loopback/test-key guards, createLocalPay; shim-node with end-to-end SDK tests
 - 2026-10-19 Fixture tooling: scrubber, secret check (CI), recorder, contract harness with 12 hand-written fixtures
+- 2026-10-19 Phase 2: signatures, webhook format, dispatcher (SSRF guard, retries, replay, fault injection), checkout API + scenarios + magic values, checkout.js (Preact, 9.7 KB gz, axe-clean), server wiring, Express example with Node and Playwright tests
 
 ## Next
-1. Phase 2: checkout.js, checkout signature, webhook dispatcher, failure injection, Express example
-2. Phase 3: dashboard, CLI, docs site
+1. Phase 3: dashboard, CLI (`localpay start --webhook ...` is already referenced by examples/express/README.md), docs site, release setup
+2. Phase 4: customers, payment links, scenario engine, Docker, GitHub Action
 3. Replace hand-written fixtures with recorded ones (maintainer)
 
 ## Blockers

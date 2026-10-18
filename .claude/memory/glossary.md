@@ -17,3 +17,6 @@ Terms as LocalPay uses them. Add a line when a new term appears.
 - **Fixture** — a scrubbed recording of a real Razorpay test-mode response, used in contract tests.
 - **Shim** — a tiny wrapper that builds the official SDK client and points it at LocalPay.
 - **Compat matrix** — docs/compat.md: every endpoint, field and event marked supported, partial or missing.
+- **Delivery** — one attempt series to send one webhook event to one target; replays and duplicates are new deliveries with the same event id.
+- **Fault injection** — deliberately duplicating, reordering, delaying or unsigning webhook deliveries to test the receiving app.
+- **Magic value** — an input that forces an outcome (test VPA `failure@razorpay`, LocalPay amounts ending in paise 13).
