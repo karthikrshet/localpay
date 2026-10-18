@@ -18,7 +18,7 @@ describe('state machines', () => {
     ['order', 'paid', 'attempted'],
     ['payment', 'captured', 'authorized'],
     ['payment', 'failed', 'captured'],
-    ['payment', 'refunded', 'captured'],
+    ['payment', 'refunded', 'authorized'],
     ['refund', 'processed', 'pending'],
     ['refund', 'failed', 'processed'],
   ] as const)('forbids %s %s → %s', (machine, from, to) => {

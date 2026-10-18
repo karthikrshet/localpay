@@ -69,6 +69,7 @@ export interface Payment {
 
 export type RefundStatus = 'pending' | 'processed' | 'failed';
 export type RefundSpeed = 'normal' | 'optimum';
+export type RefundSpeedProcessed = 'normal' | 'instant';
 
 export interface Refund {
   id: string;
@@ -77,7 +78,7 @@ export interface Refund {
   currency: string;
   status: RefundStatus;
   speedRequested: RefundSpeed;
-  speedProcessed: RefundSpeed | null;
+  speedProcessed: RefundSpeedProcessed | null;
   notes: Notes;
   receipt: string | null;
   createdAt: UnixSeconds;

@@ -15,7 +15,8 @@ export const PAYMENT_TRANSITIONS: Record<PaymentStatus, readonly PaymentStatus[]
   captured: ['refunded'],
   // failed → authorized: "late authorization", when the bank confirms after a timeout.
   failed: ['authorized'],
-  refunded: [],
+  // refunded → captured: the only refund failed, so the money stays with the merchant.
+  refunded: ['captured'],
 };
 
 export const REFUND_TRANSITIONS: Record<RefundStatus, readonly RefundStatus[]> = {
