@@ -1,6 +1,6 @@
 // Wires core, the Razorpay provider, checkout and webhooks into one Fastify app.
 import { createEngine, createFileEventStore, createMemoryEventStore, createOffsetClock, createRandom, type Engine } from '@localpay/core';
-import { allRoutes, checkoutApi, razorpayApi, razorpayWebhookFormat } from '@localpay/provider-razorpay';
+import { allRoutes, checkoutApi, paymentLinkPages, razorpayApi, razorpayWebhookFormat } from '@localpay/provider-razorpay';
 import { createDispatcher, type Dispatcher, type Sender, type WebhookTarget } from '@localpay/webhooks';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { existsSync } from 'node:fs';
@@ -66,9 +66,11 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
     },
   });
 
+  // Known once listening; used for payment link short_url values inside webhooks.
+  let publicUrl = `http://${config.host}:${config.port}`;
   const webhookTargets: WebhookTarget[] = config.webhooks.map((w, i) => ({ id: `wh_${i + 1}`, url: w.url, secret: w.secret, events: w.events ?? null }));
   const dispatcher = createDispatcher({
-    format: razorpayWebhookFormat(config.accountId),
+    format: razorpayWebhookFormat(config.accountId, () => publicUrl),
     targets: () => webhookTargets,
     clock: engine.clock,
     random: createRandom(config.seed === null ? undefined : `${config.seed}:webhooks`),
@@ -89,6 +91,7 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
   // No request logging by default: requests carry keys, and users run this on their laptops.
   const app = Fastify({ logger: false });
   await app.register(razorpayApi, { prefix: '/v1', engine, keys: config.keys, routes: allRoutes });
+  await app.register(paymentLinkPages, { engine, keys: config.keys });
   await app.register(checkoutApi, { prefix: `${INTERNAL_PREFIX}/checkout`, engine, keys: config.keys, allowedOrigins: config.allowedOrigins });
 
   let checkoutScript: Promise<string> | null = null;
@@ -122,6 +125,7 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
     tick,
     async listen() {
       const address = await app.listen({ port: config.port, host: config.host });
+      publicUrl = address.replace('[::1]', 'localhost');
       timer = setInterval(() => void tick(), TICK_MS);
       timer.unref();
       return address.replace('[::1]', 'localhost');

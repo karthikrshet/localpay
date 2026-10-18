@@ -77,6 +77,21 @@ describe('order → checkout → webhooks → refund', () => {
     await waitFor(() => localpay?.dispatcher.list().every((d) => d.status === 'delivered') ?? false);
   });
 
+  it('pays a payment link through its hosted page and delivers payment_link.paid', async () => {
+    const { url, received } = await startReceiver();
+    localpay = await createLocalPay({ port: 0, webhooks: [{ url, secret: SECRET, events: ['payment_link.paid'] }] }, { checkoutScript: () => Promise.resolve('') });
+    const base = await localpay.listen();
+    const link = (await (await fetch(`${base}/v1/payment_links`, { method: 'POST', headers: { authorization: AUTH, 'content-type': 'application/json' }, body: JSON.stringify({ amount: 5000, reference_id: 'INV-7' }) })).json()) as { id: string; short_url: string };
+    expect(link.short_url).toBe(`${base}/l/${link.id}`);
+    expect((await (await fetch(link.short_url)).text())).toContain('₹50.00');
+    const orderId = localpay.engine.getPaymentLink(link.id).orderId;
+    const paid = (await (await fetch(`${base}/_localpay/checkout/pay`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key_id: DEMO_KEY.keyId, order_id: orderId, method: 'upi', scenario: 'success' }) })).json()) as { razorpay_payment_id: string };
+    const done = (await (await fetch(`${link.short_url}/complete`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(paid) })).json()) as { status: string };
+    expect(done.status).toBe('paid');
+    await waitFor(() => received.length === 1);
+    expect(JSON.parse(received[0]?.body ?? '{}')).toMatchObject({ event: 'payment_link.paid', payload: { payment_link: { entity: { id: link.id, short_url: link.short_url, status: 'paid' } } } });
+  });
+
   it('serves checkout.js without authentication and with the origin config', async () => {
     localpay = await createLocalPay({ allowedOrigins: ['https://shop.test'] }, { checkoutScript: () => Promise.resolve('/* bundle */') });
     const response = await localpay.app.inject({ url: '/v1/checkout.js' });

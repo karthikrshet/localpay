@@ -1,7 +1,7 @@
 // The dashboard API under /_localpay/api. Read views reuse the provider's wire JSON so
 // the dashboard shows exactly what an SDK would see.
 import { parseDuration, type AnyEvent, type Engine } from '@localpay/core';
-import { toApiError, toWireOrder, toWirePayment, toWireRefund } from '@localpay/provider-razorpay';
+import { toApiError, toWireOrder, toWirePayment, toWireRefund, WEBHOOK_EVENTS } from '@localpay/provider-razorpay';
 import { BlockedTargetError, validateTargetUrl, type Dispatcher, type FaultConfig, type WebhookTarget } from '@localpay/webhooks';
 import type { FastifyPluginCallback, FastifyReply } from 'fastify';
 import { z } from 'zod';
@@ -146,7 +146,7 @@ export const adminApi: FastifyPluginCallback<AdminApiOptions> = (app, options, d
   app.post<{ Params: { id: string } }>('/webhooks/deliveries/:id/replay-unsigned', (request, reply) => deliveryAction(reply, () => dispatcher.replay(request.params.id, { signed: false })));
   app.post<{ Params: { id: string } }>('/webhooks/deliveries/:id/send-twice', (request, reply) => deliveryAction(reply, () => dispatcher.sendTwice(request.params.id)));
 
-  app.get('/webhooks/targets', (_request, reply) => reply.send({ items: webhookTargets, events: ['payment.authorized', 'payment.captured', 'payment.failed', 'order.paid', 'refund.created', 'refund.processed', 'refund.failed'] }));
+  app.get('/webhooks/targets', (_request, reply) => reply.send({ items: webhookTargets, events: WEBHOOK_EVENTS }));
 
   app.put('/webhooks/targets', (request, reply) => {
     const next = parse(targetsSchema, request.body);
