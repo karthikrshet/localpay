@@ -2,7 +2,7 @@
   "name": "@localpay/shim-node",
   "version": "0.0.0",
   "description": "Point the official Razorpay Node SDK at a local LocalPay server. Independent project, not affiliated with Razorpay.",
-  "private": true,
+  "private": false,
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
@@ -13,5 +13,32 @@
   "devDependencies": {
     "@localpay/server": "workspace:*",
     "razorpay": "^2.9.8"
-  }
+  },
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/localpay/localpay.git",
+    "directory": "packages/shims"
+  },
+  "keywords": [
+    "localpay",
+    "payments",
+    "testing",
+    "razorpay-compatible"
+  ]
 }
