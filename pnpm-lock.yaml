@@ -88,7 +88,11 @@ importers:
         specifier: ^2.9.8
         version: 2.9.8
 
-  packages/webhooks: {}
+  packages/webhooks:
+    dependencies:
+      '@localpay/core':
+        specifier: workspace:*
+        version: link:../core
 
   scripts/spike:
     devDependencies:
