@@ -6,7 +6,8 @@ import { createShop } from './server.js';
 const localpayPort = Number(process.env.LOCALPAY_PORT ?? 4011);
 const shopPort = Number(process.env.SHOP_PORT ?? 3011);
 
-const localpay = await createLocalPay({ port: localpayPort });
+// E2E_ADMIN_TOKEN lets the browser tests open the dashboard; random otherwise.
+const localpay = await createLocalPay({ port: localpayPort }, process.env.E2E_ADMIN_TOKEN ? { adminToken: process.env.E2E_ADMIN_TOKEN } : {});
 const localpayUrl = await localpay.listen();
 const shop = createShop({ LOCALPAY_URL: localpayUrl });
 shop.app.listen(shopPort, '127.0.0.1', () => {
