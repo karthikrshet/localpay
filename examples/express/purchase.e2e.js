@@ -29,7 +29,7 @@ test('buy → pay successfully → fulfilled by the capture webhook', async ({ p
   await expect(dialog).toContainText('₹499.00');
 
   const accessibility = await new AxeBuilder({ page }).include('localpay-checkout').analyze();
-  expect(accessibility.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+  expect(accessibility.violations.map((v) => `${v.id}: ${v.help} — ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
 
   await dialog.getByRole('button', { name: /Pay successfully/ }).click();
   await expect(dialog).toBeHidden();
