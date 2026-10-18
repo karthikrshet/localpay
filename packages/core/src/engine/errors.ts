@@ -16,7 +16,8 @@ export type EngineErrorReason =
   | 'payment_fully_refunded'
   | 'refund_exceeds_payment'
   | 'refund_not_pending'
-  | 'time_not_controllable';
+  | 'time_not_controllable'
+  | 'customer_exists';
 
 export class EngineError extends Error {
   readonly reason: EngineErrorReason;

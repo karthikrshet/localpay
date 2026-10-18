@@ -80,6 +80,7 @@ const DESCRIPTIONS: Record<EngineErrorReason, string> = {
   refund_exceeds_payment: 'The refund amount provided is greater than the amount not yet refunded',
   refund_not_pending: 'The refund is not in a pending state',
   time_not_controllable: 'Time travel is not enabled for this server',
+  customer_exists: 'Customer already exists for the merchant',
 };
 
 export function fromEngineError(error: EngineError): ApiError {

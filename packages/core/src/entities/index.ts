@@ -86,3 +86,13 @@ export interface Refund {
   processAt: UnixSeconds;
   processedAt: UnixSeconds | null;
 }
+
+export interface Customer {
+  id: string;
+  name: string | null;
+  email: string | null;
+  contact: string | null;
+  gstin: string | null;
+  notes: Notes;
+  createdAt: UnixSeconds;
+}
