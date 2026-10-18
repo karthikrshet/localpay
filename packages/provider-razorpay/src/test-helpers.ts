@@ -11,7 +11,7 @@ export async function buildTestApp(routes: RazorpayApiOptions['routes'] = [], en
   const app = Fastify();
   await app.register(razorpayApi, { prefix: '/v1', engine, keys: [TEST_KEY], routes });
   await app.ready();
-  const call = async (method: 'GET' | 'POST' | 'PATCH', url: string, payload?: unknown) => {
+  const call = async (method: 'GET' | 'POST' | 'PATCH' | 'PUT', url: string, payload?: unknown) => {
     const response = await app.inject({ method, url, headers: { authorization: AUTH }, ...(payload !== undefined && { payload: payload as object }) });
     return { status: response.statusCode, body: response.json<Record<string, unknown>>() };
   };

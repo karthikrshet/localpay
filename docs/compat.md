@@ -29,6 +29,10 @@ and the record-fixture skill), so nothing below is marked supported.
 | GET /v1/refunds | partial | |
 | GET /v1/refunds/:id | partial | |
 | PATCH /v1/refunds/:id | partial | notes only |
+| POST /v1/customers | partial | `fail_existing` supported; duplicates match on email + contact |
+| GET /v1/customers/:id | partial | |
+| GET /v1/customers | partial | |
+| PUT /v1/customers/:id | partial | |
 
 ## Behaviour
 
