@@ -10,6 +10,6 @@ Do not re-argue a decision here; write a new ADR that supersedes it.
 - 2026-10-18 · Node 22+ instead of the plan's Node 20 · Node 20 reached end-of-life in April 2026 · —
 - 2026-10-18 · Erasable-only TS, .ts relative imports · scripts run under Node type stripping without a build step · —
 - 2026-10-18 · Dependency direction enforced with ESLint no-restricted-imports for now · cheap; dependency-cruiser can follow · —
-- 2026-10-18 · Node SDK connects by overriding `client.api.rq.defaults.baseURL` (host only, no /v1); ship it as a shim · SDK hard-codes the host · ADR 0003 (to write)
+- 2026-10-18 · Node SDK connects by overriding `client.api.rq.defaults.baseURL` (host only, no /v1); ship it as a shim · SDK hard-codes the host · ADR 0003
 - 2026-10-18 · Fastify 5 for HTTP; Zod for request validation · inject() tests, encapsulated plugins · ADR 0001
 - 2026-10-18 · Event log is the store (in-memory, --persist appends JSONL); SQLite deferred · no native deps for npx/distroless · ADR 0002
