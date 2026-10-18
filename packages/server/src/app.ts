@@ -36,6 +36,8 @@ export interface LocalPayDependencies {
   checkoutScript?: CheckoutScriptLoader;
   /** Directory with the built dashboard (index.html, assets/). */
   dashboardDir?: string | null;
+  /** Fixed dashboard session token, for browser tests. Random when omitted. */
+  adminToken?: string;
 }
 
 /** Finds the built dashboard next to the @localpay/dashboard package, if installed and built. */
@@ -96,7 +98,7 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
     return reply.type('application/javascript; charset=utf-8').header('cache-control', 'no-store').send(await checkoutScript);
   });
 
-  const adminAuth = createAdminAuth(config.dashboardPassword);
+  const adminAuth = createAdminAuth(config.dashboardPassword, deps.adminToken);
   await app.register(adminApi, { prefix: `${INTERNAL_PREFIX}/api`, engine, dispatcher, webhookTargets, auth: adminAuth, accountId: config.accountId, keys: config.keys });
   await app.register(dashboard, { auth: adminAuth, dashboardDir: deps.dashboardDir === undefined ? findDashboardDir() : deps.dashboardDir });
 
