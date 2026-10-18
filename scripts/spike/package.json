@@ -1,0 +1,9 @@
+{
+  "name": "@localpay/spike",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "razorpay": "^2.9.8"
+  }
+}

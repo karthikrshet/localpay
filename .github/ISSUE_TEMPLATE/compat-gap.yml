@@ -1,0 +1,23 @@
+name: Compatibility gap
+description: LocalPay differs from Razorpay test mode for an endpoint, field or event.
+labels: [compat-gap]
+body:
+  - type: input
+    attributes:
+      label: Endpoint or event
+      placeholder: POST /v1/orders or payment.captured
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected JSON (Razorpay test mode)
+      description: Scrub keys, emails, phone numbers and names. Do not paste text from Razorpay's docs.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Actual JSON (LocalPay)
+      render: json
+    validations:
+      required: true

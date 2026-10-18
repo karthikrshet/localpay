@@ -1,0 +1,24 @@
+name: Bug report
+description: LocalPay behaves wrongly or crashes.
+labels: [bug, needs-repro]
+body:
+  - type: textarea
+    attributes:
+      label: What happened
+      description: Include the request and the response. Remove any keys.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Versions
+      description: LocalPay, Node, SDK name and version, OS

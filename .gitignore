@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.log
+.env
+.env.*
+*.sqlite
+*.db
+.turbo/
+.DS_Store
+# local Claude Code settings (shared rules live in AGENTS.md and .claude/memory)
+.claude/settings.local.json
