@@ -1,5 +1,6 @@
 // Domain events → Razorpay webhook envelopes and signed headers.
 import type { AnyEvent, WebhookFormat, WebhookMessage } from '@localpay/core';
+import { toWirePaymentLink } from './payment-links/serializer.ts';
 import { toWireOrder, toWirePayment, toWireRefund } from './serializers.ts';
 import { webhookSignature } from './signatures.ts';
 
@@ -11,6 +12,10 @@ export const WEBHOOK_EVENTS = [
   'refund.created',
   'refund.processed',
   'refund.failed',
+  'payment_link.paid',
+  'payment_link.partially_paid',
+  'payment_link.expired',
+  'payment_link.cancelled',
 ] as const;
 
 export const SIGNATURE_HEADER = 'X-Razorpay-Signature';
@@ -32,7 +37,7 @@ function envelope(event: AnyEvent, accountId: string, payload: Payload): Webhook
   };
 }
 
-export function toWebhook(event: AnyEvent, accountId: string): WebhookMessage | null {
+export function toWebhook(event: AnyEvent, accountId: string, baseUrl = 'http://127.0.0.1:4010'): WebhookMessage | null {
   switch (event.type) {
     case 'payment.authorized':
     case 'payment.captured':
@@ -50,15 +55,26 @@ export function toWebhook(event: AnyEvent, accountId: string): WebhookMessage | 
         refund: { entity: toWireRefund(event.data.refund) },
         payment: { entity: toWirePayment(event.data.payment) },
       });
+    case 'payment_link.paid':
+    case 'payment_link.partially_paid':
+      return envelope(event, accountId, {
+        payment_link: { entity: toWirePaymentLink(event.data.paymentLink, { baseUrl, payments: [event.data.payment] }) },
+        payment: { entity: toWirePayment(event.data.payment) },
+        order: { entity: toWireOrder(event.data.order) },
+      });
+    case 'payment_link.expired':
+    case 'payment_link.cancelled':
+      return envelope(event, accountId, { payment_link: { entity: toWirePaymentLink(event.data.paymentLink, { baseUrl, payments: [] }) } });
     default:
       return null;
   }
 }
 
-export function razorpayWebhookFormat(accountId: string): WebhookFormat {
+/** `baseUrl` is read per event, so it can change once the server knows its port. */
+export function razorpayWebhookFormat(accountId: string, baseUrl: () => string = () => 'http://127.0.0.1:4010'): WebhookFormat {
   return {
     events: WEBHOOK_EVENTS,
-    format: (event) => toWebhook(event, accountId),
+    format: (event) => toWebhook(event, accountId, baseUrl()),
     headers(rawBody, secret, eventId, options = {}) {
       return {
         'content-type': 'application/json',

@@ -40,6 +40,24 @@ describe('toWebhook', () => {
   });
 });
 
+describe('payment link webhooks', () => {
+  it('sends payment_link.paid with link, payment and order, and expiry with the link only', () => {
+    const engine = createEngine({ seed: 'plink-hooks' });
+    const paid = engine.createPaymentLink({ amount: 500 });
+    engine.attemptPayment({ orderId: paid.orderId, method: 'upi', outcome: { kind: 'success' } });
+    const expiring = engine.createPaymentLink({ amount: 500, expireBy: engine.now() + 1 });
+    engine.advanceTime(1000);
+    const byName = Object.fromEntries(engine.events.flatMap((e) => {
+      const message = toWebhook(e, ACCOUNT, 'http://127.0.0.1:4010');
+      return message ? [[message.name, message.payload]] : [];
+    })) as Record<string, { contains: string[]; payload: { payment_link: { entity: { short_url: string; id: string } } } }>;
+    expect(byName['payment_link.paid']?.contains).toEqual(['payment_link', 'payment', 'order']);
+    expect(byName['payment_link.paid']?.payload.payment_link.entity.short_url).toBe(`http://127.0.0.1:4010/l/${paid.id}`);
+    expect(byName['payment_link.expired']?.contains).toEqual(['payment_link']);
+    expect(byName['payment_link.expired']?.payload.payment_link.entity.id).toBe(expiring.id);
+  });
+});
+
 describe('razorpayWebhookFormat headers', () => {
   it('signs the raw body so the official SDK accepts it', () => {
     const format = razorpayWebhookFormat(ACCOUNT);
