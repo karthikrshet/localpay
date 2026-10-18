@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/* LocalPay's own palette (docs/PLAN.md "Design system"). Never Razorpay's colours. */
+@theme {
+  --color-lp-primary: #0E7C7B;
+  --color-lp-primary-hover: #0A6463;
+  --color-lp-accent: #F59E0B;
+  --color-lp-ink: #0F172A;
+  --color-lp-muted: #64748B;
+  --color-lp-surface: #FFFFFF;
+  --color-lp-canvas: #F6F8FA;
+  --color-lp-border: #E2E8F0;
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Dark theme mirrors the tokens. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-lp-primary: #2DB5B3;
+    --color-lp-primary-hover: #4FD1CF;
+    --color-lp-ink: #E2E8F0;
+    --color-lp-muted: #94A3B8;
+    --color-lp-surface: #0F172A;
+    --color-lp-canvas: #020617;
+    --color-lp-border: #1E293B;
+    color-scheme: dark;
+  }
+}
+
+html { font-size: 14px; }
+body { @apply bg-lp-canvas text-lp-ink font-sans antialiased; }
