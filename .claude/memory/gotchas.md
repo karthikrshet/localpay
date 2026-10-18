@@ -16,3 +16,4 @@ Razorpay and SDK quirks found in testing. One dated line each, with where it was
 - 2026-10-19 · Two payments can be authorized on one order; capturing the second after the first settled the order overpaid it. LocalPay now rejects that capture (`order_already_paid`). Real Razorpay may auto-refund instead — unverified. Found by the property test.
 - 2026-10-19 · Under ~30 parallel Vitest workers, cold Fastify/Zod imports can exceed 5s; timeouts are 20s in vitest.config.ts.
 - 2026-10-19 · Error descriptions in provider-razorpay/errors.ts are our wording. Contract tests compare exact descriptions only for fixtures with provenance "recorded".
+- 2026-10-19 · esbuild 0.28 refuses target safari14 ("Transforming destructuring … is not supported yet"); checkout.js targets es2020/chrome100/firefox100/safari15. Seen: packages/checkout/build.ts.
