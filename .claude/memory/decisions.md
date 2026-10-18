@@ -19,3 +19,4 @@ Do not re-argue a decision here; write a new ADR that supersedes it.
 - 2026-10-19 · Node shim package is @localpay/shim-node (no "razorpay" in package names) · trademark rule · ADR 0003
 - 2026-10-19 · Contract fixtures: hand-written stand-ins until the maintainer records real ones; hand-written are shape-checked only · honest compat status · —
 - 2026-10-19 · Demo key rzp_test_LocalPayDemo01 / localpay_demo_secret is public on purpose · zero-config start; only works against LocalPay · —
+- 2026-10-19 · UI palette: primary is blue #2563EB (hover #1D4ED8) on a light-only white theme, replacing the plan's teal and dark mode · maintainer's request; still distinct from Razorpay's navy/sky blue · —

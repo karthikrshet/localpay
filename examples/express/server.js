@@ -38,7 +38,7 @@ export function createShop(env = process.env) {
     res.type('html').send(`<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LocalPay demo shop</title>
-<style>body{font:16px system-ui,sans-serif;max-width:32rem;margin:3rem auto;padding:0 1rem;color:#0F172A}button{font:inherit;padding:.6rem 1rem;border-radius:8px;border:0;background:#0E7C7B;color:#fff;cursor:pointer}#status{margin-top:1rem;min-height:1.5em}</style>
+<style>body{font:16px system-ui,sans-serif;max-width:32rem;margin:3rem auto;padding:0 1rem;color:#0F172A}button{font:inherit;padding:.6rem 1rem;border-radius:8px;border:0;background:#2563EB;color:#fff;cursor:pointer}#status{margin-top:1rem;min-height:1.5em}</style>
 </head>
 <body>
 <h1>Demo shop</h1>

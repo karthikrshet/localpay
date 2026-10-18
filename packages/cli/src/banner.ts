@@ -4,14 +4,14 @@ import type { LocalPayConfig } from '@localpay/server';
 export interface Style {
   bold(s: string): string;
   dim(s: string): string;
-  teal(s: string): string;
+  blue(s: string): string;
   amber(s: string): string;
   red(s: string): string;
 }
 
 export function createStyle(enabled: boolean): Style {
   const wrap = (open: number, close: number) => (s: string) => (enabled ? `\u001b[${open}m${s}\u001b[${close}m` : s);
-  return { bold: wrap(1, 22), dim: wrap(2, 22), teal: wrap(36, 39), amber: wrap(33, 39), red: wrap(31, 39) };
+  return { bold: wrap(1, 22), dim: wrap(2, 22), blue: wrap(34, 39), amber: wrap(33, 39), red: wrap(31, 39) };
 }
 
 const DEMO_SECRET = 'localpay_demo_secret';
@@ -23,9 +23,9 @@ export function banner(input: { version: string; url: string; dashboardUrl: stri
     '',
     `${style.amber('●')} ${style.bold(`LocalPay ${input.version}`)} ${style.dim('— test mode, no real money moves')}`,
     '',
-    row('API', `${style.teal(`${url}/v1`)}  ${style.dim('(set your SDK base URL to')} ${url}${style.dim(')')}`),
+    row('API', `${style.blue(`${url}/v1`)}  ${style.dim('(set your SDK base URL to')} ${url}${style.dim(')')}`),
     row('Checkout', `${url}/v1/checkout.js`),
-    row('Dashboard', style.teal(input.dashboardUrl)),
+    row('Dashboard', style.blue(input.dashboardUrl)),
   ];
   for (const key of config.keys) {
     // The shipped demo secret is public; anything else the user configured is masked.

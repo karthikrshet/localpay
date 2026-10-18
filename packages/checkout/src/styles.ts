@@ -3,7 +3,7 @@
 export const STYLES = `
 :host { all: initial; }
 .lp-overlay {
-  --lp-primary: #0E7C7B; --lp-primary-hover: #0A6463; --lp-accent: #F59E0B;
+  --lp-primary: #2563EB; --lp-primary-hover: #1D4ED8; --lp-accent: #F59E0B;
   --lp-ink: #0F172A; --lp-muted: #475569; --lp-surface: #FFFFFF; --lp-canvas: #F6F8FA;
   --lp-border: #E2E8F0; --lp-success: #15803D; --lp-danger: #B91C1C;
   --lp-banner-bg: #FEF3C7; --lp-banner-ink: #78350F;
@@ -48,7 +48,7 @@ export const STYLES = `
 .lp-scenario[disabled] { opacity: 0.6; cursor: progress; }
 .lp-label { font-weight: 600; }
 .lp-effect { font-size: 12px; color: var(--lp-muted); }
-.lp-primary .lp-effect { color: #E6FFFA; }
+.lp-primary .lp-effect { color: #FFFFFF; }
 .lp-alert { border-radius: 8px; padding: 10px 12px; background: #FEF2F2; color: var(--lp-danger); border: 1px solid #FECACA; }
 .lp-dismiss { justify-self: center; border: 0; background: transparent; color: var(--lp-muted); text-decoration: underline; cursor: pointer; font: inherit; padding: 6px; }
 .lp-footer { padding: 10px 20px 14px; border-top: 1px solid var(--lp-border); color: var(--lp-muted); font-size: 11px; text-align: center; }

@@ -2,8 +2,8 @@
 
 /* LocalPay's own palette (docs/PLAN.md "Design system"). Never Razorpay's colours. */
 @theme {
-  --color-lp-primary: #0E7C7B;
-  --color-lp-primary-hover: #0A6463;
+  --color-lp-primary: #2563EB;
+  --color-lp-primary-hover: #1D4ED8;
   --color-lp-accent: #F59E0B;
   --color-lp-ink: #0F172A;
   --color-lp-muted: #64748B;
