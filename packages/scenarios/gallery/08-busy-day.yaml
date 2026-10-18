@@ -1,0 +1,10 @@
+name: A busy day with flaky webhooks
+description: Ten orders, about 30% UPI timeouts, and duplicate or reordered webhooks. Your webhook handler must be idempotent and order-independent.
+seed: busy-day
+steps:
+  - webhook_faults: { duplicate: 0.2, out_of_order: 0.2 }
+  - repeat:
+      times: 10
+      steps:
+        - order: { amount: 39900 }
+        - pay: { order: last, outcomes: { success: 0.7, upi_timeout: 0.3 } }

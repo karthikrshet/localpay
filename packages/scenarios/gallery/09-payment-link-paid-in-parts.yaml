@@ -1,0 +1,10 @@
+name: Payment link paid in two parts
+description: An invoice link accepts partial payments. It becomes partially_paid, then paid. Watch for payment_link.partially_paid before payment_link.paid.
+seed: link-parts
+steps:
+  - link: { amount: 300000, reference_id: INV-1001, description: Invoice 1001, accept_partial: true, as: inv }
+  - pay: { link: inv, amount: 100000, scenario: success }
+  - pay: { link: inv, scenario: success }
+expect:
+  events_include: [payment_link.created, payment_link.partially_paid, payment_link.paid]
+  payment_links: { paid: 1 }

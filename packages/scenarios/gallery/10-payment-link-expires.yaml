@@ -1,0 +1,9 @@
+name: Payment link expires unpaid
+description: A link with a one-day expiry is never paid. Fast-forwarding two days expires it and sends payment_link.expired.
+seed: link-expiry
+steps:
+  - link: { amount: 99900, reference_id: INV-2001, expire_in: 1d, as: inv }
+  - advance: 2d
+expect:
+  events_include: [payment_link.created, clock.advanced, payment_link.expired]
+  payment_links: { expired: 1 }

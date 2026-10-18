@@ -1,0 +1,10 @@
+name: Card declined for insufficient funds
+description: Every attempt fails. The order stays attempted and no money moves. Check that your app shows a retry, not a success page.
+seed: declined
+steps:
+  - order: { amount: 250000, as: o }
+  - pay: { order: o, method: card, scenario: insufficient_funds }
+  - pay: { order: o, method: card, scenario: insufficient_funds }
+expect:
+  orders: { attempted: 1 }
+  payments: { failed: 2 }

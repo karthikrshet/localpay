@@ -1,0 +1,10 @@
+name: Bank down, customer switches to UPI
+description: Netbanking fails with GATEWAY_ERROR, then the customer pays by UPI. Your failure handling must not cancel the order.
+seed: bank-down
+steps:
+  - order: { amount: 59900, as: o }
+  - pay: { order: o, method: netbanking, scenario: bank_down }
+  - pay: { order: o, method: upi, scenario: success }
+expect:
+  events_include: [payment.failed, payment.captured, order.paid]
+  orders: { paid: 1 }

@@ -1,0 +1,12 @@
+name: A refund fails at the bank
+description: The refund is created and then fails. The amount goes back to the merchant, so the payment is captured again with nothing refunded.
+seed: refund-fails
+steps:
+  - order: { amount: 75000, as: o }
+  - pay: { order: o, scenario: success, as: p }
+  - refund: { payment: p, as: r }
+  - fail_refund: { refund: r }
+expect:
+  events_include: [refund.created, refund.failed]
+  payments: { captured: 1 }
+  refunds: { failed: 1 }

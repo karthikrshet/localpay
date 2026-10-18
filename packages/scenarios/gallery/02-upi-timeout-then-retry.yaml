@@ -1,0 +1,11 @@
+name: UPI timeout, then a successful retry
+description: The first UPI request expires, the customer tries again and pays. Your app sees payment.failed before payment.captured for the same order.
+seed: upi-retry
+steps:
+  - order: { amount: 49900, as: tee }
+  - pay: { order: tee, method: upi, scenario: upi_timeout }
+  - pay: { order: tee, method: upi, scenario: success }
+expect:
+  events_include: [payment.failed, payment.authorized, payment.captured, order.paid]
+  orders: { paid: 1 }
+  payments: { failed: 1, captured: 1 }

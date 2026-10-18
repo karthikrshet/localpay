@@ -1,0 +1,10 @@
+name: Happy path
+description: A customer pays an order by UPI and it is captured straight away. Use this to check that your order.paid handler fulfils exactly once.
+seed: happy-path
+steps:
+  - order: { amount: 49900, receipt: tee-1, as: tee }
+  - pay: { order: tee, method: upi, scenario: success }
+expect:
+  events_include: [order.created, payment.authorized, payment.captured, order.paid]
+  orders: { paid: 1 }
+  payments: { captured: 1 }

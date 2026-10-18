@@ -1,0 +1,14 @@
+name: Partial refund, then the rest
+description: A captured payment is refunded in two parts. The payment stays captured after the first refund and becomes refunded after the second.
+seed: two-refunds
+steps:
+  - order: { amount: 100000, as: o }
+  - pay: { order: o, scenario: success, as: p }
+  - refund: { payment: p, amount: 25000, as: first }
+  - process_refund: { refund: first }
+  - refund: { payment: p, as: rest }
+  - process_refund: { refund: rest }
+expect:
+  events_include: [refund.created, refund.processed, refund.created, refund.processed]
+  payments: { refunded: 1 }
+  refunds: { processed: 2 }

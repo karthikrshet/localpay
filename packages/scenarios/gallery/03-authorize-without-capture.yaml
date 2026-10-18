@@ -1,0 +1,11 @@
+name: Authorized but not captured
+description: The payment is only authorized. The order is not paid until your server captures it. The classic bug is shipping on payment.authorized.
+seed: authorize-only
+steps:
+  - order: { amount: 129900, auto_capture: false, as: phone }
+  - pay: { order: phone, method: card, scenario: success, as: auth }
+  - capture: { payment: auth }
+expect:
+  events_include: [payment.authorized, payment.captured, order.paid]
+  orders: { paid: 1 }
+  payments: { captured: 1 }
