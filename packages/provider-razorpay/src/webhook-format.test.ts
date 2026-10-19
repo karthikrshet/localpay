@@ -91,6 +91,32 @@ describe('dispute webhooks', () => {
   });
 });
 
+describe('settlement webhooks and the base URL getter', () => {
+  it('sends settlement.processed with the settlement only', () => {
+    const engine = createEngine({ seed: 'settle-hooks' });
+    const order = engine.createOrder({ amount: 10000 });
+    engine.attemptPayment({ orderId: order.id, method: 'upi', outcome: { kind: 'success' } });
+    engine.advanceTime(2 * 86_400_000);
+    const event = engine.events.find((e) => e.type === 'settlement.processed');
+    expect(event && toWebhook(event, ACCOUNT)?.payload).toMatchObject({ event: 'settlement.processed', contains: ['settlement'], payload: { settlement: { entity: { entity: 'settlement', status: 'processed' } } } });
+  });
+
+  it('reads the base URL on every event, so short_url follows the real port', () => {
+    let base = 'http://127.0.0.1:4010';
+    const format = razorpayWebhookFormat(ACCOUNT, () => base);
+    const engine = createEngine({ seed: 'base-url' });
+    const link = engine.createPaymentLink({ amount: 100 });
+    engine.cancelPaymentLink(link.id);
+    const cancelled = engine.events.at(-1);
+    if (!cancelled) throw new Error('no event');
+    const shortUrl = () => (format.format(cancelled)?.payload as { payload: { payment_link: { entity: { short_url: string } } } }).payload.payment_link.entity.short_url;
+    expect(shortUrl()).toBe(`http://127.0.0.1:4010/l/${link.id}`);
+    base = 'http://127.0.0.1:51234';
+    expect(shortUrl()).toBe(`http://127.0.0.1:51234/l/${link.id}`);
+    expect(format.events).toContain('settlement.processed');
+  });
+});
+
 describe('razorpayWebhookFormat headers', () => {
   it('signs the raw body so the official SDK accepts it', () => {
     const format = razorpayWebhookFormat(ACCOUNT);
