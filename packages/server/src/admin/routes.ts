@@ -170,6 +170,10 @@ export const adminApi: FastifyPluginCallback<AdminApiOptions> = (app, options, d
     reply.send({ items: engine.listSettlements().map((s) => ({ ...toWireSettlement(s), payment_ids: s.paymentIds, refund_ids: s.refundIds, dispute_ids: s.disputeIds })) }),
   );
 
+  app.post<{ Params: { id: string } }>('/payments/:id/late-authorize', (request, reply) =>
+    reply.send({ payment: toWirePayment(engine.lateAuthorize(request.params.id)) }),
+  );
+
   // The bank's side of disputes, which the merchant API cannot do.
   app.post<{ Params: { id: string } }>('/payments/:id/dispute', (request, reply) => {
     const body = parse(z.strictObject({ amount: z.number().int().optional(), reason_code: z.string().optional(), respond_in_days: z.number().int().min(1).max(60).optional() }), request.body);

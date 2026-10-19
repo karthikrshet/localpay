@@ -73,6 +73,11 @@ export function PaymentRow({ payment, onChange }: { payment: WirePayment; onChan
             Capture
           </Button>
         )}
+        {payment.status === 'failed' && (
+          <Button onClick={() => void api(`/payments/${payment.id}/late-authorize`, { method: 'POST' }).then(onChange, (e: unknown) => setError(String(e)))}>
+            Bank confirms late
+          </Button>
+        )}
         {error && <span className="text-xs text-red-700">{error}</span>}
       </td>
     </tr>

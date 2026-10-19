@@ -56,6 +56,13 @@ describe('admin API', () => {
     expect((await call('POST', `/refunds/${refund.id}/process`)).status).toBe(400);
   });
 
+  it('authorizes a failed payment late, as the bank would', async () => {
+    const { call, engine } = await setup();
+    const order = engine.createOrder({ amount: 700 });
+    const failed = engine.attemptPayment({ orderId: order.id, method: 'upi', outcome: { kind: 'fail', error: { code: 'BAD_REQUEST_ERROR', description: 'x', source: 'customer', step: 'payment_authentication', reason: 'payment_timeout' } } });
+    expect((await call('POST', `/payments/${failed.id}/late-authorize`)).body).toMatchObject({ payment: { status: 'captured' } });
+  });
+
   it('raises, contests and resolves disputes as the bank would', async () => {
     const { call, payment } = await setup();
     const raised = await call('POST', `/payments/${payment.id}/dispute`, { reason_code: 'fraud', respond_in_days: 3 });
