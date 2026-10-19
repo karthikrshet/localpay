@@ -1,7 +1,7 @@
 // The dashboard API under /_localpay/api. Read views reuse the provider's wire JSON so
 // the dashboard shows exactly what an SDK would see.
 import { parseDuration, type AnyEvent, type Engine } from '@localpay/core';
-import { toApiError, toWireDispute, toWireOrder, toWirePayment, toWireRefund, WEBHOOK_EVENTS } from '@localpay/provider-razorpay';
+import { toApiError, toWireCustomer, toWireDispute, toWireOrder, toWirePayment, toWirePaymentLink, toWirePlan, toWireRefund, toWireSettlement, toWireSubscription, WEBHOOK_EVENTS } from '@localpay/provider-razorpay';
 import { BlockedTargetError, validateTargetUrl, type Dispatcher, type FaultConfig, type WebhookTarget } from '@localpay/webhooks';
 import type { FastifyPluginCallback, FastifyReply } from 'fastify';
 import { z } from 'zod';
@@ -143,6 +143,32 @@ export const adminApi: FastifyPluginCallback<AdminApiOptions> = (app, options, d
     const payment = engine.getPayment(request.params.id);
     return reply.send({ payment: toWirePayment(engine.capturePayment(payment.id, { amount: payment.amount })) });
   });
+
+  const baseUrl = (request: { protocol: string; host: string }) => `${request.protocol}://${request.host}`;
+
+  app.get('/customers', (_request, reply) => reply.send({ items: engine.listCustomers().map(toWireCustomer) }));
+
+  app.get('/payment-links', (request, reply) =>
+    reply.send({ items: engine.listPaymentLinks().map((l) => toWirePaymentLink(l, { baseUrl: baseUrl(request), payments: l.paymentIds.map((id) => engine.getPayment(id)) })) }),
+  );
+  app.post<{ Params: { id: string } }>('/payment-links/:id/cancel', (request, reply) => {
+    const link = engine.cancelPaymentLink(request.params.id);
+    return reply.send({ link: toWirePaymentLink(link, { baseUrl: baseUrl(request), payments: [] }) });
+  });
+
+  app.get('/subscriptions', (request, reply) =>
+    reply.send({
+      plans: engine.listPlans().map(toWirePlan),
+      items: engine.listSubscriptions().map((s) => toWireSubscription(s, baseUrl(request))),
+    }),
+  );
+  app.post<{ Params: { id: string } }>('/subscriptions/:id/cancel', (request, reply) =>
+    reply.send({ subscription: toWireSubscription(engine.cancelSubscription(request.params.id), baseUrl(request)) }),
+  );
+
+  app.get('/settlements', (_request, reply) =>
+    reply.send({ items: engine.listSettlements().map((s) => ({ ...toWireSettlement(s), payment_ids: s.paymentIds, refund_ids: s.refundIds, dispute_ids: s.disputeIds })) }),
+  );
 
   // The bank's side of disputes, which the merchant API cannot do.
   app.post<{ Params: { id: string } }>('/payments/:id/dispute', (request, reply) => {

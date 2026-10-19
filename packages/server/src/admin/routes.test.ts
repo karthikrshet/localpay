@@ -98,6 +98,21 @@ describe('admin API', () => {
     expect((await call('POST', '/time/advance', { duration: 'soon' })).status).toBe(400);
   });
 
+  it('lists customers, payment links, subscriptions and settlements', async () => {
+    const { call, engine } = await setup();
+    engine.createCustomer({ name: 'Asha' });
+    const link = engine.createPaymentLink({ amount: 1000 });
+    const plan = engine.createPlan({ period: 'monthly', interval: 1, item: { name: 'Pro', amount: 1000 } });
+    const sub = engine.createSubscription({ planId: plan.id, totalCount: 2 });
+    engine.advanceTime(3 * 86_400_000);
+    expect((await call('GET', '/customers')).body).toMatchObject({ items: [{ name: 'Asha' }] });
+    expect((await call('GET', '/payment-links')).body).toMatchObject({ items: [{ id: link.id, status: 'created' }] });
+    expect((await call('POST', `/payment-links/${link.id}/cancel`)).body).toMatchObject({ link: { status: 'cancelled' } });
+    expect((await call('GET', '/subscriptions')).body).toMatchObject({ plans: [{ id: plan.id }], items: [{ id: sub.id, status: 'created' }] });
+    expect((await call('POST', `/subscriptions/${sub.id}/cancel`)).body).toMatchObject({ subscription: { status: 'cancelled' } });
+    expect((await call('GET', '/settlements')).body).toMatchObject({ items: [{ entity: 'settlement', status: 'processed' }] });
+  });
+
   it('exports the event log as a JSONL recording', async () => {
     const { app } = await setup();
     const response = await app.inject({ url: '/_localpay/api/events.jsonl', headers: { authorization: 'Bearer admintoken' } });
