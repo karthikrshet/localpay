@@ -36,6 +36,22 @@ function redirectWith(url: string, fields: Record<string, string>): void {
   form.submit();
 }
 
+/**
+ * Constructable stylesheets are not blocked by a merchant page's `style-src` CSP, while a
+ * <style> element is (without 'unsafe-inline'). Fall back to <style> on older browsers.
+ */
+export function applyStyles(root: ShadowRoot): void {
+  if ('adoptedStyleSheets' in root && typeof CSSStyleSheet === 'function' && 'replaceSync' in CSSStyleSheet.prototype) {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(STYLES);
+    root.adoptedStyleSheets = [sheet];
+    return;
+  }
+  const style = document.createElement('style');
+  style.textContent = STYLES;
+  root.appendChild(style);
+}
+
 export function createCheckoutClass(env: CheckoutEnvironment) {
   return class LocalPayCheckout {
     readonly options: CheckoutOptions;
@@ -62,9 +78,7 @@ export function createCheckoutClass(env: CheckoutEnvironment) {
       this.host = document.createElement('localpay-checkout');
       document.body.appendChild(this.host);
       const root = this.host.attachShadow({ mode: 'open' });
-      const style = document.createElement('style');
-      style.textContent = STYLES;
-      root.appendChild(style);
+      applyStyles(root);
       const mount = document.createElement('div');
       root.appendChild(mount);
       render(
