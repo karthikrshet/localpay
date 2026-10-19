@@ -60,3 +60,14 @@ test('checkout fits a 360 px phone screen and closes with Escape', async ({ page
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
 });
+
+test('checkout keeps its styles on a page with a strict style-src CSP', async ({ page }) => {
+  // e2e-servers.js serves /strict-csp with a CSP that blocks <style> elements.
+  await page.goto('/strict-csp');
+  await page.getByRole('button', { name: 'Open' }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  // Styled: the sheet is a white, rounded card, not an unstyled block.
+  const radius = await dialog.evaluate((el) => getComputedStyle(el).borderTopLeftRadius);
+  expect(radius).toBe('12px');
+});

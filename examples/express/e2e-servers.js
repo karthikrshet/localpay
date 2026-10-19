@@ -10,6 +10,16 @@ const shopPort = Number(process.env.SHOP_PORT ?? 3011);
 const localpay = await createLocalPay({ port: localpayPort }, process.env.E2E_ADMIN_TOKEN ? { adminToken: process.env.E2E_ADMIN_TOKEN } : {});
 const localpayUrl = await localpay.listen();
 const shop = createShop({ LOCALPAY_URL: localpayUrl });
+// Test-only page: a merchant page whose CSP forbids inline styles.
+shop.app.get('/strict-csp', (_req, res) => {
+  res
+    .set('content-security-policy', `default-src 'self'; script-src 'self' ${localpayUrl} 'unsafe-inline'; connect-src ${localpayUrl}; style-src 'self'`)
+    .type('html')
+    .send(`<!doctype html><html><body><button id="open">Open</button>
+<script src="${localpayUrl}/v1/checkout.js"></script>
+<script>document.getElementById('open').addEventListener('click', () => { new Razorpay({ key: 'rzp_test_LocalPayDemo01', order_id: 'order_DoesNotExist00' }).open(); });</script>
+</body></html>`);
+});
 shop.app.listen(shopPort, '127.0.0.1', () => {
   localpay.webhookTargets.push({ id: 'shop', url: `http://127.0.0.1:${shopPort}/webhooks`, secret: 'localpay_webhook_secret' });
   console.log(`LocalPay ${localpayUrl} · shop http://127.0.0.1:${shopPort} · dashboard ${localpay.dashboardUrl(localpayUrl)}`);
