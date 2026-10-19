@@ -37,8 +37,30 @@
   },
   "keywords": [
     "localpay",
+    "razorpay-node",
+    "sdk",
+    "razorpay-compatible",
+    "razorpay",
+    "razorpay-api",
+    "razorpay-test",
+    "payment-gateway",
     "payments",
+    "mock-server",
+    "api-mock",
+    "emulator",
+    "webhooks",
+    "webhook-testing",
+    "upi",
+    "india",
     "testing",
-    "razorpay-compatible"
-  ]
+    "integration-testing",
+    "local-development",
+    "offline",
+    "developer-tools",
+    "ci"
+  ],
+  "homepage": "https://karthikrshet.github.io/localpay/",
+  "bugs": {
+    "url": "https://github.com/karthikrshet/localpay/issues"
+  }
 }

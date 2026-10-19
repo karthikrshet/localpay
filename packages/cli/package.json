@@ -3,14 +3,28 @@
   "version": "0.0.0",
   "description": "Razorpay-compatible local payment emulator for testing. Independent project, not affiliated with Razorpay. Never moves money.",
   "keywords": [
-    "payments",
-    "emulator",
-    "mock",
-    "testing",
-    "upi",
+    "localpay",
+    "cli",
+    "checkout",
     "razorpay-compatible",
+    "razorpay",
+    "razorpay-api",
+    "razorpay-test",
+    "payment-gateway",
+    "payments",
+    "mock-server",
+    "api-mock",
+    "emulator",
     "webhooks",
-    "offline"
+    "webhook-testing",
+    "upi",
+    "india",
+    "testing",
+    "integration-testing",
+    "local-development",
+    "offline",
+    "developer-tools",
+    "ci"
   ],
   "license": "Apache-2.0",
   "repository": {
@@ -42,5 +56,9 @@
     "@localpay/server": "workspace:*",
     "esbuild": "^0.28.2"
   },
-  "private": false
+  "private": false,
+  "homepage": "https://karthikrshet.github.io/localpay/",
+  "bugs": {
+    "url": "https://github.com/karthikrshet/localpay/issues"
+  }
 }
