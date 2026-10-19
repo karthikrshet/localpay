@@ -56,6 +56,17 @@ describe('admin API', () => {
     expect((await call('POST', `/refunds/${refund.id}/process`)).status).toBe(400);
   });
 
+  it('raises, contests and resolves disputes as the bank would', async () => {
+    const { call, payment } = await setup();
+    const raised = await call('POST', `/payments/${payment.id}/dispute`, { reason_code: 'fraud', respond_in_days: 3 });
+    const id = (raised.body.dispute as { id: string }).id;
+    expect(raised.body.dispute).toMatchObject({ status: 'open', reason_code: 'fraud' });
+    expect((await call('GET', `/payments/${payment.id}`)).body).toMatchObject({ disputes: [{ id }] });
+    expect((await call('POST', `/disputes/${id}/resolve`, { outcome: 'won' })).status).toBe(400);
+    expect((await call('POST', `/disputes/${id}/submit`)).body).toMatchObject({ dispute: { status: 'under_review' } });
+    expect((await call('POST', `/disputes/${id}/resolve`, { outcome: 'won' })).body).toMatchObject({ dispute: { status: 'won' } });
+  });
+
   it('lists, replays and double-sends webhook deliveries', async () => {
     const { call, dispatcher, sent } = await setup();
     await dispatcher.tick();

@@ -1,7 +1,7 @@
 // The dashboard API under /_localpay/api. Read views reuse the provider's wire JSON so
 // the dashboard shows exactly what an SDK would see.
 import { parseDuration, type AnyEvent, type Engine } from '@localpay/core';
-import { toApiError, toWireOrder, toWirePayment, toWireRefund, WEBHOOK_EVENTS } from '@localpay/provider-razorpay';
+import { toApiError, toWireDispute, toWireOrder, toWirePayment, toWireRefund, WEBHOOK_EVENTS } from '@localpay/provider-razorpay';
 import { BlockedTargetError, validateTargetUrl, type Dispatcher, type FaultConfig, type WebhookTarget } from '@localpay/webhooks';
 import type { FastifyPluginCallback, FastifyReply } from 'fastify';
 import { z } from 'zod';
@@ -123,13 +123,35 @@ export const adminApi: FastifyPluginCallback<AdminApiOptions> = (app, options, d
 
   app.get<{ Params: { id: string } }>('/payments/:id', (request, reply) => {
     const payment = engine.getPayment(request.params.id);
-    return reply.send({ payment: toWirePayment(payment), refunds: engine.listRefunds({ paymentId: payment.id }).map(toWireRefund), events: timelineFor(payment.id) });
+    return reply.send({
+      payment: toWirePayment(payment),
+      refunds: engine.listRefunds({ paymentId: payment.id }).map(toWireRefund),
+      disputes: engine.listDisputes({ paymentId: payment.id }).map(toWireDispute),
+      events: timelineFor(payment.id),
+    });
   });
 
   app.post<{ Params: { id: string } }>('/payments/:id/capture', (request, reply) => {
     const payment = engine.getPayment(request.params.id);
     return reply.send({ payment: toWirePayment(engine.capturePayment(payment.id, { amount: payment.amount })) });
   });
+
+  // The bank's side of disputes, which the merchant API cannot do.
+  app.post<{ Params: { id: string } }>('/payments/:id/dispute', (request, reply) => {
+    const body = parse(z.strictObject({ amount: z.number().int().optional(), reason_code: z.string().optional(), respond_in_days: z.number().int().min(1).max(60).optional() }), request.body);
+    const dispute = engine.raiseDispute(request.params.id, {
+      ...(body.amount !== undefined && { amount: body.amount }),
+      ...(body.reason_code && { reasonCode: body.reason_code }),
+      ...(body.respond_in_days !== undefined && { respondInDays: body.respond_in_days }),
+    });
+    return reply.send({ dispute: toWireDispute(dispute) });
+  });
+  app.post<{ Params: { id: string } }>('/disputes/:id/resolve', (request, reply) => {
+    const { outcome } = parse(z.strictObject({ outcome: z.enum(['won', 'lost']) }), request.body);
+    return reply.send({ dispute: toWireDispute(engine.resolveDispute(request.params.id, outcome)) });
+  });
+  app.post<{ Params: { id: string } }>('/disputes/:id/accept', (request, reply) => reply.send({ dispute: toWireDispute(engine.acceptDispute(request.params.id)) }));
+  app.post<{ Params: { id: string } }>('/disputes/:id/submit', (request, reply) => reply.send({ dispute: toWireDispute(engine.contestDispute(request.params.id, {}, { submit: true })) }));
 
   app.post<{ Params: { id: string } }>('/refunds/:id/process', (request, reply) => reply.send({ refund: toWireRefund(engine.processRefund(request.params.id)) }));
   app.post<{ Params: { id: string } }>('/refunds/:id/fail', (request, reply) => reply.send({ refund: toWireRefund(engine.failRefund(request.params.id)) }));
