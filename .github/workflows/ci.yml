@@ -169,3 +169,23 @@ jobs:
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:4010/_localpay/health && break; sleep 1; done
       - run: pytest -q
         working-directory: examples/fastapi
+
+  example-django:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pnpm install --frozen-lockfile
+      - run: pip install -r examples/django/requirements-dev.txt
+      - run: |
+          pnpm localpay start --port 4010 --webhook http://127.0.0.1:8012/webhooks &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4010/_localpay/health && break; sleep 1; done
+      - run: pytest -q
+        working-directory: examples/django
