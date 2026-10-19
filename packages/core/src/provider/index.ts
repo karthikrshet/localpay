@@ -9,6 +9,18 @@ export interface ProviderKey {
   keySecret: string;
 }
 
+/** Failures injected into API requests before any handler runs, so state never changes. */
+export interface ApiFaults {
+  /** Probability (0–1) of answering 429 Too Many Requests. */
+  rateLimitRate: number;
+  /** Probability (0–1) of answering 500. */
+  serverErrorRate: number;
+  /** Extra latency for every API request, in ms. */
+  delayMs: number;
+}
+
+export const NO_API_FAULTS: ApiFaults = { rateLimitRate: 0, serverErrorRate: 0, delayMs: 0 };
+
 export interface ProviderContext {
   engine: Engine;
   /** API keys the server was started with (already checked by isTestKeyId). */
@@ -19,6 +31,10 @@ export interface ProviderContext {
   publicUrl: () => string;
   /** Origins besides localhost allowed to use the provider's checkout. */
   allowedOrigins: readonly string[];
+  /** Current API fault settings (read per request, so they can change at runtime). */
+  apiFaults: () => ApiFaults;
+  /** Randomness for fault decisions (seeded when the server is). */
+  random: { next(): number };
 }
 
 export interface Provider<App = unknown> {

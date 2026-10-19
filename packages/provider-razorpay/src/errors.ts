@@ -61,6 +61,10 @@ export function serverError(): ApiError {
   });
 }
 
+export function tooManyRequests(): ApiError {
+  return new ApiError(429, { code: 'BAD_REQUEST_ERROR', description: 'Too many requests. Please retry after some time.', source: 'NA', step: 'NA', reason: 'rate_limit_exceeded', metadata: {} });
+}
+
 export const notFoundId = (): ApiError => badRequest('The id provided does not exist', { field: 'id', reason: 'NA' });
 export const notFoundUrl = (): ApiError => badRequest('The requested URL was not found on the server.', { reason: 'NA' });
 

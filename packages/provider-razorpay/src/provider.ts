@@ -23,8 +23,8 @@ export const CHECKOUT_PREFIX = '/_localpay/checkout';
 export const razorpayProvider: Provider<FastifyInstance> = {
   name: 'razorpay',
   isTestKeyId,
-  async register(app, { engine, keys, allowedOrigins }) {
-    await app.register(razorpayApi, { prefix: '/v1', engine, keys, routes: allRoutes });
+  async register(app, { engine, keys, allowedOrigins, apiFaults, random }) {
+    await app.register(razorpayApi, { prefix: '/v1', engine, keys, routes: allRoutes, faults: apiFaults, random });
     await app.register(paymentLinkPages, { engine, keys });
     await app.register(checkoutApi, { prefix: CHECKOUT_PREFIX, engine, keys, allowedOrigins });
   },

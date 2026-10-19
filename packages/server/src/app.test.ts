@@ -44,6 +44,16 @@ describe('createLocalPay', () => {
     expect(server.dashboardUrl('http://127.0.0.1:4010')).toBe(`http://127.0.0.1:4010/?token=${server.adminAuth.token}`);
   });
 
+  it('injects API faults from config and lets the dashboard change them', async () => {
+    const server = await start({ apiFaults: { rateLimitRate: 1 } }, { dashboardDir: null });
+    const create = () => server.app.inject({ method: 'POST', url: '/v1/orders', headers: { authorization: AUTH }, payload: { amount: 100 } });
+    expect((await create()).statusCode).toBe(429);
+    const admin = { authorization: `Bearer ${server.adminAuth.token}` };
+    await server.app.inject({ method: 'PUT', url: '/_localpay/api/api-faults', headers: admin, payload: { rateLimitRate: 0 } });
+    expect((await create()).statusCode).toBe(200);
+    expect((await server.app.inject({ url: '/_localpay/health' })).statusCode).toBe(200);
+  });
+
   it('keeps data across restarts with persist', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'localpay-persist-'));
     try {

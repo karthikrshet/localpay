@@ -1,14 +1,17 @@
 // Mounts the Razorpay-compatible REST API. Register with { prefix: '/v1' }.
-import { EngineError, type Engine } from '@localpay/core';
+import { EngineError, NO_API_FAULTS, type ApiFaults, type Engine } from '@localpay/core';
 import type { FastifyError, FastifyInstance, FastifyPluginCallback } from 'fastify';
 import { authenticate, type ApiKey } from './auth.ts';
-import { ApiError, badRequest, fromEngineError, notFoundUrl, serverError } from './errors.ts';
+import { ApiError, badRequest, fromEngineError, notFoundUrl, serverError, tooManyRequests } from './errors.ts';
 
 export interface RazorpayApiOptions {
   engine: Engine;
   keys: readonly ApiKey[];
   /** Extra route groups (orders, payments, ...) to mount inside the authenticated scope. */
   routes?: readonly ((app: FastifyInstance, engine: Engine) => void)[];
+  /** Injected failures; none when omitted. */
+  faults?: () => ApiFaults;
+  random?: { next(): number };
 }
 
 /** Turns anything thrown by a handler into the gateway's error envelope. */
@@ -49,6 +52,19 @@ export const razorpayApi: FastifyPluginCallback<RazorpayApiOptions> = (app, opti
     }
     // Do not return `reply` here: it is thenable, and Fastify would treat this callback hook as async.
     void reply.code(result.error.status).send(result.error.toJSON());
+  });
+
+  // Fault injection runs after auth and before any handler, so a faulted request changes nothing.
+  app.addHook('preHandler', (_request, reply, next) => {
+    const faults = options.faults?.() ?? NO_API_FAULTS;
+    const roll = () => options.random?.next() ?? Math.random();
+    const fault = faults.rateLimitRate > 0 && roll() < faults.rateLimitRate ? tooManyRequests() : faults.serverErrorRate > 0 && roll() < faults.serverErrorRate ? serverError() : null;
+    const finish = () => {
+      if (fault) void reply.code(fault.status).send(fault.toJSON());
+      else next();
+    };
+    if (faults.delayMs > 0) setTimeout(finish, faults.delayMs);
+    else finish();
   });
 
   for (const register of options.routes ?? []) register(app, options.engine);

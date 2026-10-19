@@ -1,5 +1,5 @@
 // Wires core, a provider (Razorpay by default), checkout and webhooks into one Fastify app.
-import { createEngine, createFileEventStore, createMemoryEventStore, createOffsetClock, createRandom, type Engine, type Provider, type ProviderContext } from '@localpay/core';
+import { createEngine, createFileEventStore, createMemoryEventStore, createOffsetClock, createRandom, NO_API_FAULTS, type ApiFaults, type Engine, type Provider, type ProviderContext } from '@localpay/core';
 import { razorpayProvider } from '@localpay/provider-razorpay';
 import { createDispatcher, type Dispatcher, type Sender, type WebhookTarget } from '@localpay/webhooks';
 import Fastify, { type FastifyInstance } from 'fastify';
@@ -75,12 +75,15 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
   let publicUrl = `http://${config.host}:${config.port}`;
   const webhookTargets: WebhookTarget[] = config.webhooks.map((w, i) => ({ id: `wh_${i + 1}`, url: w.url, secret: w.secret, events: w.events ?? null }));
   const provider = deps.provider ?? razorpayProvider;
+  const apiFaults: ApiFaults = { ...NO_API_FAULTS, ...config.apiFaults };
   const providerContext: ProviderContext = {
     engine,
     keys: config.keys,
     accountId: config.accountId,
     publicUrl: () => publicUrl,
     allowedOrigins: config.allowedOrigins,
+    apiFaults: () => apiFaults,
+    random: createRandom(config.seed === null ? undefined : `${config.seed}:api`),
   };
   const dispatcher = createDispatcher({
     format: provider.webhookFormat(providerContext),
@@ -113,7 +116,7 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
   });
 
   const adminAuth = createAdminAuth(config.dashboardPassword, deps.adminToken);
-  await app.register(adminApi, { prefix: `${INTERNAL_PREFIX}/api`, engine, dispatcher, webhookTargets, auth: adminAuth, accountId: config.accountId, keys: config.keys, ...(deps.galleryDir && { galleryDir: deps.galleryDir }) });
+  await app.register(adminApi, { prefix: `${INTERNAL_PREFIX}/api`, engine, dispatcher, webhookTargets, auth: adminAuth, accountId: config.accountId, keys: config.keys, apiFaults, ...(deps.galleryDir && { galleryDir: deps.galleryDir }) });
   await app.register(dashboard, { auth: adminAuth, dashboardDir: deps.dashboardDir === undefined ? findDashboardDir() : deps.dashboardDir });
 
   app.get(`${INTERNAL_PREFIX}/health`, (_request, reply) => reply.send({ ok: true, name: 'LocalPay', time: engine.now() }));

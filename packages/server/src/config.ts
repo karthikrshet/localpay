@@ -1,5 +1,6 @@
 // Server configuration with safe defaults: loopback only, test keys only.
 import { isTestKeyId, type ApiKey } from '@localpay/provider-razorpay';
+import type { ApiFaults } from '@localpay/core';
 import { BlockedTargetError, validateTargetUrl, type FaultConfig } from '@localpay/webhooks';
 
 export interface WebhookConfig {
@@ -35,6 +36,8 @@ export interface LocalPayConfig {
   webhooks: WebhookConfig[];
   /** Webhook failure injection. */
   faults: Partial<FaultConfig>;
+  /** API failure injection (429, 500, latency). */
+  apiFaults: Partial<ApiFaults>;
   /** Origins besides localhost allowed to load and use checkout.js. */
   allowedOrigins: string[];
 }
@@ -53,6 +56,7 @@ export const DEFAULT_CONFIG: LocalPayConfig = {
   accountId: 'acc_LocalPayDemo01',
   webhooks: [],
   faults: {},
+  apiFaults: {},
   allowedOrigins: [],
 };
 

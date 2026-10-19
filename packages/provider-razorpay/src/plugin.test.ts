@@ -38,6 +38,27 @@ describe('razorpayApi plugin', () => {
   });
 });
 
+describe('API fault injection', () => {
+  it('answers 429 or 500 before any handler runs, so nothing changes', async () => {
+    const engine = (await import('@localpay/core')).createEngine({ seed: 'faults' });
+    const Fastify = (await import('fastify')).default;
+    const { orderRoutes } = await import('./routes/orders.ts');
+    const { razorpayApi } = await import('./plugin.ts');
+    let faults = { rateLimitRate: 1, serverErrorRate: 0, delayMs: 0 };
+    const app = Fastify();
+    await app.register(razorpayApi, { prefix: '/v1', engine, keys: [{ keyId: 'rzp_test_LocalPayDemo01', keySecret: 'demo_secret' }], routes: [orderRoutes], faults: () => faults, random: { next: () => 0.5 } });
+    const create = () => app.inject({ method: 'POST', url: '/v1/orders', payload: { amount: 100 }, headers: { authorization: `Basic ${Buffer.from('rzp_test_LocalPayDemo01:demo_secret').toString('base64')}` } });
+    const limited = await create();
+    expect(limited.statusCode).toBe(429);
+    expect(limited.json()).toMatchObject({ error: { reason: 'rate_limit_exceeded' } });
+    faults = { rateLimitRate: 0, serverErrorRate: 1, delayMs: 0 };
+    expect((await create()).statusCode).toBe(500);
+    expect(engine.listOrders()).toEqual([]);
+    faults = { rateLimitRate: 0, serverErrorRate: 0, delayMs: 30 };
+    expect((await create()).statusCode).toBe(200);
+  });
+});
+
 describe('toApiError', () => {
   it('passes ApiErrors through and maps EngineErrors', () => {
     const api = badRequest('x');

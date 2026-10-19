@@ -1,6 +1,6 @@
 // The dashboard API under /_localpay/api. Read views reuse the provider's wire JSON so
 // the dashboard shows exactly what an SDK would see.
-import { parseDuration, type AnyEvent, type Engine } from '@localpay/core';
+import { parseDuration, type AnyEvent, type ApiFaults, type Engine } from '@localpay/core';
 import { toApiError, toWireCustomer, toWireDispute, toWireOrder, toWirePayment, toWirePaymentLink, toWirePlan, toWireRefund, toWireSettlement, toWireSubscription, WEBHOOK_EVENTS } from '@localpay/provider-razorpay';
 import { BlockedTargetError, validateTargetUrl, type Dispatcher, type FaultConfig, type WebhookTarget } from '@localpay/webhooks';
 import type { FastifyPluginCallback, FastifyReply } from 'fastify';
@@ -17,6 +17,8 @@ export interface AdminApiOptions {
   keys: readonly { keyId: string; keySecret: string }[];
   /** Directory of gallery scenarios (YAML). */
   galleryDir?: string;
+  /** Live API fault settings, edited in place. */
+  apiFaults?: ApiFaults;
 }
 
 class AdminError extends Error {
@@ -226,6 +228,14 @@ export const adminApi: FastifyPluginCallback<AdminApiOptions> = (app, options, d
 
   app.get('/webhooks/faults', (_request, reply) => reply.send(dispatcher.faults()));
   app.put('/webhooks/faults', (request, reply) => reply.send(dispatcher.setFaults(parse(faultsSchema, request.body) as Partial<FaultConfig>)));
+
+  app.get('/api-faults', (_request, reply) => reply.send(options.apiFaults ?? { rateLimitRate: 0, serverErrorRate: 0, delayMs: 0 }));
+  app.put('/api-faults', (request, reply) => {
+    if (!options.apiFaults) throw new AdminError(404, 'API fault injection is not available');
+    const next = parse(z.strictObject({ rateLimitRate: z.number().min(0).max(1).optional(), serverErrorRate: z.number().min(0).max(1).optional(), delayMs: z.number().int().min(0).max(60_000).optional() }), request.body);
+    Object.assign(options.apiFaults, next);
+    return reply.send(options.apiFaults);
+  });
 
   app.get('/time', (_request, reply) => reply.send({ now: engine.now(), offsetMs: 'offset' in engine.clock ? (engine.clock as { offset(): number }).offset() : 0 }));
   app.post('/time/advance', (request, reply) => {
