@@ -75,6 +75,22 @@ describe('subscription webhooks', () => {
   });
 });
 
+describe('dispute webhooks', () => {
+  it('sends payment.dispute.* with the payment and the dispute', () => {
+    const engine = createEngine({ seed: 'dispute-hooks' });
+    const order = engine.createOrder({ amount: 1000 });
+    const payment = engine.attemptPayment({ orderId: order.id, method: 'card', outcome: { kind: 'success' } });
+    const dispute = engine.raiseDispute(payment.id);
+    engine.acceptDispute(dispute.id);
+    const messages = engine.events.flatMap((e) => {
+      const m = toWebhook(e, ACCOUNT);
+      return m && m.name.startsWith('payment.dispute') ? [m] : [];
+    });
+    expect(messages.map((m) => m.name)).toEqual(['payment.dispute.created', 'payment.dispute.lost']);
+    expect((messages[0]?.payload as { contains: string[] }).contains).toEqual(['payment', 'dispute']);
+  });
+});
+
 describe('razorpayWebhookFormat headers', () => {
   it('signs the raw body so the official SDK accepts it', () => {
     const format = razorpayWebhookFormat(ACCOUNT);

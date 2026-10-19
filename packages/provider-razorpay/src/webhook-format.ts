@@ -1,6 +1,7 @@
 // Domain events → Razorpay webhook envelopes and signed headers.
 import type { AnyEvent, WebhookFormat, WebhookMessage } from '@localpay/core';
 import { toWirePaymentLink } from './payment-links/serializer.ts';
+import { toWireDispute } from './routes/disputes.ts';
 import { toWireSubscription } from './subscriptions/serializer.ts';
 import { toWireOrder, toWirePayment, toWireRefund } from './serializers.ts';
 import { webhookSignature } from './signatures.ts';
@@ -25,6 +26,10 @@ export const WEBHOOK_EVENTS = [
   'subscription.cancelled',
   'subscription.completed',
   'subscription.updated',
+  'payment.dispute.created',
+  'payment.dispute.under_review',
+  'payment.dispute.won',
+  'payment.dispute.lost',
 ] as const;
 
 export const SIGNATURE_HEADER = 'X-Razorpay-Signature';
@@ -74,6 +79,14 @@ export function toWebhook(event: AnyEvent, accountId: string, baseUrl = 'http://
     case 'payment_link.expired':
     case 'payment_link.cancelled':
       return envelope(event, accountId, { payment_link: { entity: toWirePaymentLink(event.data.paymentLink, { baseUrl, payments: [] }) } });
+    case 'payment.dispute.created':
+    case 'payment.dispute.under_review':
+    case 'payment.dispute.won':
+    case 'payment.dispute.lost':
+      return envelope(event, accountId, {
+        payment: { entity: toWirePayment(event.data.payment) },
+        dispute: { entity: toWireDispute(event.data.dispute) },
+      });
     case 'subscription.charged':
       return envelope(event, accountId, {
         subscription: { entity: toWireSubscription(event.data.subscription, baseUrl) },

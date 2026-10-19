@@ -44,6 +44,9 @@ and the record-fixture skill), so nothing below is marked supported.
 | GET /v1/subscriptions/:id, GET /v1/subscriptions | partial | `plan_id` filter |
 | POST /v1/subscriptions/:id/cancel | partial | `cancel_at_cycle_end` supported |
 | PATCH /v1/subscriptions/:id, pause, resume | missing | |
+| GET /v1/disputes, GET /v1/disputes/:id | partial | Disputes are raised from the dashboard, the dashboard API or scenarios |
+| POST /v1/disputes/:id/accept | partial | |
+| PATCH /v1/disputes/:id/contest | partial | `draft` / `submit`; evidence documents are ids only, no uploads |
 
 ## Behaviour
 
@@ -78,6 +81,7 @@ and the record-fixture skill), so nothing below is marked supported.
 | payment_link.partially_paid | partial | Contains payment_link, payment, order |
 | payment_link.expired | partial | |
 | payment_link.cancelled | partial | |
+| payment.dispute.created / under_review / won / lost | partial | Contains payment and dispute |
 | subscription.authenticated / activated / charged / pending / halted / cancelled / completed / updated | partial | `charged` contains subscription and payment |
 
 ## SDK connection
