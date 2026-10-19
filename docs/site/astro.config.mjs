@@ -27,6 +27,7 @@ export default defineConfig({
             { slug: 'guides/scenarios' },
             { slug: 'guides/test-values' },
             { slug: 'guides/time-travel' },
+            { slug: 'guides/record-replay' },
           ],
         },
         { label: 'Reference', items: [{ slug: 'reference/cli' }, { slug: 'reference/compatibility' }, { slug: 'reference/security' }] },

@@ -11,6 +11,7 @@ localpay time [--port N]          show emulator time
 localpay time advance <duration>  fast-forward, e.g. 1h, 3d, 1w
 localpay scenario list            list the built-in scenario gallery
 localpay scenario run <file|id>   run a YAML scenario; exit code 1 if it fails
+localpay replay <session.jsonl> --webhook <url>   re-send a recorded session's webhooks
 localpay help | --version
 ```
 
@@ -31,6 +32,7 @@ localpay help | --version
 | `--refund-delay <s>` | `5` | Seconds a refund stays `pending`. |
 | `--settlement-days <n>` | `2` | Days from capture to settlement (T+N). |
 | `--persist <file>` | memory | Keep data in a JSONL event log between runs. |
+| `--record <file>` | — | Same as `--persist`, for record-and-replay. |
 | `--seed <value>` | random | Deterministic ids. |
 | `--allowed-origin <url>` | localhost only | Let checkout run on another origin, repeatable. |
 | `--config <file>` | `./localpay.config.json` | JSON config file. |
