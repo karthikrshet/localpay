@@ -189,3 +189,23 @@ jobs:
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:4010/_localpay/health && break; sleep 1; done
       - run: pytest -q
         working-directory: examples/django
+
+  example-nextjs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: npm install --no-audit --no-fund
+        working-directory: examples/nextjs
+      - run: |
+          pnpm localpay start --port 4010 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4010/_localpay/health && break; sleep 1; done
+      - run: npm test
+        working-directory: examples/nextjs
+      - run: npm run build
+        working-directory: examples/nextjs
