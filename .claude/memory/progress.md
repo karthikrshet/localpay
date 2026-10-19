@@ -1,23 +1,26 @@
 # Progress
-Phase: 4 — Daily-driver features — code complete; gate (3 external projects using LocalPay in CI) needs a public release
+Phase: 6 — Ecosystem — provider plug-in API done. All phases are code-complete; the
+remaining gates and launch steps need the maintainer (see Blockers).
 
 ## Done
 - 2026-10-18 Phase 0: skeleton, agent docs, tooling, CI, Node + Python SDK spikes, ADRs 0001–0003
-- 2026-10-19 core: seeded random, ids, injectable clock with time travel, money/fees, entities, state machines, event log (memory + JSONL), engine (orders, payments, capture, refunds, tick)
-- 2026-10-19 Property tests (fast-check) over random API sequences; found and fixed an overpay bug
-- 2026-10-19 provider-razorpay: error envelope, Zod schemas, wire serializers, Basic auth (live keys refused), orders/payments/refunds routes
-- 2026-10-19 server: config with loopback/test-key guards, createLocalPay; shim-node with end-to-end SDK tests
-- 2026-10-19 Fixture tooling: scrubber, secret check (CI), recorder, contract harness with 12 hand-written fixtures
-- 2026-10-19 Phase 2: signatures, webhook format, dispatcher (SSRF guard, retries, replay, fault injection), checkout API + scenarios + magic values, checkout.js (Preact, 9.7 KB gz, axe-clean), server wiring, Express example with Node and Playwright tests
-- 2026-10-19 Phase 3: admin API (session token cookie, CSRF, CSP), React dashboard (light, blue #2563EB), CLI (start/status/reset/time), bundled `localpay` package + smoke test, Starlight docs, Changesets + release workflow, README with screenshots, 10 good first issues, dashboard browser test
-- 2026-10-19 Phase 4: customers, payment links (+ hosted page, callback signature, webhooks), YAML scenario engine + 10-scenario gallery (CLI, API, dashboard), container-safe CLI, Dockerfile (CI-tested; not built locally), GitHub Action (simulated locally), nightly SDK + upstream drift workflow, FastAPI example
+- 2026-10-19 Phase 1: core engine (ids, clock, event log, state machines, orders/payments/refunds), Razorpay API, auth, Node shim, fixture tooling, contract harness, property tests
+- 2026-10-19 Phase 2: signatures, webhook dispatcher (SSRF guard, retries, replay, faults), checkout API + checkout.js, Express example, offline browser gate
+- 2026-10-19 Phase 3: dashboard (light, blue #2563EB) behind token + CSRF + CSP, CLI, bundled `localpay` package + smoke test, Starlight docs, Changesets + release workflow, README with screenshots
+- 2026-10-19 Phase 4: customers, payment links (hosted page, signed callback), YAML scenarios + gallery, Docker image, GitHub Action, nightly SDK/drift CI, FastAPI example
+- 2026-10-19 Phase 5: plans/subscriptions with clock-driven renewals, disputes, T+N settlements, record-and-replay, dashboard screens for all of them
+- 2026-10-20 Phase 6: provider plug-in contract (ADR 0004) with Razorpay as the first plug-in
+- 2026-10-20 Extras: late authorization, API fault injection (429/500/latency), redacted request log (--log), Django and Next.js examples, billing property tests
+- 2026-10-20 Verified locally: lint, typecheck, 503 unit/contract tests, 4 Playwright tests, package smoke test, secret scan, docs build, Python SDK spike, FastAPI/Django/Next.js example tests
 
 ## Next
-1. Phase 5: subscriptions and plans, disputes, settlements, record-and-replay
-2. Examples still missing: Next.js, Django, Laravel (no PHP on the dev machine); PHP/Java/Go SDK spikes
-3. Maintainer: create the GitHub repo (URLs assume github.com/localpay/localpay), NPM_TOKEN secret, publish v0.1.0, record fixtures, the README GIF, the 5-minute friend test
+1. Maintainer: create the GitHub repo (URLs assume github.com/localpay/localpay), push, check CI (Docker, Action, docs, examples jobs have only run locally or not at all)
+2. Maintainer: record fixtures with `pnpm record-fixtures fixtures/requests/core.json` from your own test account, scrub, review, replace the hand-written stand-ins
+3. Maintainer: register the npm scope, add NPM_TOKEN, publish v0.1.0 via the release workflow; record the README GIF; run the 5-minute friend test
 
 ## Blockers
-- Phase 1 gate ("all recorded fixtures pass") needs real recordings from the maintainer's test account: run `pnpm record-fixtures fixtures/requests/core.json` with RZP_KEY_ID/RZP_KEY_SECRET, then scrub and review
-- npm scope @localpay must be registered by the maintainer; unscoped `localpay` was free on 2026-10-18
-- PHP, Java, Go SDK base-URL override: unchecked
+- Phase 1 gate (recorded fixtures pass) needs the maintainer's own Razorpay test account
+- Docker image not built locally (Docker Desktop was not running); first real build is the CI docker job
+- PHP, Java, Go SDK base-URL override: unchecked (no PHP/Java/Go on the dev machine); Laravel example not written
+- CODE_OF_CONDUCT.md still needs a contact address
+- Cashfree/PhonePe/PayU providers: by design, led by community co-maintainers (ADR 0004)

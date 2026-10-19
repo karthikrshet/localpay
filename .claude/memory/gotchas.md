@@ -26,3 +26,4 @@ Razorpay and SDK quirks found in testing. One dated line each, with where it was
 - 2026-10-19 · Bundling `yaml` into the ESM CLI breaks on `require('process')`; packages/cli/build.ts adds a createRequire banner. The package smoke test caught it.
 - 2026-10-19 · Our Bash tool rejects some large heredoc blocks containing apostrophes with "unexpected EOF"; write patch scripts to the scratchpad with the file tool and run them instead.
 - 2026-10-19 · In this agent's Bash tool, `set -e` did not stop a multi-line block after a failed python patch, and a later commit ran with a wrong message. Chain steps with `|| exit 1` instead. The commit helper now unstages on failed checks and commits only the given paths.
+- 2026-10-20 · next build lints with the nearest ESLint flat config; the monorepo's type-aware config cannot resolve the standalone Next.js example's types, so examples/nextjs is ignored there (next build still typechecks).
