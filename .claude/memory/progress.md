@@ -21,6 +21,7 @@ remaining gates and launch steps need the maintainer (see Blockers).
 3. Maintainer: register the npm scope, add NPM_TOKEN, publish v0.1.0 via the release workflow; run the 5-minute friend test
 
 ## Blockers
+- GitHub settings (maintainer only): enable Pages with source "GitHub Actions"; allow GitHub Actions to create pull requests (Settings → Actions → General) so the Changesets release PR can open
 - Phase 1 gate (recorded fixtures pass) needs the maintainer's own Razorpay test account
 - Docker image not built locally (Docker Desktop was not running); first real build is the CI docker job
 - PHP, Java, Go SDK base-URL override: unchecked (no PHP/Java/Go on the dev machine); Laravel example not written
