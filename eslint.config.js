@@ -38,6 +38,19 @@ export default tseslint.config(
     },
   },
   {
+    files: ['packages/webhooks/src/**/*.ts', 'packages/scenarios/src/**/*.ts'],
+    ignores: ['**/*.test.ts'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [{ group: [...OTHER_PACKAGES, '!@localpay/core'], message: 'webhooks and scenarios may depend only on @localpay/core; providers are injected.' }] }],
+    },
+  },
+  {
+    files: ['packages/checkout/src/**/*.{ts,tsx}', 'packages/dashboard/src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [{ group: OTHER_PACKAGES, message: 'Browser bundles talk to the server over HTTP; do not import server packages.' }] }],
+    },
+  },
+  {
     files: ['packages/provider-razorpay/src/**/*.ts'],
     rules: {
       'no-restricted-imports': ['error', { patterns: [{ group: [...OTHER_PACKAGES, '!@localpay/core'], message: 'provider-razorpay may depend only on @localpay/core.' }] }],
