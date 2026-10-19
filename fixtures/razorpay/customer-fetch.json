@@ -1,0 +1,24 @@
+{
+  "name": "customer-fetch",
+  "provenance": "hand-written",
+  "recorded_at": "2026-10-19",
+  "request": {
+    "method": "GET",
+    "path": "/v1/customers/cust_RAnN2cDe3fGh4I"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "id": "cust_RAnN2cDe3fGh4I",
+      "entity": "customer",
+      "name": "Contract Test",
+      "email": "customer@example.com",
+      "contact": "+919999999999",
+      "gstin": null,
+      "notes": {
+        "purpose": "contract-test"
+      },
+      "created_at": 1760800000
+    }
+  }
+}

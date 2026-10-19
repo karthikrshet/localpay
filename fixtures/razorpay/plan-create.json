@@ -1,0 +1,41 @@
+{
+  "name": "plan-create",
+  "provenance": "hand-written",
+  "recorded_at": "2026-10-19",
+  "request": {
+    "method": "POST",
+    "path": "/v1/plans"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "id": "plan_RAnP4eFg5hIj6K",
+      "entity": "plan",
+      "interval": 1,
+      "period": "monthly",
+      "item": {
+        "id": "item_RAnP5fGh6iJk7L",
+        "active": true,
+        "name": "Contract plan",
+        "description": null,
+        "amount": 49900,
+        "unit_amount": 49900,
+        "currency": "INR",
+        "type": "plan",
+        "unit": null,
+        "tax_inclusive": false,
+        "hsn_code": null,
+        "sac_code": null,
+        "tax_rate": null,
+        "tax_id": null,
+        "tax_group_id": null,
+        "created_at": 1760800000,
+        "updated_at": 1760800000
+      },
+      "notes": {
+        "purpose": "contract-test"
+      },
+      "created_at": 1760800000
+    }
+  }
+}

@@ -1,23 +1,254 @@
 [
-  { "name": "order-create", "method": "POST", "path": "/v1/orders", "body": { "amount": 50000, "currency": "INR", "receipt": "fixture-1", "notes": { "purpose": "contract-test" } } },
-  { "name": "order-create-no-notes", "method": "POST", "path": "/v1/orders", "body": { "amount": 10000, "currency": "INR" } },
-  { "name": "order-fetch", "method": "GET", "path": "/v1/orders/{order-create.id}" },
-  { "name": "order-list", "method": "GET", "path": "/v1/orders?count=2" },
-  { "name": "order-update-notes", "method": "PATCH", "path": "/v1/orders/{order-create.id}", "body": { "notes": { "purpose": "updated" } } },
-  { "name": "order-payments-empty", "method": "GET", "path": "/v1/orders/{order-create.id}/payments" },
-  { "name": "error-order-amount-too-low", "method": "POST", "path": "/v1/orders", "body": { "amount": 10, "currency": "INR" } },
-  { "name": "error-order-unknown-field", "method": "POST", "path": "/v1/orders", "body": { "amount": 10000, "currency": "INR", "colour": "red" } },
-  { "name": "error-order-receipt-too-long", "method": "POST", "path": "/v1/orders", "body": { "amount": 10000, "currency": "INR", "receipt": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" } },
-  { "name": "error-order-not-found", "method": "GET", "path": "/v1/orders/order_DoesNotExist00" },
-  { "name": "error-url-not-found", "method": "GET", "path": "/v1/does-not-exist" },
-  { "name": "auth-error-bad-credentials", "method": "GET", "path": "/v1/orders" },
-  { "name": "error-list-count-too-high", "method": "GET", "path": "/v1/orders?count=101" },
-  { "name": "payment-list", "method": "GET", "path": "/v1/payments?count=1" },
-  { "name": "payment-fetch", "method": "GET", "path": "/v1/payments/{env.PAYMENT_ID}", "optional": true },
-  { "name": "payment-capture", "method": "POST", "path": "/v1/payments/{env.AUTHORIZED_PAYMENT_ID}/capture", "body": { "amount": "{env.AUTHORIZED_AMOUNT}", "currency": "INR" }, "optional": true },
-  { "name": "error-capture-twice", "method": "POST", "path": "/v1/payments/{env.PAYMENT_ID}/capture", "body": { "amount": 50000, "currency": "INR" }, "optional": true },
-  { "name": "refund-create-partial", "method": "POST", "path": "/v1/payments/{env.PAYMENT_ID}/refund", "body": { "amount": 100, "speed": "normal", "notes": { "reason": "contract-test" } }, "optional": true },
-  { "name": "refund-fetch", "method": "GET", "path": "/v1/refunds/{refund-create-partial.id}", "optional": true },
-  { "name": "refund-list-for-payment", "method": "GET", "path": "/v1/payments/{env.PAYMENT_ID}/refunds", "optional": true },
-  { "name": "error-refund-too-much", "method": "POST", "path": "/v1/payments/{env.PAYMENT_ID}/refund", "body": { "amount": 999999999 }, "optional": true }
+  {
+    "name": "order-create",
+    "method": "POST",
+    "path": "/v1/orders",
+    "body": {
+      "amount": 50000,
+      "currency": "INR",
+      "receipt": "fixture-1",
+      "notes": {
+        "purpose": "contract-test"
+      }
+    }
+  },
+  {
+    "name": "order-create-no-notes",
+    "method": "POST",
+    "path": "/v1/orders",
+    "body": {
+      "amount": 10000,
+      "currency": "INR"
+    }
+  },
+  {
+    "name": "order-fetch",
+    "method": "GET",
+    "path": "/v1/orders/{order-create.id}"
+  },
+  {
+    "name": "order-list",
+    "method": "GET",
+    "path": "/v1/orders?count=2"
+  },
+  {
+    "name": "order-update-notes",
+    "method": "PATCH",
+    "path": "/v1/orders/{order-create.id}",
+    "body": {
+      "notes": {
+        "purpose": "updated"
+      }
+    }
+  },
+  {
+    "name": "order-payments-empty",
+    "method": "GET",
+    "path": "/v1/orders/{order-create.id}/payments"
+  },
+  {
+    "name": "error-order-amount-too-low",
+    "method": "POST",
+    "path": "/v1/orders",
+    "body": {
+      "amount": 10,
+      "currency": "INR"
+    }
+  },
+  {
+    "name": "error-order-unknown-field",
+    "method": "POST",
+    "path": "/v1/orders",
+    "body": {
+      "amount": 10000,
+      "currency": "INR",
+      "colour": "red"
+    }
+  },
+  {
+    "name": "error-order-receipt-too-long",
+    "method": "POST",
+    "path": "/v1/orders",
+    "body": {
+      "amount": 10000,
+      "currency": "INR",
+      "receipt": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "name": "error-order-not-found",
+    "method": "GET",
+    "path": "/v1/orders/order_DoesNotExist00"
+  },
+  {
+    "name": "error-url-not-found",
+    "method": "GET",
+    "path": "/v1/does-not-exist"
+  },
+  {
+    "name": "auth-error-bad-credentials",
+    "method": "GET",
+    "path": "/v1/orders"
+  },
+  {
+    "name": "error-list-count-too-high",
+    "method": "GET",
+    "path": "/v1/orders?count=101"
+  },
+  {
+    "name": "payment-list",
+    "method": "GET",
+    "path": "/v1/payments?count=1"
+  },
+  {
+    "name": "payment-fetch",
+    "method": "GET",
+    "path": "/v1/payments/{env.PAYMENT_ID}",
+    "optional": true
+  },
+  {
+    "name": "payment-capture",
+    "method": "POST",
+    "path": "/v1/payments/{env.AUTHORIZED_PAYMENT_ID}/capture",
+    "body": {
+      "amount": "{env.AUTHORIZED_AMOUNT}",
+      "currency": "INR"
+    },
+    "optional": true
+  },
+  {
+    "name": "error-capture-twice",
+    "method": "POST",
+    "path": "/v1/payments/{env.PAYMENT_ID}/capture",
+    "body": {
+      "amount": 50000,
+      "currency": "INR"
+    },
+    "optional": true
+  },
+  {
+    "name": "refund-create-partial",
+    "method": "POST",
+    "path": "/v1/payments/{env.PAYMENT_ID}/refund",
+    "body": {
+      "amount": 100,
+      "speed": "normal",
+      "notes": {
+        "reason": "contract-test"
+      }
+    },
+    "optional": true
+  },
+  {
+    "name": "refund-fetch",
+    "method": "GET",
+    "path": "/v1/refunds/{refund-create-partial.id}",
+    "optional": true
+  },
+  {
+    "name": "refund-list-for-payment",
+    "method": "GET",
+    "path": "/v1/payments/{env.PAYMENT_ID}/refunds",
+    "optional": true
+  },
+  {
+    "name": "error-refund-too-much",
+    "method": "POST",
+    "path": "/v1/payments/{env.PAYMENT_ID}/refund",
+    "body": {
+      "amount": 999999999
+    },
+    "optional": true
+  },
+  {
+    "name": "customer-create",
+    "method": "POST",
+    "path": "/v1/customers",
+    "body": {
+      "name": "Contract Test",
+      "email": "customer@example.com",
+      "contact": "+919999999999",
+      "fail_existing": "0",
+      "notes": {
+        "purpose": "contract-test"
+      }
+    }
+  },
+  {
+    "name": "customer-fetch",
+    "method": "GET",
+    "path": "/v1/customers/{customer-create.id}"
+  },
+  {
+    "name": "payment-link-create",
+    "method": "POST",
+    "path": "/v1/payment_links",
+    "body": {
+      "amount": 50000,
+      "currency": "INR",
+      "description": "Contract test link",
+      "reference_id": "LINK-{env.RUN_ID}",
+      "notes": {
+        "purpose": "contract-test"
+      }
+    }
+  },
+  {
+    "name": "payment-link-fetch",
+    "method": "GET",
+    "path": "/v1/payment_links/{payment-link-create.id}"
+  },
+  {
+    "name": "payment-link-cancel",
+    "method": "POST",
+    "path": "/v1/payment_links/{payment-link-create.id}/cancel"
+  },
+  {
+    "name": "plan-create",
+    "method": "POST",
+    "path": "/v1/plans",
+    "body": {
+      "period": "monthly",
+      "interval": 1,
+      "item": {
+        "name": "Contract plan",
+        "amount": 49900,
+        "currency": "INR"
+      },
+      "notes": {
+        "purpose": "contract-test"
+      }
+    }
+  },
+  {
+    "name": "subscription-create",
+    "method": "POST",
+    "path": "/v1/subscriptions",
+    "body": {
+      "plan_id": "{plan-create.id}",
+      "total_count": 6,
+      "customer_notify": 1,
+      "notes": {
+        "purpose": "contract-test"
+      }
+    }
+  },
+  {
+    "name": "subscription-cancel",
+    "method": "POST",
+    "path": "/v1/subscriptions/{subscription-create.id}/cancel",
+    "body": {
+      "cancel_at_cycle_end": 0
+    }
+  },
+  {
+    "name": "settlement-list",
+    "method": "GET",
+    "path": "/v1/settlements?count=1"
+  },
+  {
+    "name": "dispute-list",
+    "method": "GET",
+    "path": "/v1/disputes?count=1"
+  }
 ]

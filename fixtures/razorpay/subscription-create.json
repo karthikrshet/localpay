@@ -1,0 +1,41 @@
+{
+  "name": "subscription-create",
+  "provenance": "hand-written",
+  "recorded_at": "2026-10-19",
+  "request": {
+    "method": "POST",
+    "path": "/v1/subscriptions"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "id": "sub_RAnQ5fGh6iJk7L",
+      "entity": "subscription",
+      "plan_id": "plan_RAnP4eFg5hIj6K",
+      "customer_id": null,
+      "status": "created",
+      "current_start": null,
+      "current_end": null,
+      "ended_at": null,
+      "quantity": 1,
+      "notes": {
+        "purpose": "contract-test"
+      },
+      "charge_at": null,
+      "start_at": null,
+      "end_at": null,
+      "auth_attempts": 0,
+      "total_count": 6,
+      "paid_count": 0,
+      "remaining_count": 6,
+      "customer_notify": true,
+      "created_at": 1760800000,
+      "expire_by": null,
+      "short_url": "https://example.com/s/sub_RAnQ5fGh6iJk7L",
+      "has_scheduled_changes": false,
+      "change_scheduled_at": null,
+      "source": "api",
+      "offer_id": null
+    }
+  }
+}

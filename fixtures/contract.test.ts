@@ -30,7 +30,7 @@ beforeAll(async () => {
   const payment = engine.attemptPayment({ orderId: paid.id, method: 'upi', vpa: 'customer@upi', outcome: { kind: 'success' } });
   const pending = engine.createOrder({ amount: 30000, autoCapture: false });
   const authorized = engine.attemptPayment({ orderId: pending.id, method: 'card', outcome: { kind: 'success' } });
-  const env = { PAYMENT_ID: payment.id, AUTHORIZED_PAYMENT_ID: authorized.id, AUTHORIZED_AMOUNT: String(authorized.amount) };
+  const env = { PAYMENT_ID: payment.id, AUTHORIZED_PAYMENT_ID: authorized.id, AUTHORIZED_AMOUNT: String(authorized.amount), RUN_ID: 'contract' };
 
   const responses: Record<string, unknown> = {};
   for (const spec of specs) {

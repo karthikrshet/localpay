@@ -1,0 +1,50 @@
+{
+  "name": "payment-link-fetch",
+  "provenance": "hand-written",
+  "recorded_at": "2026-10-19",
+  "request": {
+    "method": "GET",
+    "path": "/v1/payment_links/plink_RAnO3dEf4gHi5J"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "id": "plink_RAnO3dEf4gHi5J",
+      "entity": "payment_link",
+      "amount": 50000,
+      "amount_paid": 0,
+      "currency": "INR",
+      "accept_partial": false,
+      "first_min_partial_amount": 0,
+      "description": "Contract test link",
+      "reference_id": "LINK-1",
+      "customer": {
+        "name": null,
+        "email": null,
+        "contact": null
+      },
+      "notify": {
+        "sms": false,
+        "email": false
+      },
+      "reminder_enable": false,
+      "reminders": [],
+      "notes": {
+        "purpose": "contract-test"
+      },
+      "callback_url": "",
+      "callback_method": "",
+      "expire_by": 0,
+      "expired_at": 0,
+      "cancelled_at": 0,
+      "order_id": "order_RAnO4eFg5hIj6K",
+      "payments": null,
+      "short_url": "https://example.com/l/plink_RAnO3dEf4gHi5J",
+      "status": "created",
+      "upi_link": false,
+      "user_id": "",
+      "created_at": 1760800000,
+      "updated_at": 1760800000
+    }
+  }
+}

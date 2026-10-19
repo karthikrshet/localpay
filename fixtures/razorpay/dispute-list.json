@@ -1,0 +1,17 @@
+{
+  "name": "dispute-list",
+  "provenance": "hand-written",
+  "recorded_at": "2026-10-19",
+  "request": {
+    "method": "GET",
+    "path": "/v1/disputes?count=1"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "entity": "collection",
+      "count": 0,
+      "items": []
+    }
+  }
+}
