@@ -40,6 +40,8 @@ export interface LocalPayConfig {
   apiFaults: Partial<ApiFaults>;
   /** Origins besides localhost allowed to load and use checkout.js. */
   allowedOrigins: string[];
+  /** Print one redacted line per request. */
+  log: boolean;
 }
 
 export const DEFAULT_CONFIG: LocalPayConfig = {
@@ -58,6 +60,7 @@ export const DEFAULT_CONFIG: LocalPayConfig = {
   faults: {},
   apiFaults: {},
   allowedOrigins: [],
+  log: false,
 };
 
 export class ConfigError extends Error {

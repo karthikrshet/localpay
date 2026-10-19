@@ -11,6 +11,7 @@ import { dashboard } from './admin/dashboard.ts';
 import { adminApi } from './admin/routes.ts';
 import { defaultCheckoutScript, withConfig, type CheckoutScriptLoader } from './checkout-script.ts';
 import { resolveConfig, type LocalPayConfig } from './config.ts';
+import { attachRequestLog, type LogSink } from './request-log.ts';
 
 export interface LocalPay {
   app: FastifyInstance;
@@ -42,6 +43,8 @@ export interface LocalPayDependencies {
   galleryDir?: string;
   /** The gateway to emulate. Razorpay when omitted. */
   provider?: Provider<FastifyInstance>;
+  /** Where --log lines go; stdout when omitted. */
+  log?: LogSink;
 }
 
 /** Finds the built dashboard next to the @localpay/dashboard package, if installed and built. */
@@ -106,6 +109,7 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
 
   // No request logging by default: requests carry keys, and users run this on their laptops.
   const app = Fastify({ logger: false });
+  if (config.log) attachRequestLog(app, deps.log ?? ((line) => process.stdout.write(`${line}\n`)));
   await provider.register(app, providerContext);
 
   let checkoutScript: Promise<string> | null = null;
