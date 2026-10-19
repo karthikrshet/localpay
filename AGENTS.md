@@ -21,15 +21,28 @@ It never moves money, never calls Razorpay, and never accepts live keys.
 - pnpm changeset — record a user-visible change
 - pnpm spike — Phase 0 SDK base-URL spike (scripts/spike)
 
+## Packages
+- core — entities, state machines, event log, engine (orders, payments, refunds, customers,
+  payment links, plans/subscriptions, disputes, settlements), clock, ids, provider contract
+- provider-razorpay — the Razorpay plug-in: routes, schemas, errors, signatures, webhook
+  format, checkout API, hosted link/subscription pages
+- webhooks — dispatcher (retries, replay, fault injection, SSRF guard)
+- scenarios — YAML scenario parser, runner and gallery
+- server — wires an engine, a provider, webhooks, the dashboard API and checkout.js
+- checkout (Preact, browser), dashboard (React, browser), cli (`localpay`), shims (Node SDK)
+
 ## Architecture rules
 - packages/core has zero imports from other packages.
-- Wire format lives only in packages/provider-razorpay.
+- Wire format lives only in packages/provider-razorpay (a provider plug-in, ADR 0004).
+- webhooks and scenarios import only @localpay/core; browser bundles import no server package.
 - All time comes from core/clock; never call Date.now() directly.
 - All IDs come from core/ids; never generate IDs inline.
 - Every state change emits an event through core/events first (engine `emit()`).
 - Events carry full snapshots of every entity they change; state is a fold of the log.
-- Time-driven work (pending refunds, renewals) is derived from state in `tick()`,
-  never from in-memory timers, so it survives restarts and time travel.
+- Time-driven work is derived from state in `tick()`, never from in-memory timers, so it
+  survives restarts and time travel: refund processing, link expiry, subscription renewals
+  and retries (scheduled from the missed charge, not "now"), dispute deadlines, settlements.
+- Magic values apply to the amount charged at that moment (see guides/test-values).
 - The import and Date.now() rules are enforced by ESLint (eslint.config.js).
 
 ## Conventions
