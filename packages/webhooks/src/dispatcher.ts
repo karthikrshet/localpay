@@ -215,6 +215,14 @@ export function createDispatcher(options: DispatcherOptions) {
       });
     },
 
+    /** Every delivery, oldest first, for persisting. */
+    snapshot: (): Delivery[] => [...deliveries.values()].map((d) => structuredClone(d)),
+    /** Loads persisted deliveries; open ones are retried on the next tick. */
+    restore(saved: readonly Delivery[]): void {
+      for (const delivery of saved) deliveries.set(delivery.id, structuredClone(delivery));
+      trim();
+    },
+
     get: (id: string): Delivery | undefined => deliveries.get(id),
     /** Newest first. */
     list: (): Delivery[] => [...deliveries.values()].reverse(),

@@ -148,6 +148,22 @@ describe('dispatcher', () => {
     expect(sent).toHaveLength(2);
   });
 
+  it('snapshots and restores deliveries, retrying the open ones', async () => {
+    const first = setup({}, [500]);
+    const [delivery] = first.dispatcher.enqueue(first.event());
+    await first.dispatcher.tick();
+    const saved = first.dispatcher.snapshot();
+    expect(saved[0]).toMatchObject({ id: delivery?.id, status: 'retrying' });
+
+    const second = setup();
+    second.dispatcher.restore(saved);
+    expect(second.dispatcher.get(delivery?.id ?? '')?.attempts).toHaveLength(1);
+    second.clock.advance(60_000);
+    await second.dispatcher.tick();
+    expect(second.dispatcher.get(delivery?.id ?? '')).toMatchObject({ status: 'delivered' });
+    expect(saved[0]?.status).toBe('retrying');
+  });
+
   it('does not run two ticks at once', async () => {
     const { dispatcher, sent, event } = setup();
     dispatcher.enqueue(event());
