@@ -101,6 +101,14 @@ export const adminApi: FastifyPluginCallback<AdminApiOptions> = (app, options, d
     return reply.send({ events: engine.events.filter((e) => e.seq > after).slice(-limit) });
   });
 
+  // The whole event log as JSONL: a recording `localpay replay` can use.
+  app.get('/events.jsonl', (_request, reply) =>
+    reply
+      .type('application/x-ndjson')
+      .header('content-disposition', 'attachment; filename="localpay-session.jsonl"')
+      .send(engine.events.map((e) => JSON.stringify(e)).join('\n') + (engine.events.length ? '\n' : '')),
+  );
+
   app.get<{ Querystring: { q?: string } }>('/orders', (request, reply) => {
     const items = engine
       .listOrders()

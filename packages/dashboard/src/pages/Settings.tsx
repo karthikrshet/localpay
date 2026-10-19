@@ -124,6 +124,12 @@ function ResetCard() {
   return (
     <Card title="Reset data">
       <p className="mb-3 text-lp-muted">Deletes every order, payment, refund, event and webhook delivery in this LocalPay. Settings stay.</p>
+      <p className="mb-3 text-sm">
+        <a className="text-lp-primary underline" href="/_localpay/api/events.jsonl" download>
+          Download this session (JSONL)
+        </a>{' '}
+        <span className="text-lp-muted">to replay its webhooks later with localpay replay.</span>
+      </p>
       {confirming ? (
         <div className="flex gap-2">
           <Button

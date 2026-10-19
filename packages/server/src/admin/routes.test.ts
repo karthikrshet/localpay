@@ -98,6 +98,14 @@ describe('admin API', () => {
     expect((await call('POST', '/time/advance', { duration: 'soon' })).status).toBe(400);
   });
 
+  it('exports the event log as a JSONL recording', async () => {
+    const { app } = await setup();
+    const response = await app.inject({ url: '/_localpay/api/events.jsonl', headers: { authorization: 'Bearer admintoken' } });
+    expect(response.headers['content-type']).toContain('application/x-ndjson');
+    const lines = response.body.trim().split('\n').map((l) => JSON.parse(l) as { seq: number });
+    expect(lines.map((l) => l.seq)).toEqual([1, 2, 3, 4, 5]);
+  });
+
   it('returns the event log after a sequence number', async () => {
     const { call } = await setup();
     expect(((await call('GET', '/events?after=3')).body.events as { seq: number }[]).map((e) => e.seq)).toEqual([4, 5]);
