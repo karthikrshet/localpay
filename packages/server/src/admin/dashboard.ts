@@ -23,7 +23,7 @@ export const SECURITY_HEADERS: Record<string, string> = {
 };
 
 /** The SPA's client-side routes; all of them serve index.html. */
-export const DASHBOARD_ROUTES = ['/', '/orders', '/orders/:id', '/payments', '/payments/:id', '/webhooks', '/scenarios', '/time', '/settings'];
+export const DASHBOARD_ROUTES = ['/', '/orders', '/orders/:id', '/payments', '/payments/:id', '/links', '/subscriptions', '/settlements', '/webhooks', '/scenarios', '/time', '/settings'];
 
 const page = (title: string, body: string): string => `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} · LocalPay</title></head>

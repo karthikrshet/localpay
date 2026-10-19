@@ -106,6 +106,26 @@ describe('App', () => {
     await waitFor(() => expect(calls.some((c) => c.url.endsWith('/payments/pay_1/dispute') && c.init?.method === 'POST')).toBe(true));
   });
 
+  it('shows links, subscriptions and settlements', async () => {
+    mockApi({
+      '/session': SESSION,
+      '/payment-links': { items: [{ id: 'plink_1', amount: 50000, amount_paid: 0, currency: 'INR', description: '', reference_id: 'INV-1', status: 'created', short_url: 'http://127.0.0.1:4010/l/plink_1', expire_by: 0, created_at: 1 }] },
+      '/customers': { items: [] },
+      '/subscriptions': { plans: [{ id: 'plan_1', period: 'monthly', interval: 1, item: { name: 'Pro', amount: 49900, currency: 'INR' } }], items: [{ id: 'sub_1', plan_id: 'plan_1', status: 'active', paid_count: 1, total_count: 12, charge_at: 2, current_end: 2, short_url: 'x' }] },
+      '/settlements': { items: [{ id: 'setl_1', amount: 97640, fees: 2360, tax: 360, utr: 'ABCDEFGH12345678', created_at: 1, payment_ids: ['pay_1'], refund_ids: [], dispute_ids: [] }] },
+    });
+    render(<App />);
+    await screen.findByText('rzp_test_LocalPayDemo01');
+    act(() => navigate('/links'));
+    expect(await screen.findByText('INV-1')).toBeTruthy();
+    act(() => navigate('/subscriptions'));
+    expect(await screen.findByText('Pro · ₹499.00 / monthly')).toBeTruthy();
+    expect(screen.getByText('1 / 12')).toBeTruthy();
+    act(() => navigate('/settlements'));
+    expect(await screen.findByText('ABCDEFGH12345678')).toBeTruthy();
+    expect(screen.getByText('1 payments, 0 refunds, 0 disputes')).toBeTruthy();
+  });
+
   it('shows the API error when the session is missing', async () => {
     mockApi({});
     render(<App />);

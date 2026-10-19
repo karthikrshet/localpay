@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { api, LiveContext, setCsrf } from './api.ts';
 import { Empty, ErrorBox } from './components/ui.tsx';
+import { LinksPage, SettlementsPage, SubscriptionsPage } from './pages/Billing.tsx';
 import { Home } from './pages/Home.tsx';
 import { OrderDetail, OrdersPage } from './pages/Orders.tsx';
 import { PaymentDetail, PaymentsPage } from './pages/Payments.tsx';
@@ -15,6 +16,9 @@ const NAV = [
   { to: '/', label: 'Home' },
   { to: '/orders', label: 'Orders' },
   { to: '/payments', label: 'Payments' },
+  { to: '/links', label: 'Links' },
+  { to: '/subscriptions', label: 'Subscriptions' },
+  { to: '/settlements', label: 'Settlements' },
   { to: '/webhooks', label: 'Webhooks' },
   { to: '/scenarios', label: 'Scenarios' },
   { to: '/time', label: 'Time' },
@@ -55,6 +59,12 @@ export function route(path: string, session: Session): ReactNode {
       return <OrdersPage />;
     case '/payments':
       return <PaymentsPage />;
+    case '/links':
+      return <LinksPage />;
+    case '/subscriptions':
+      return <SubscriptionsPage />;
+    case '/settlements':
+      return <SettlementsPage />;
     case '/webhooks':
       return <WebhooksPage />;
     case '/scenarios':
