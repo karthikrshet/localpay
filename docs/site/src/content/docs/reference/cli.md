@@ -27,7 +27,7 @@ localpay help | --version
 | `--webhook <url>` | none | Webhook target, repeatable. |
 | `--webhook-secret <s>` | `localpay_webhook_secret` | Secret for `X-Razorpay-Signature`. |
 | `--webhook-events <a,b>` | all | Only send these events. |
-| `--fault <name=value>` | none | `duplicate`, `out-of-order`, `unsigned` (0–1) or `delay` (ms). Repeatable. |
+| `--fault <name=value>` | none | Webhooks: `duplicate`, `out-of-order`, `unsigned` (0–1), `delay` (ms). API: `rate-limit`, `server-error` (0–1), `api-delay` (ms). Repeatable. |
 | `--no-auto-capture` | capture on | Stop successful payments at `authorized`. |
 | `--refund-delay <s>` | `5` | Seconds a refund stays `pending`. |
 | `--settlement-days <n>` | `2` | Days from capture to settlement (T+N). |

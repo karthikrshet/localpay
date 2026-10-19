@@ -55,6 +55,7 @@ and the record-fixture skill), so nothing below is marked supported.
 | --- | --- | --- |
 | Basic auth with test keys | partial | `rzp_test_` and `lp_test_`; `rzp_live_` always 401 |
 | Error envelope | partial | Shape matches; exact descriptions unverified |
+| 429 rate limiting | partial | Only on demand via `--fault rate-limit=…`; real limits are not emulated |
 | Unknown body fields rejected | partial | "… is/are not required and should not be sent" |
 | Empty notes rendered as `[]` | partial | |
 | Auto-capture | partial | On by default; per order with `payment_capture` |

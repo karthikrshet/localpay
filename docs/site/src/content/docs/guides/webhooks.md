@@ -62,6 +62,17 @@ Failed deliveries are retried after 5 s, 30 s, 2 min and 10 min, then marked fai
 | `--fault unsigned=0.1` | 10% arrive without `X-Razorpay-Signature` |
 | `--fault delay=2000` | every delivery waits 2 s |
 
+### API failures
+
+| Flag | Effect |
+| --- | --- |
+| `--fault rate-limit=0.1` | 10% of API requests get `429` with reason `rate_limit_exceeded` |
+| `--fault server-error=0.05` | 5% get `500 SERVER_ERROR` |
+| `--fault api-delay=300` | every API request waits 300 ms |
+
+The fault is decided before the request does anything, so retrying a faulted request is
+always safe. Settings in the dashboard change these while LocalPay runs.
+
 The **Webhooks** screen can also replay any delivery, send it twice, or send it without a
 signature. Replaying an older delivery is how to test out-of-order handling by hand.
 
