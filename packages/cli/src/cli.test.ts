@@ -1,4 +1,5 @@
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -97,6 +98,36 @@ describe('localpay CLI', () => {
     expect(s.out.join('\n')).toContain('(generated dashboard password)');
     expect(s.out.join('\n')).toContain('WARNING');
     expect(s.err.join('\n')).toContain('could not write the session file');
+  });
+
+  it('records a session with --record and replays its webhooks', async () => {
+    const recording = join(home, 'session.jsonl');
+    const s = io();
+    const started = await main(['start', '--port', '0', '--record', 'session.jsonl'], s.io);
+    running.push(started);
+    const order = started.server?.engine.createOrder({ amount: 100 });
+    if (order) started.server?.engine.attemptPayment({ orderId: order.id, method: 'upi', outcome: { kind: 'success' } });
+    await started.stop?.();
+    running.length = 0;
+    expect(existsSync(recording)).toBe(true);
+
+    const received: string[] = [];
+    const receiver = createServer((req, res) => {
+      let body = '';
+      req.on('data', (c: Buffer) => (body += c.toString()));
+      req.on('end', () => {
+        received.push((JSON.parse(body) as { event: string }).event);
+        res.writeHead(received.length === 3 ? 500 : 200).end();
+      });
+    });
+    await new Promise<void>((done) => receiver.listen(0, '127.0.0.1', done));
+    const url = `http://127.0.0.1:${(receiver.address() as AddressInfo).port}/hooks`;
+    const r = io();
+    const result = await main(['replay', 'session.jsonl', '--webhook', url], r.io);
+    await new Promise((done) => receiver.close(done));
+    expect(received).toEqual(['payment.authorized', 'payment.captured', 'order.paid']);
+    expect(result.code).toBe(1);
+    expect(r.out[0]).toContain('2/3 webhook(s) delivered');
   });
 
   it('explains when no server is running', async () => {

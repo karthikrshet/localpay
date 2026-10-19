@@ -7,7 +7,7 @@ import { resolve } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { createLocalPay, type LocalPay, type LocalPayDependencies } from '@localpay/server';
+import { createLocalPay, DEFAULT_WEBHOOK_SECRET, loadRecording, replayEvents, type LocalPay, type LocalPayDependencies } from '@localpay/server';
 import { banner, createStyle } from './banner.ts';
 import { parseStartOptions, UsageError } from './options.ts';
 import { callServer, readSession, removeSession, writeSession } from './session.ts';
@@ -39,6 +39,8 @@ Usage
   localpay time advance <duration>  fast-forward, e.g. 1h, 3d, 1w [--port N]
   localpay scenario list            list the built-in scenario gallery [--port N]
   localpay scenario run <file|id>   run a YAML scenario on a running server [--port N]
+  localpay replay <session.jsonl> --webhook <url> [--webhook-secret s] [--events a,b]
+                                    re-send a recorded session's webhooks; exit 1 on any failure
   localpay help | --version
 
 Start options
@@ -55,6 +57,7 @@ Start options
       --refund-delay <s>      seconds before refunds are processed (default 5)
       --settlement-days <n>   days from capture to settlement (default 2)
       --persist <file>        keep data in a JSONL event log between runs
+      --record <file>         same as --persist; record a session to replay later
       --seed <value>          deterministic ids
       --allowed-origin <url>  allow checkout on a non-localhost origin, repeatable
       --config <file>         JSON config (default ./localpay.config.json if present)
@@ -182,6 +185,34 @@ async function scenario(argv: string[], io: Io): Promise<Result> {
   return { code: result.ok ? 0 : 1 };
 }
 
+async function replay(argv: string[], io: Io): Promise<Result> {
+  const { values, positionals } = parseArgs({
+    args: argv,
+    options: { webhook: { type: 'string' }, 'webhook-secret': { type: 'string' }, events: { type: 'string' } },
+    allowPositionals: true,
+    strict: true,
+  });
+  const file = positionals[0];
+  if (!file || !values.webhook) throw new UsageError('usage: localpay replay <session.jsonl> --webhook <url> [--webhook-secret s] [--events a,b]');
+  const path = resolve(io.cwd, file);
+  if (!existsSync(path)) throw new UsageError(`recording not found: ${path}`);
+  const events = values.events?.split(',').map((e) => e.trim()).filter(Boolean);
+  const result = await replayEvents(loadRecording(path), {
+    url: values.webhook,
+    secret: values['webhook-secret'] ?? DEFAULT_WEBHOOK_SECRET,
+    ...(events?.length && { events }),
+  });
+  const style = createStyle(io.color);
+  const lines = result.deliveries.map((d) => {
+    const last = d.attempts.at(-1);
+    const ok = d.status === 'delivered';
+    return `  ${ok ? style.blue('✓') : style.red('✗')} ${d.event.padEnd(28)} ${String(last?.statusCode ?? last?.error ?? '')}`;
+  });
+  lines.push(`${result.delivered}/${result.total} webhook(s) delivered to ${values.webhook}.`);
+  io.out(lines.join('\n'));
+  return { code: result.failed.length === 0 ? 0 : 1 };
+}
+
 export async function main(argv: string[], io: Io): Promise<Result> {
   const [first, ...rest] = argv;
   try {
@@ -198,6 +229,8 @@ export async function main(argv: string[], io: Io): Promise<Result> {
         return await time(rest, io);
       case 'scenario':
         return await scenario(rest, io);
+      case 'replay':
+        return await replay(rest, io);
       case 'help':
       case '--help':
       case '-h':

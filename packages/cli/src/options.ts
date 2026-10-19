@@ -18,6 +18,7 @@ export const START_FLAGS = {
   'allow-public': { type: 'boolean' },
   'dashboard-password': { type: 'string' },
   persist: { type: 'string' },
+  record: { type: 'string' },
   seed: { type: 'string' },
   key: { type: 'string', multiple: true },
   webhook: { type: 'string', multiple: true },
@@ -106,6 +107,8 @@ export function parseStartOptions(argv: string[], env: NodeJS.ProcessEnv = {}, c
   if (v['allow-public']) config.allowPublic = true;
   if (v['dashboard-password'] !== undefined) config.dashboardPassword = v['dashboard-password'];
   if (v.persist !== undefined) config.persist = resolve(cwd, v.persist);
+  // --record is --persist under the name used for record-and-replay.
+  if (v.record !== undefined) config.persist = resolve(cwd, v.record);
   if (v.seed !== undefined) config.seed = v.seed;
   if (v.key?.length) config.keys = v.key.map(parseKey);
   if (v.webhook?.length) {
