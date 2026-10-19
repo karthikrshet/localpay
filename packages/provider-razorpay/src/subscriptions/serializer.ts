@@ -1,5 +1,5 @@
 import type { Plan, Subscription } from '@localpay/core';
-import { wireNotes } from '../serializers.ts';
+import { trimTrailingSlashes, wireNotes } from '../serializers.ts';
 import { hmacHex, signaturesMatch } from '../signatures.ts';
 
 export function toWirePlan(plan: Plan) {
@@ -55,7 +55,7 @@ export function toWireSubscription(subscription: Subscription, baseUrl: string) 
     customer_notify: subscription.customerNotify,
     created_at: subscription.createdAt,
     expire_by: null,
-    short_url: `${baseUrl.replace(/\/+$/, '')}/s/${subscription.id}`,
+    short_url: `${trimTrailingSlashes(baseUrl)}/s/${subscription.id}`,
     has_scheduled_changes: subscription.cancelAtCycleEnd,
     change_scheduled_at: subscription.cancelAtCycleEnd ? subscription.currentEnd : null,
     source: 'api',

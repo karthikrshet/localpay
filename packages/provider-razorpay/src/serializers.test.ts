@@ -1,6 +1,6 @@
 import { createEngine } from '@localpay/core';
 import { describe, expect, it } from 'vitest';
-import { collection, paginate, toWireOrder, toWirePayment, toWireRefund, wireNotes } from './serializers.ts';
+import { collection, paginate, toWireOrder, toWirePayment, toWireRefund, trimTrailingSlashes, wireNotes } from './serializers.ts';
 
 const flow = () => {
   const engine = createEngine({ seed: 'wire' });
@@ -47,5 +47,21 @@ describe('wire serializers', () => {
     const items = [5, 4, 3, 2, 1].map((createdAt) => ({ createdAt }));
     expect(paginate(items, { count: 2, skip: 1 })).toEqual([{ createdAt: 4 }, { createdAt: 3 }]);
     expect(paginate(items, { count: 10, skip: 0, from: 2, to: 4 }).map((i) => i.createdAt)).toEqual([4, 3, 2]);
+  });
+});
+
+describe('trimTrailingSlashes', () => {
+  it.each([
+    ['http://127.0.0.1:4010', 'http://127.0.0.1:4010'],
+    ['http://127.0.0.1:4010///', 'http://127.0.0.1:4010'],
+    ['/', ''],
+    ['', ''],
+  ])('%s → %s', (input, output) => {
+    expect(trimTrailingSlashes(input)).toBe(output);
+  });
+
+  it('stays linear on a long run of slashes', () => {
+    const input = `a${'/'.repeat(100_000)}b${'/'.repeat(100_000)}`;
+    expect(trimTrailingSlashes(input)).toBe(`a${'/'.repeat(100_000)}b`);
   });
 });

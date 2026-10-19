@@ -18,6 +18,7 @@ describe('normalizeBaseUrl', () => {
     ['http://127.0.0.1:4010/', 'http://127.0.0.1:4010'],
     ['http://127.0.0.1:4010/v1', 'http://127.0.0.1:4010'],
     ['http://127.0.0.1:4010/v1/', 'http://127.0.0.1:4010'],
+    ['http://127.0.0.1:4010///v1//', 'http://127.0.0.1:4010'],
   ])('%s → %s', (input, output) => {
     expect(normalizeBaseUrl(input)).toBe(output);
   });

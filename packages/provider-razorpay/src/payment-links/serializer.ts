@@ -1,9 +1,9 @@
 import type { Payment, PaymentLink } from '@localpay/core';
 import { hmacHex, signaturesMatch } from '../signatures.ts';
-import { wireNotes } from '../serializers.ts';
+import { trimTrailingSlashes, wireNotes } from '../serializers.ts';
 
 /** Where a link's hosted page lives: <base>/l/<id>. */
-export const shortUrl = (baseUrl: string, link: Pick<PaymentLink, 'id'>): string => `${baseUrl.replace(/\/+$/, '')}/l/${link.id}`;
+export const shortUrl = (baseUrl: string, link: Pick<PaymentLink, 'id'>): string => `${trimTrailingSlashes(baseUrl)}/l/${link.id}`;
 
 export function toWirePaymentLink(link: PaymentLink, context: { baseUrl: string; payments: Payment[] }) {
   return {

@@ -4,6 +4,13 @@ import type { Notes, Order, Payment, Refund } from '@localpay/core';
 import type { ListQuery } from './schemas.ts';
 
 /** The gateway returns an empty JSON array, not an object, when there are no notes. */
+/** Drops trailing slashes in one pass. A `/\/+$/` regex is quadratic on long runs of slashes. */
+export function trimTrailingSlashes(text: string): string {
+  let end = text.length;
+  while (end > 0 && text.charCodeAt(end - 1) === 47) end--;
+  return text.slice(0, end);
+}
+
 export const wireNotes = (notes: Notes): Notes | [] => (Object.keys(notes).length === 0 ? [] : notes);
 
 export function toWireOrder(order: Order) {

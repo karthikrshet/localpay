@@ -14,8 +14,15 @@ async function json<T>(response: Response): Promise<T> {
   return body;
 }
 
+/** Drops trailing slashes in one pass. A `/\/+$/` regex is quadratic on long runs of slashes. */
+function trimTrailingSlashes(text: string): string {
+  let end = text.length;
+  while (end > 0 && text.charCodeAt(end - 1) === 47) end--;
+  return text.slice(0, end);
+}
+
 export function createApi(baseUrl: string, fetchImpl: typeof fetch = (...args) => fetch(...args)): CheckoutApi {
-  const root = `${baseUrl.replace(/\/+$/, '')}/_localpay/checkout`;
+  const root = `${trimTrailingSlashes(baseUrl)}/_localpay/checkout`;
   return {
     order: async (orderId, keyId) => json<OrderDetails>(await fetchImpl(`${root}/orders/${encodeURIComponent(orderId)}?key_id=${encodeURIComponent(keyId)}`)),
     subscription: async (subscriptionId, keyId) => {

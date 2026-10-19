@@ -12,11 +12,18 @@ interface AxiosLike {
   interceptors: { response: { use(onFulfilled: undefined, onRejected: (error: unknown) => unknown): number } };
 }
 
+/** Drops trailing slashes in one pass. A `/\/+$/` regex is quadratic on long runs of slashes. */
+function trimTrailingSlashes(text: string): string {
+  let end = text.length;
+  while (end > 0 && text.charCodeAt(end - 1) === 47) end--;
+  return text.slice(0, end);
+}
+
 /** The SDK adds /v1 itself, so the base URL must be the host only. */
 export function normalizeBaseUrl(url: string): string {
   const parsed = new URL(url);
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new TypeError(`LocalPay URL must be http(s): ${url}`);
-  return `${parsed.origin}${parsed.pathname.replace(/\/+$/, '').replace(/\/v1$/, '')}`;
+  return `${parsed.origin}${trimTrailingSlashes(trimTrailingSlashes(parsed.pathname).replace(/\/v1$/, ''))}`;
 }
 
 function axiosOf(client: Razorpay): AxiosLike {
