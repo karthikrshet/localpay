@@ -180,9 +180,11 @@ export function createSubscriptionOps(ctx: EngineContext, orders: OrderOps, paym
       const method = input.method ?? 'card';
       if (current.startAt === null || input.outcome.kind === 'fail') return charge(current, method, input.outcome.kind === 'fail' ? input.outcome : undefined);
 
-      // Future start: a small authorization payment records the mandate; nothing is charged yet.
+      // Future start: a ₹1 authorization records the mandate and is released at once, so it
+      // can never be captured (found by the billing property test).
       const order = orders.createOrder({ amount: MANDATE_AUTH_AMOUNT, receipt: current.id, autoCapture: false });
-      const payment = payments.attemptPayment({ orderId: order.id, method, outcome: { kind: 'authorize_only' } });
+      const authorized = payments.attemptPayment({ orderId: order.id, method, outcome: { kind: 'authorize_only' } });
+      const payment = payments.releaseAuthorization(authorized.id);
       const subscription = move(current, { ...current, status: 'authenticated', chargeAt: current.startAt, paymentIds: [...current.paymentIds, payment.id] }, 'subscription.authenticated');
       return { subscription, payment };
     },

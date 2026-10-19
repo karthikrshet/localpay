@@ -123,6 +123,12 @@ describe('capture', () => {
     expect(orders.getOrder(order.id).amountPaid).toBe(100);
   });
 
+  it('releases an uncaptured authorization', () => {
+    const { payments, payment } = authorized();
+    expect(payments.releaseAuthorization(payment.id)).toMatchObject({ status: 'refunded', amountRefunded: 50000, refundStatus: 'full', captured: false });
+    expect(() => payments.releaseAuthorization(payment.id)).toThrow(expect.objectContaining({ reason: 'payment_not_authorized' }) as Error);
+  });
+
   it('reports unknown payments', () => {
     const { payments } = setup();
     expect(() => payments.capturePayment('pay_missing00000000', { amount: 1 })).toThrow(expect.objectContaining({ reason: 'not_found' }) as Error);

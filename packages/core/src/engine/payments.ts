@@ -47,6 +47,16 @@ export function createPaymentOps(ctx: EngineContext, orders: OrderOps) {
       return filter.orderId ? all.filter((p) => p.orderId === filter.orderId) : all;
     },
 
+    /** Releases an uncaptured authorization back to the customer (authorized → refunded). */
+    releaseAuthorization(id: string): Payment {
+      const payment = getPayment(id);
+      if (payment.status !== 'authorized') throw new EngineError('payment_not_authorized', `only authorized payments can be released; ${id} is ${payment.status}`);
+      assertTransition('payment', payment.status, 'refunded');
+      const released: Payment = { ...payment, status: 'refunded', amountRefunded: payment.amount, refundStatus: 'full' };
+      ctx.emit('payment.updated', { payment: released });
+      return released;
+    },
+
     updatePaymentNotes(id: string, notes: Notes): Payment {
       const payment: Payment = { ...getPayment(id), notes };
       ctx.emit('payment.updated', { payment });

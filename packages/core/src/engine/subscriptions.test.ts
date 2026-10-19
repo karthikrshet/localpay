@@ -40,7 +40,8 @@ describe('subscriptions', () => {
     const sub = engine.createSubscription({ planId: plan.id, totalCount: 12, startAt: engine.now() + 10 * 86_400 });
     const { subscription, payment } = engine.authenticateSubscription(sub.id, { outcome: { kind: 'success' } });
     expect(subscription).toMatchObject({ status: 'authenticated', paidCount: 0, chargeAt: sub.startAt });
-    expect(payment).toMatchObject({ status: 'authorized', amount: 100 });
+    expect(payment).toMatchObject({ status: 'refunded', amount: 100, amountRefunded: 100, captured: false });
+    expect(() => engine.capturePayment(payment.id, { amount: 100 })).toThrow(expect.objectContaining({ reason: 'payment_not_authorized' }) as Error);
     expect(engine.authenticationAmount(sub.id)).toBe(100);
     engine.advanceTime(9 * DAY);
     expect(engine.getSubscription(sub.id).status).toBe('authenticated');

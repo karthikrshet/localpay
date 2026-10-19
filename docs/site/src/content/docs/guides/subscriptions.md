@@ -31,7 +31,7 @@ Verify `razorpay_signature` as HMAC-SHA256 (hex) of
 | Situation | What happens |
 | --- | --- |
 | No `start_at` | The first cycle is charged at checkout: `subscription.authenticated`, `subscription.activated`, `subscription.charged` |
-| Future `start_at` | A ₹1 authorization records the mandate (`subscription.authenticated`); the first charge happens at `start_at` |
+| Future `start_at` | A ₹1 authorization records the mandate and is released at once (`subscription.authenticated`); the first charge happens at `start_at` |
 | Renewal due | Charged on the scheduler: `subscription.charged` with the payment |
 | Renewal declined | `subscription.pending`, retried daily |
 | Third decline in a row | `subscription.halted`; no more retries |
