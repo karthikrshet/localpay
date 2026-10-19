@@ -65,6 +65,7 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
     config: {
       autoCapture: config.autoCapture,
       refundDelaySeconds: { normal: config.refundDelaySeconds, optimum: Math.min(1, config.refundDelaySeconds) },
+      settlementDays: config.settlementDays,
     },
   });
 

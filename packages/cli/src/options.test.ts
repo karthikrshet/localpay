@@ -17,7 +17,7 @@ describe('parseStartOptions', () => {
       [
         '-p', '5000', '--host', '0.0.0.0', '--allow-public', '--dashboard-password', 'pw', '--persist', 'data/events.jsonl', '--seed', 's1',
         '--key', 'rzp_test_A:secret:with:colons', '--webhook', 'http://127.0.0.1:3000/webhooks', '--webhook', 'http://127.0.0.1:3001/hooks',
-        '--webhook-secret', 'whsec', '--webhook-events', 'payment.captured, order.paid', '--no-auto-capture', '--refund-delay', '30',
+        '--webhook-secret', 'whsec', '--webhook-events', 'payment.captured, order.paid', '--no-auto-capture', '--refund-delay', '30', '--settlement-days', '3',
         '--allowed-origin', 'https://shop.test', '--fault', 'duplicate=0.5', '--fault', 'delay=200', '--open',
       ],
       {},
@@ -31,7 +31,7 @@ describe('parseStartOptions', () => {
         { url: 'http://127.0.0.1:3000/webhooks', secret: 'whsec', events: ['payment.captured', 'order.paid'] },
         { url: 'http://127.0.0.1:3001/hooks', secret: 'whsec', events: ['payment.captured', 'order.paid'] },
       ],
-      autoCapture: false, refundDelaySeconds: 30, allowedOrigins: ['https://shop.test'], faults: { duplicateRate: 0.5, delayMs: 200 },
+      autoCapture: false, refundDelaySeconds: 30, settlementDays: 3, allowedOrigins: ['https://shop.test'], faults: { duplicateRate: 0.5, delayMs: 200 },
     });
   });
 

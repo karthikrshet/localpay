@@ -28,6 +28,8 @@ export interface LocalPayConfig {
   autoCapture: boolean;
   /** Seconds before a pending refund is processed. */
   refundDelaySeconds: number;
+  /** Days from capture to settlement (T+N). */
+  settlementDays: number;
   /** account_id in webhook envelopes. */
   accountId: string;
   webhooks: WebhookConfig[];
@@ -47,6 +49,7 @@ export const DEFAULT_CONFIG: LocalPayConfig = {
   persist: null,
   autoCapture: true,
   refundDelaySeconds: 5,
+  settlementDays: 2,
   accountId: 'acc_LocalPayDemo01',
   webhooks: [],
   faults: {},
@@ -79,6 +82,7 @@ export function resolveConfig(overrides: Partial<LocalPayConfig> = {}): LocalPay
     if (!key.keySecret) throw new ConfigError(`key ${key.keyId} has no secret`);
   }
   if (!Number.isInteger(config.refundDelaySeconds) || config.refundDelaySeconds < 0) throw new ConfigError('refundDelaySeconds must be a non-negative integer');
+  if (!Number.isInteger(config.settlementDays) || config.settlementDays < 0) throw new ConfigError('settlementDays must be a non-negative integer');
   for (const webhook of config.webhooks) {
     try {
       validateTargetUrl(webhook.url);

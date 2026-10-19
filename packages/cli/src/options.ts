@@ -25,6 +25,7 @@ export const START_FLAGS = {
   'webhook-events': { type: 'string' },
   'no-auto-capture': { type: 'boolean' },
   'refund-delay': { type: 'string' },
+  'settlement-days': { type: 'string' },
   'allowed-origin': { type: 'string', multiple: true },
   fault: { type: 'string', multiple: true },
   config: { type: 'string' },
@@ -114,6 +115,7 @@ export function parseStartOptions(argv: string[], env: NodeJS.ProcessEnv = {}, c
   }
   if (v['no-auto-capture']) config.autoCapture = false;
   if (v['refund-delay'] !== undefined) config.refundDelaySeconds = int('refund-delay', v['refund-delay']);
+  if (v['settlement-days'] !== undefined) config.settlementDays = int('settlement-days', v['settlement-days']);
   if (v['allowed-origin']?.length) config.allowedOrigins = v['allowed-origin'];
   if (v.fault?.length) config.faults = Object.fromEntries(v.fault.map(parseFault));
 

@@ -53,6 +53,7 @@ Start options
       --fault <name=value>    duplicate=0.2, out-of-order=0.2, unsigned=0.1, delay=500
       --no-auto-capture       stop successful payments at authorized
       --refund-delay <s>      seconds before refunds are processed (default 5)
+      --settlement-days <n>   days from capture to settlement (default 2)
       --persist <file>        keep data in a JSONL event log between runs
       --seed <value>          deterministic ids
       --allowed-origin <url>  allow checkout on a non-localhost origin, repeatable
