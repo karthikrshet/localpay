@@ -80,13 +80,15 @@ async function record(specFile: string, outDir: string): Promise<void> {
   const specs = JSON.parse(readFileSync(specFile, 'utf8')) as RequestSpec[];
   const auth = `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString('base64')}`;
   const responses: Record<string, unknown> = {};
+  // A fresh RUN_ID per recording keeps reference_ids unique across runs.
+  const env = { RUN_ID: Date.now().toString(36), ...process.env };
   mkdirSync(outDir, { recursive: true });
   for (const spec of specs) {
     let path: string;
     let body: unknown;
     try {
-      path = resolveTemplate(spec.path, responses, process.env);
-      body = spec.body === undefined ? undefined : resolveBody(spec.body, responses, process.env);
+      path = resolveTemplate(spec.path, responses, env);
+      body = spec.body === undefined ? undefined : resolveBody(spec.body, responses, env);
     } catch (error) {
       if (spec.optional && error instanceof MissingReference) {
         console.log(`skip     ${spec.name} (${error.message})`);
