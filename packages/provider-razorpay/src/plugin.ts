@@ -19,6 +19,8 @@ export function toApiError(error: unknown): ApiError {
   if (error instanceof ApiError) return error;
   if (error instanceof EngineError) return fromEngineError(error);
   const fastifyError = error as Partial<FastifyError>;
+  // The server's rate limiter answers in Razorpay's own shape.
+  if (fastifyError.statusCode === 429) return tooManyRequests();
   switch (fastifyError.code) {
     case 'FST_ERR_CTP_INVALID_JSON_BODY':
     case 'FST_ERR_CTP_EMPTY_JSON_BODY':

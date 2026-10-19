@@ -24,6 +24,23 @@ describe('createLocalPay', () => {
     expect(response.json()).toMatchObject({ entity: 'order', amount: 100 });
   });
 
+  it('rate-limits the API with a Razorpay-shaped 429', async () => {
+    const { app } = await start({}, { dashboardDir: null, rateLimitPerMinute: 2 });
+    const create = () => app.inject({ method: 'POST', url: '/v1/orders', headers: { authorization: AUTH }, payload: { amount: 100 } });
+    expect((await create()).statusCode).toBe(200);
+    expect((await create()).statusCode).toBe(200);
+    const limited = await create();
+    expect(limited.statusCode).toBe(429);
+    expect(limited.json()).toMatchObject({ error: { code: 'BAD_REQUEST_ERROR', reason: 'rate_limit_exceeded' } });
+  });
+
+  it('allows ten dashboard password guesses a minute', async () => {
+    const { app } = await start({ dashboardPassword: 'correct horse' }, { dashboardDir: null });
+    const guess = () => app.inject({ method: 'POST', url: '/_localpay/login', headers: { 'content-type': 'application/x-www-form-urlencoded' }, payload: 'password=wrong' });
+    for (let i = 0; i < 10; i++) expect((await guess()).statusCode).toBe(401);
+    expect((await guess()).statusCode).toBe(429);
+  });
+
   it('exposes an unauthenticated health check', async () => {
     const { app } = await start();
     expect((await app.inject({ url: '/_localpay/health' })).json()).toMatchObject({ ok: true, name: 'LocalPay' });

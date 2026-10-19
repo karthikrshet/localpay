@@ -62,7 +62,8 @@ export const dashboard: FastifyPluginAsync<DashboardOptions> = async (app, { aut
     done(null, Object.fromEntries(new URLSearchParams(String(body))));
   });
 
-  app.post('/_localpay/login', (request, reply) => {
+  // Ten guesses a minute per client: enough for a typo, too slow to brute-force a password.
+  app.post('/_localpay/login', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, (request, reply) => {
     const parsed = z.object({ password: z.string() }).safeParse(request.body);
     if (!auth.password || !parsed.success || parsed.data.password !== auth.password) return locked(reply);
     return reply.code(302).headers({ ...SECURITY_HEADERS, 'set-cookie': sessionCookie(auth.token), location: '/' }).send();

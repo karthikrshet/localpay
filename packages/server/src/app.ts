@@ -2,6 +2,7 @@
 import { createEngine, createFileEventStore, createMemoryEventStore, createOffsetClock, createRandom, NO_API_FAULTS, type ApiFaults, type Engine, type Provider, type ProviderContext } from '@localpay/core';
 import { razorpayProvider } from '@localpay/provider-razorpay';
 import { createDispatcher, type Dispatcher, type Sender, type WebhookTarget } from '@localpay/webhooks';
+import rateLimit from '@fastify/rate-limit';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -45,7 +46,15 @@ export interface LocalPayDependencies {
   provider?: Provider<FastifyInstance>;
   /** Where --log lines go; stdout when omitted. */
   log?: LogSink;
+  /** Requests per minute per client before 429s (tests). */
+  rateLimitPerMinute?: number;
 }
+
+/**
+ * Far above what a test suite sends on loopback; it only stops a runaway loop or, with
+ * --allow-public, a flood from the network. The dashboard login has its own, stricter limit.
+ */
+export const RATE_LIMIT_PER_MINUTE = 6000;
 
 /** Finds the built dashboard next to the @localpay/dashboard package, if installed and built. */
 export function findDashboardDir(): string | null {
@@ -133,6 +142,7 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
   // No request logging by default: requests carry keys, and users run this on their laptops.
   const app = Fastify({ logger: false });
   if (config.log) attachRequestLog(app, deps.log ?? ((line) => process.stdout.write(`${line}\n`)));
+  await app.register(rateLimit, { global: true, max: deps.rateLimitPerMinute ?? RATE_LIMIT_PER_MINUTE, timeWindow: '1 minute' });
   await provider.register(app, providerContext);
 
   let checkoutScript: Promise<string> | null = null;
