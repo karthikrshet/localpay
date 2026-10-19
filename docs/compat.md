@@ -46,6 +46,7 @@ and the record-fixture skill), so nothing below is marked supported.
 | PATCH /v1/subscriptions/:id, pause, resume | missing | |
 | GET /v1/disputes, GET /v1/disputes/:id | partial | Disputes are raised from the dashboard, the dashboard API or scenarios |
 | POST /v1/disputes/:id/accept | partial | |
+| GET /v1/settlements, GET /v1/settlements/:id | partial | One settlement per scheduler tick with everything due; no recon or on-demand settlements |
 | PATCH /v1/disputes/:id/contest | partial | `draft` / `submit`; evidence documents are ids only, no uploads |
 
 ## Behaviour
@@ -82,6 +83,7 @@ and the record-fixture skill), so nothing below is marked supported.
 | payment_link.expired | partial | |
 | payment_link.cancelled | partial | |
 | payment.dispute.created / under_review / won / lost | partial | Contains payment and dispute |
+| settlement.processed | partial | |
 | subscription.authenticated / activated / charged / pending / halted / cancelled / completed / updated | partial | `charged` contains subscription and payment |
 
 ## SDK connection

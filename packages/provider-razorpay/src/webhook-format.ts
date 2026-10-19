@@ -2,6 +2,7 @@
 import type { AnyEvent, WebhookFormat, WebhookMessage } from '@localpay/core';
 import { toWirePaymentLink } from './payment-links/serializer.ts';
 import { toWireDispute } from './routes/disputes.ts';
+import { toWireSettlement } from './routes/settlements.ts';
 import { toWireSubscription } from './subscriptions/serializer.ts';
 import { toWireOrder, toWirePayment, toWireRefund } from './serializers.ts';
 import { webhookSignature } from './signatures.ts';
@@ -30,6 +31,7 @@ export const WEBHOOK_EVENTS = [
   'payment.dispute.under_review',
   'payment.dispute.won',
   'payment.dispute.lost',
+  'settlement.processed',
 ] as const;
 
 export const SIGNATURE_HEADER = 'X-Razorpay-Signature';
@@ -87,6 +89,8 @@ export function toWebhook(event: AnyEvent, accountId: string, baseUrl = 'http://
         payment: { entity: toWirePayment(event.data.payment) },
         dispute: { entity: toWireDispute(event.data.dispute) },
       });
+    case 'settlement.processed':
+      return envelope(event, accountId, { settlement: { entity: toWireSettlement(event.data.settlement) } });
     case 'subscription.charged':
       return envelope(event, accountId, {
         subscription: { entity: toWireSubscription(event.data.subscription, baseUrl) },
