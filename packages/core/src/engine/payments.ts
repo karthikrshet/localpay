@@ -47,6 +47,23 @@ export function createPaymentOps(ctx: EngineContext, orders: OrderOps) {
       return filter.orderId ? all.filter((p) => p.orderId === filter.orderId) : all;
     },
 
+    /**
+     * Late authorization: the bank confirms a payment after it was reported failed (typically a
+     * UPI timeout). The payment becomes authorized and, with auto-capture, is captured unless
+     * the order was paid in the meantime.
+     */
+    lateAuthorize(id: string): Payment {
+      const payment = getPayment(id);
+      if (payment.status !== 'failed') throw new EngineError('payment_not_failed', `only failed payments can be authorized late; ${id} is ${payment.status}`);
+      assertTransition('payment', payment.status, 'authorized');
+      const authorized: Payment = { ...payment, status: 'authorized', error: null, authorizedAt: ctx.now() };
+      ctx.emit('payment.authorized', { payment: authorized });
+      const order = payment.orderId ? orders.getOrder(payment.orderId) : null;
+      const autoCapture = order ? (order.autoCapture ?? ctx.config.autoCapture) : false;
+      const fits = order !== null && order.amountPaid + authorized.amount <= order.amount;
+      return autoCapture && fits ? ops.capturePayment(authorized.id, { amount: authorized.amount }) : authorized;
+    },
+
     /** Releases an uncaptured authorization back to the customer (authorized → refunded). */
     releaseAuthorization(id: string): Payment {
       const payment = getPayment(id);

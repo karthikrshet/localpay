@@ -123,6 +123,26 @@ describe('capture', () => {
     expect(orders.getOrder(order.id).amountPaid).toBe(100);
   });
 
+  it('authorizes a failed payment late and captures it when the order is still due', () => {
+    const { base, orders, payments } = setup();
+    const order = orders.createOrder({ amount: 100 });
+    const failed = payments.attemptPayment({ orderId: order.id, method: 'upi', outcome: { kind: 'fail', error: DECLINED } });
+    const late = payments.lateAuthorize(failed.id);
+    expect(late).toMatchObject({ status: 'captured', error: null });
+    expect(orders.getOrder(order.id).status).toBe('paid');
+    expect(base.events.map((e) => e.type).slice(-4)).toEqual(['payment.failed', 'payment.authorized', 'payment.captured', 'order.paid']);
+    expect(() => payments.lateAuthorize(failed.id)).toThrow(expect.objectContaining({ reason: 'payment_not_failed' }) as Error);
+  });
+
+  it('leaves a late authorization uncaptured when the order was paid by a retry', () => {
+    const { orders, payments } = setup();
+    const order = orders.createOrder({ amount: 100 });
+    const failed = payments.attemptPayment({ orderId: order.id, method: 'upi', outcome: { kind: 'fail', error: DECLINED } });
+    payments.attemptPayment({ orderId: order.id, method: 'upi', outcome: { kind: 'success' } });
+    expect(payments.lateAuthorize(failed.id).status).toBe('authorized');
+    expect(orders.getOrder(order.id).amountPaid).toBe(100);
+  });
+
   it('releases an uncaptured authorization', () => {
     const { payments, payment } = authorized();
     expect(payments.releaseAuthorization(payment.id)).toMatchObject({ status: 'refunded', amountRefunded: 50000, refundStatus: 'full', captured: false });

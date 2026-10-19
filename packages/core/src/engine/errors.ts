@@ -24,7 +24,8 @@ export type EngineErrorReason =
   | 'invalid_plan'
   | 'subscription_not_authenticatable'
   | 'subscription_ended'
-  | 'dispute_not_open';
+  | 'dispute_not_open'
+  | 'payment_not_failed';
 
 export class EngineError extends Error {
   readonly reason: EngineErrorReason;

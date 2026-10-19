@@ -88,6 +88,7 @@ const DESCRIPTIONS: Record<EngineErrorReason, string> = {
   subscription_not_authenticatable: 'The subscription cannot be authenticated in its current state',
   subscription_ended: 'The subscription has already ended',
   dispute_not_open: 'The dispute cannot be changed in its current state',
+  payment_not_failed: 'Only failed payments can be authorized late',
 };
 
 export function fromEngineError(error: EngineError): ApiError {
