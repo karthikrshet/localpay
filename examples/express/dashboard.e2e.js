@@ -33,3 +33,16 @@ test('dashboard shows the order timeline and replays a webhook', async ({ page }
   await expect(page.getByText('replay').first()).toBeVisible({ timeout: 10_000 });
   expect(await rows.count()).toBeGreaterThan(before);
 });
+
+test('every dashboard screen passes axe', async ({ page }) => {
+  await page.goto(`${LOCALPAY}/?token=e2e-dashboard-token`);
+  const problems = [];
+  for (const path of ['/', '/orders', '/payments', '/links', '/subscriptions', '/settlements', '/webhooks', '/scenarios', '/time', '/settings']) {
+    await page.goto(`${LOCALPAY}${path}`);
+    await page.locator('main h1').waitFor({ state: 'attached' });
+    await page.waitForLoadState('networkidle');
+    const result = await new AxeBuilder({ page }).analyze();
+    for (const v of result.violations) problems.push(`${path} ${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
+  }
+  expect(problems).toEqual([]);
+});
