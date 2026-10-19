@@ -34,11 +34,14 @@ export const START_FLAGS = {
   help: { type: 'boolean', short: 'h' },
 } as const;
 
-const FAULT_NAMES: Record<string, keyof NonNullable<LocalPayConfig['faults']>> = {
-  duplicate: 'duplicateRate',
-  'out-of-order': 'outOfOrderRate',
-  unsigned: 'unsignedRate',
-  delay: 'delayMs',
+const FAULT_NAMES: Record<string, ['faults', keyof NonNullable<LocalPayConfig['faults']>] | ['apiFaults', keyof NonNullable<LocalPayConfig['apiFaults']>]> = {
+  duplicate: ['faults', 'duplicateRate'],
+  'out-of-order': ['faults', 'outOfOrderRate'],
+  unsigned: ['faults', 'unsignedRate'],
+  delay: ['faults', 'delayMs'],
+  'rate-limit': ['apiFaults', 'rateLimitRate'],
+  'server-error': ['apiFaults', 'serverErrorRate'],
+  'api-delay': ['apiFaults', 'delayMs'],
 };
 
 const int = (name: string, value: string): number => {
@@ -52,12 +55,12 @@ function parseKey(value: string): { keyId: string; keySecret: string } {
   return { keyId: value.slice(0, index), keySecret: value.slice(index + 1) };
 }
 
-function parseFault(value: string): [keyof NonNullable<LocalPayConfig['faults']>, number] {
+function parseFault(value: string): { target: 'faults' | 'apiFaults'; key: string; number: number } {
   const [name = '', raw = ''] = value.split('=');
-  const key = FAULT_NAMES[name];
+  const entry = FAULT_NAMES[name];
   const number = Number(raw);
-  if (!key || raw === '' || !Number.isFinite(number)) throw new UsageError(`--fault must be one of ${Object.keys(FAULT_NAMES).join(', ')}=<number>, got "${value}"`);
-  return [key, number];
+  if (!entry || raw === '' || !Number.isFinite(number)) throw new UsageError(`--fault must be one of ${Object.keys(FAULT_NAMES).join(', ')}=<number>, got "${value}"`);
+  return { target: entry[0], key: entry[1], number };
 }
 
 function readConfigFile(path: string | undefined, cwd: string, required: boolean): Partial<LocalPayConfig> {
@@ -120,7 +123,9 @@ export function parseStartOptions(argv: string[], env: NodeJS.ProcessEnv = {}, c
   if (v['refund-delay'] !== undefined) config.refundDelaySeconds = int('refund-delay', v['refund-delay']);
   if (v['settlement-days'] !== undefined) config.settlementDays = int('settlement-days', v['settlement-days']);
   if (v['allowed-origin']?.length) config.allowedOrigins = v['allowed-origin'];
-  if (v.fault?.length) config.faults = Object.fromEntries(v.fault.map(parseFault));
+  for (const fault of (v.fault ?? []).map(parseFault)) {
+    config[fault.target] = { ...config[fault.target], [fault.key]: fault.number };
+  }
 
   return { config, open: v.open ?? false, help: v.help ?? false };
 }

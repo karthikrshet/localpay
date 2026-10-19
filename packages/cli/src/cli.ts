@@ -52,7 +52,8 @@ Start options
       --webhook <url>         webhook target, repeatable
       --webhook-secret <s>    secret for X-Razorpay-Signature (default localpay_webhook_secret)
       --webhook-events <a,b>  only these events
-      --fault <name=value>    duplicate=0.2, out-of-order=0.2, unsigned=0.1, delay=500
+      --fault <name=value>    webhooks: duplicate=0.2, out-of-order=0.2, unsigned=0.1, delay=500
+                              API: rate-limit=0.1, server-error=0.05, api-delay=300
       --no-auto-capture       stop successful payments at authorized
       --refund-delay <s>      seconds before refunds are processed (default 5)
       --settlement-days <n>   days from capture to settlement (default 2)
