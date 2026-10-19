@@ -30,6 +30,8 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm test:coverage
+        if: matrix.node == 22
 
   commits:
     if: github.event_name == 'pull_request'
