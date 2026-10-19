@@ -15,7 +15,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/localpay/localpay.git",
+    "url": "git+https://github.com/karthikrshet/localpay.git",
     "directory": "packages/cli"
   },
   "type": "module",

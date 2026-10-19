@@ -1,6 +1,6 @@
 # @localpay/shim-node
 
-Points the official Razorpay Node SDK at a local [LocalPay](https://github.com/localpay/localpay)
+Points the official Razorpay Node SDK at a local [LocalPay](https://github.com/karthikrshet/localpay)
 server. The SDK has no host option, so this sets the base URL on its HTTP client and turns
 "server not running" into a readable error.
 

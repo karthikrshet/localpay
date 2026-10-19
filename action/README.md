@@ -4,7 +4,7 @@ Starts [LocalPay](../README.md) in the background so your tests can create order
 pay them and receive signed webhooks without Razorpay keys or network access.
 
 ```yaml
-- uses: localpay/localpay/action@v0
+- uses: karthikrshet/localpay/action@v0
   id: localpay
   with:
     webhook: http://127.0.0.1:3000/webhooks

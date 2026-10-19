@@ -117,7 +117,7 @@ export function razorpayWebhookFormat(accountId: string, baseUrl: () => string =
     headers(rawBody, secret, eventId, options = {}) {
       return {
         'content-type': 'application/json',
-        'user-agent': 'LocalPay-Webhooks/0.1 (+https://github.com/localpay/localpay)',
+        'user-agent': 'LocalPay-Webhooks/0.1 (+https://github.com/karthikrshet/localpay)',
         [EVENT_ID_HEADER]: eventId,
         ...(options.signed === false ? {} : { [SIGNATURE_HEADER]: webhookSignature(rawBody, secret) }),
       };

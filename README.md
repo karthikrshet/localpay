@@ -2,7 +2,7 @@
 
 **Test your Razorpay integration offline. No keys, no ngrok, every edge case one click away.**
 
-[![CI](https://github.com/localpay/localpay/actions/workflows/ci.yml/badge.svg)](https://github.com/localpay/localpay/actions/workflows/ci.yml)
+[![CI](https://github.com/karthikrshet/localpay/actions/workflows/ci.yml/badge.svg)](https://github.com/karthikrshet/localpay/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/localpay)](https://www.npmjs.com/package/localpay)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
@@ -213,7 +213,7 @@ lists them all.
 - **GitHub Action:**
 
   ```yaml
-  - uses: localpay/localpay/action@v0
+  - uses: karthikrshet/localpay/action@v0
     id: localpay
     with:
       webhook: http://127.0.0.1:3000/webhooks

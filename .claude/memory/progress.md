@@ -16,7 +16,7 @@ remaining gates and launch steps need the maintainer (see Blockers).
 - 2026-10-20 README rewritten to explain the whole repo; 23s README video (docs/assets/localpay-demo.mp4 + GIF preview + poster) with music and sound effects, rebuilt by scripts/render-video.ts
 
 ## Next
-1. Pushed to github.com/karthikrshet/localpay; badges, Action and docs URLs still assume github.com/localpay/localpay. Check CI (Docker, Action, docs, examples jobs have only run locally or not at all)
+1. Pushed to github.com/karthikrshet/localpay; all repo URLs point there (the npm scope is still @localpay). Check CI (Docker, Action, docs, examples jobs have only run locally or not at all)
 2. Maintainer: record fixtures with `pnpm record-fixtures fixtures/requests/core.json` from your own test account, scrub, review, replace the hand-written stand-ins
 3. Maintainer: register the npm scope, add NPM_TOKEN, publish v0.1.0 via the release workflow; run the 5-minute friend test
 

@@ -67,4 +67,4 @@ signed with `X-Razorpay-Signature` (secret `localpay_webhook_secret` unless you 
 replay it.
 
 A complete example app lives in
-[`examples/express`](https://github.com/localpay/localpay/tree/main/examples/express).
+[`examples/express`](https://github.com/karthikrshet/localpay/tree/main/examples/express).
