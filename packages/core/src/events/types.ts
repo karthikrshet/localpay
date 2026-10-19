@@ -1,6 +1,6 @@
 // Domain events. Each event carries full snapshots of every entity it changed,
 // so state is a plain fold over the log and webhooks need no extra lookups.
-import type { Customer, Dispute, Order, Payment, PaymentLink, Plan, Refund, Subscription } from '../entities/index.ts';
+import type { Customer, Dispute, Order, Payment, PaymentLink, Plan, Refund, Settlement, Subscription } from '../entities/index.ts';
 
 export interface EventMap {
   'order.created': { order: Order };
@@ -37,6 +37,7 @@ export interface EventMap {
   'payment.dispute.won': { dispute: Dispute; payment: Payment };
   'payment.dispute.lost': { dispute: Dispute; payment: Payment };
   'payment.dispute.updated': { dispute: Dispute };
+  'settlement.processed': { settlement: Settlement };
   'clock.advanced': { from: number; to: number };
 }
 

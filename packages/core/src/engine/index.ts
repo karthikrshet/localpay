@@ -8,9 +8,10 @@ import { createOrderOps, type OrderOps } from './orders.ts';
 import { createPaymentLinkOps, type PaymentLinkOps } from './payment-links.ts';
 import { createPaymentOps, type PaymentOps } from './payments.ts';
 import { createRefundOps, type RefundOps } from './refunds.ts';
+import { createSettlementOps, type SettlementOps } from './settlements.ts';
 import { createSubscriptionOps, type SubscriptionOps } from './subscriptions.ts';
 
-export interface Engine extends EngineBase, OrderOps, PaymentOps, RefundOps, CustomerOps, PaymentLinkOps, SubscriptionOps, DisputeOps {
+export interface Engine extends EngineBase, OrderOps, PaymentOps, RefundOps, CustomerOps, PaymentLinkOps, SubscriptionOps, DisputeOps, SettlementOps {
   /** Runs every time-driven transition that is due now. Returns how many ran. */
   tick(): number;
   /** Moves emulator time forward (needs a controllable clock), then ticks. */
@@ -28,6 +29,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
   const paymentLinks = createPaymentLinkOps(base, orders);
   const subscriptions = createSubscriptionOps(base, orders, payments);
   const disputes = createDisputeOps(base, payments);
+  const settlements = createSettlementOps(base, base.random);
 
   // Links hook into the payment flow: refuse payments on closed links, advance them on capture.
   const attempt = payments.attemptPayment.bind(payments);
@@ -42,10 +44,10 @@ export function createEngine(options: EngineOptions = {}): Engine {
     return captured;
   };
 
-  const tick = (): number => refunds.processDueRefunds() + paymentLinks.expireDuePaymentLinks() + subscriptions.chargeDueSubscriptions() + disputes.expireDueDisputes();
+  const tick = (): number => refunds.processDueRefunds() + paymentLinks.expireDuePaymentLinks() + subscriptions.chargeDueSubscriptions() + disputes.expireDueDisputes() + settlements.settleDue();
 
   // Two calls: Object.assign is only typed for up to three sources.
-  const withOps = Object.assign(Object.assign(base, orders, payments), Object.assign(refunds, customers, paymentLinks), Object.assign(subscriptions, disputes));
+  const withOps = Object.assign(Object.assign(base, orders, payments), Object.assign(refunds, customers, paymentLinks), Object.assign(subscriptions, disputes, settlements));
   return Object.assign(withOps, {
     tick,
     advanceTime(ms: number): number {

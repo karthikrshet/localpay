@@ -10,12 +10,15 @@ export interface EngineConfig {
   fees: FeeSchedule;
   /** Seconds a refund stays pending before it is processed, by requested speed. */
   refundDelaySeconds: Record<RefundSpeed, number>;
+  /** Captured payments are settled this many days later (T+N). */
+  settlementDays: number;
 }
 
 export const DEFAULT_ENGINE_CONFIG: EngineConfig = {
   autoCapture: true,
   fees: { feeBps: 200, taxBps: 1800 },
   refundDelaySeconds: { normal: 5, optimum: 1 },
+  settlementDays: 2,
 };
 
 export interface EngineContext {

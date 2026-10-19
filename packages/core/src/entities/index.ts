@@ -188,3 +188,18 @@ export interface Dispute {
   createdAt: UnixSeconds;
   resolvedAt: UnixSeconds | null;
 }
+
+export interface Settlement {
+  id: string;
+  /** Net amount paid out: payments minus fees, refunds and lost disputes. */
+  amount: Paise;
+  fees: Paise;
+  tax: Paise;
+  /** Bank reference for the payout. */
+  utr: string;
+  status: 'processed';
+  paymentIds: string[];
+  refundIds: string[];
+  disputeIds: string[];
+  createdAt: UnixSeconds;
+}
