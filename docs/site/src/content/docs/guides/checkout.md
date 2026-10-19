@@ -57,3 +57,16 @@ like a real payment page.
 checkout.js only renders on `localhost`, `127.0.0.1`, `[::1]` and `*.localhost`. To use
 another origin (for example `https://shop.test`), start LocalPay with
 `--allowed-origin https://shop.test`.
+
+### Pages on other hosts
+
+Chrome's Local Network Access rules can block a page served from a public address (for
+example a staging site) from loading `checkout.js` from `127.0.0.1`; Chrome asks the user
+for permission or refuses. Serve the page you test from `localhost`, or run LocalPay
+where that page can reach it on its own network.
+
+### Strict Content-Security-Policy
+
+checkout.js styles its popup with constructable stylesheets, so it works on pages whose
+CSP forbids inline styles. Its own origin must still be allowed in `script-src` and
+`connect-src`, for example `script-src 'self' http://127.0.0.1:4010`.
