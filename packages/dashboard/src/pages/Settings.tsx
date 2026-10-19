@@ -92,9 +92,56 @@ function FaultsEditor() {
   if (!draft) return null;
   const save = () => api('/webhooks/faults', { method: 'PUT', body: draft }).then(reload, (e: unknown) => setError(String(e)));
   return (
-    <Card title="Failure injection">
+    <Card title="Webhook failure injection">
       <div className="grid gap-3 sm:grid-cols-2">
         {FAULT_FIELDS.map((f) => (
+          <label key={f.key} className="grid gap-1">
+            <span className="font-medium">{f.label}</span>
+            <input
+              type="number"
+              min={0}
+              max={f.max}
+              step={f.step}
+              value={draft[f.key]}
+              onChange={(e) => setDraft({ ...draft, [f.key]: Number(e.target.value) })}
+              className="rounded-md border border-lp-border bg-lp-surface px-3 py-1.5"
+            />
+            <span className="text-xs text-lp-muted">{f.help}</span>
+          </label>
+        ))}
+      </div>
+      <Button variant="primary" className="mt-3" onClick={() => void save()}>
+        Save
+      </Button>
+      {error && <ErrorBox message={error} />}
+    </Card>
+  );
+}
+
+interface ApiFaults {
+  rateLimitRate: number;
+  serverErrorRate: number;
+  delayMs: number;
+}
+
+const API_FAULT_FIELDS: { key: keyof ApiFaults; label: string; help: string; max: number; step: number }[] = [
+  { key: 'rateLimitRate', label: '429 rate', help: 'Chance (0–1) an API request gets 429 Too Many Requests.', max: 1, step: 0.05 },
+  { key: 'serverErrorRate', label: '500 rate', help: 'Chance an API request gets 500 SERVER_ERROR.', max: 1, step: 0.05 },
+  { key: 'delayMs', label: 'Latency (ms)', help: 'Extra delay on every API request.', max: 60_000, step: 50 },
+];
+
+function ApiFaultsEditor() {
+  const { data, reload } = useApi<ApiFaults>('/api-faults');
+  const [draft, setDraft] = useState<ApiFaults | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => setDraft(data), [data]);
+  if (!draft) return null;
+  const save = () => api('/api-faults', { method: 'PUT', body: draft }).then(reload, (e: unknown) => setError(String(e)));
+  return (
+    <Card title="API failure injection">
+      <p className="mb-3 text-sm text-lp-muted">Faulted requests are answered before anything changes, so your client can always retry them safely.</p>
+      <div className="grid gap-3 sm:grid-cols-3">
+        {API_FAULT_FIELDS.map((f) => (
           <label key={f.key} className="grid gap-1">
             <span className="font-medium">{f.label}</span>
             <input
@@ -160,6 +207,7 @@ export function SettingsPage() {
     <div className="grid gap-4">
       <TargetsEditor />
       <FaultsEditor />
+      <ApiFaultsEditor />
       <ResetCard />
     </div>
   );
