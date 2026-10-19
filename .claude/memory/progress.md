@@ -11,7 +11,8 @@ remaining gates and launch steps need the maintainer (see Blockers).
 - 2026-10-19 Phase 5: plans/subscriptions with clock-driven renewals, disputes, T+N settlements, record-and-replay, dashboard screens for all of them
 - 2026-10-20 Phase 6: provider plug-in contract (ADR 0004) with Razorpay as the first plug-in
 - 2026-10-20 Extras: late authorization, API fault injection (429/500/latency), redacted request log (--log), Django and Next.js examples, billing property tests
-- 2026-10-20 Verified locally: lint, typecheck, 503 unit/contract tests, 4 Playwright tests, package smoke test, secret scan, docs build, Python SDK spike, FastAPI/Django/Next.js example tests
+- 2026-10-20 Quality gates: 90% coverage gate (core + provider at 98.7% lines), axe on every dashboard screen, checkout under a strict CSP, OpenSSF Scorecard, Renovate, docs published to GitHub Pages
+- 2026-10-20 Verified locally: lint, typecheck, 507 unit/contract tests, coverage gate, 6 Playwright tests, package smoke test (7 checks), secret scan, docs build (18 pages), Python SDK spike, FastAPI/Django/Next.js example tests; all 200 commit messages pass scripts/check-commit-msg.ts
 
 ## Next
 1. Maintainer: create the GitHub repo (URLs assume github.com/localpay/localpay), push, check CI (Docker, Action, docs, examples jobs have only run locally or not at all)
