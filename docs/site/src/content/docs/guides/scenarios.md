@@ -55,7 +55,7 @@ expect:
 
 `as` names an entity; later steps refer to it by that name or by `last`. Payment
 scenarios are the checkout buttons: `success`, `insufficient_funds`, `bank_down`,
-`upi_timeout`, `authorize_only`. [Magic values](/guides/test-values/) still apply.
+`upi_timeout`, `authorize_only`. [Magic values](../test-values/) still apply.
 
 ## Expectations
 

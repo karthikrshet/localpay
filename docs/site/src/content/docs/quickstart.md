@@ -45,7 +45,7 @@ const order = await razorpay.orders.create({ amount: 49900, currency: 'INR', rec
 client = razorpay.Client(auth=("rzp_test_LocalPayDemo01", "localpay_demo_secret"), base_url="http://127.0.0.1:4010")
 ```
 
-Other languages: see [SDK setup](/guides/sdk-setup/).
+Other languages: see [SDK setup](../guides/sdk-setup/).
 
 ## 3. Swap the checkout script
 

@@ -18,7 +18,7 @@ description: What LocalPay gives you that test mode alone does not.
 - **Not a payment gateway.** It never moves money and never talks to a bank or NPCI.
 - **Not a production proxy.** It binds to `127.0.0.1` and refuses public addresses unless forced.
 - **Not a replacement for test mode.** Run your integration against Razorpay's real test
-  mode before going live. LocalPay's [compatibility matrix](/reference/compatibility/)
+  mode before going live. LocalPay's [compatibility matrix](../reference/compatibility/)
   says exactly what has been checked.
 - **Not a clone of Razorpay's brand.** Its own name, colours and a permanent test-mode
   banner make it impossible to mistake for the real thing.

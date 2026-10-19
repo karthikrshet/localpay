@@ -3,6 +3,9 @@ import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
+  // Set by the Pages workflow; a project site lives under /<repo>/. Links in content are relative.
+  site: process.env.DOCS_SITE,
+  base: process.env.DOCS_BASE ?? '/',
   integrations: [
     starlight({
       title: 'LocalPay',

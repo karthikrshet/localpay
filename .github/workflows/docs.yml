@@ -28,6 +28,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter localpay-docs build
+        env:
+          DOCS_SITE: https://${{ github.repository_owner }}.github.io
+          DOCS_BASE: /${{ github.event.repository.name }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/site/dist
