@@ -8,6 +8,7 @@ export * from './events/types.ts';
 export * from './ids/index.ts';
 export * from './machines/index.ts';
 export * from './money/index.ts';
+export * from './provider/index.ts';
 export * from './random/index.ts';
 export * from './state/index.ts';
 export * from './webhooks/index.ts';
