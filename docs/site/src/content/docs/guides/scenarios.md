@@ -35,6 +35,7 @@ expect:
 | `order` | `amount` (paise), `currency`, `receipt`, `notes`, `partial`, `auto_capture`, `as` |
 | `pay` | `order` or `link`, `method` (`upi` default, `card`, `netbanking`, `wallet`), `scenario` **or** weighted `outcomes`, `amount`, `vpa`, `as` |
 | `capture` | `payment` |
+| `late_authorize` | `payment` (a failed payment the bank confirms later) |
 | `refund` | `payment`, `amount`, `speed` (`normal`, `optimum`), `as` |
 | `process_refund` / `fail_refund` | `refund` |
 | `link` | `amount`, `reference_id`, `description`, `accept_partial`, `expire_in` (e.g. `1d`), `as` |
@@ -85,3 +86,4 @@ reports why.
 | `12-subscription-halts` | Renewals fail until the subscription halts |
 | `13-dispute-won` | A chargeback contested with evidence and won |
 | `14-dispute-deadline-missed` | A chargeback lost by missing respond_by |
+| `15-upi-late-authorization` | A timed-out UPI payment the bank confirms minutes later |

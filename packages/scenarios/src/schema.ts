@@ -40,6 +40,7 @@ const payStep = z.strictObject({
 });
 
 const captureStep = z.strictObject({ capture: z.strictObject({ payment: ref }) });
+const lateAuthorizeStep = z.strictObject({ late_authorize: z.strictObject({ payment: ref }) });
 
 const refundStep = z.strictObject({
   refund: z.strictObject({ payment: ref, amount: amount.optional(), speed: z.enum(['normal', 'optimum']).optional(), as: alias.optional() }),
@@ -102,6 +103,7 @@ export type Step =
   | z.output<typeof orderStep>
   | z.output<typeof payStep>
   | z.output<typeof captureStep>
+  | z.output<typeof lateAuthorizeStep>
   | z.output<typeof refundStep>
   | z.output<typeof failRefundStep>
   | z.output<typeof processRefundStep>
@@ -125,6 +127,7 @@ const stepSchema: z.ZodType<Step> = z.lazy(() =>
     orderStep,
     payStep,
     captureStep,
+    lateAuthorizeStep,
     refundStep,
     failRefundStep,
     processRefundStep,

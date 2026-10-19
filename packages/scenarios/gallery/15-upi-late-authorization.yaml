@@ -1,0 +1,12 @@
+name: UPI timeout, then the bank confirms late
+description: The UPI request times out and the app shows a failure, but minutes later the bank confirms the same payment. Your app receives payment.authorized and payment.captured after payment.failed and must fulfil the order instead of ignoring them.
+seed: late-auth
+steps:
+  - order: { amount: 79900, as: o }
+  - pay: { order: o, method: upi, scenario: upi_timeout, as: p }
+  - advance: 10m
+  - late_authorize: { payment: p }
+expect:
+  events_include: [payment.failed, payment.authorized, payment.captured, order.paid]
+  orders: { paid: 1 }
+  payments: { captured: 1 }

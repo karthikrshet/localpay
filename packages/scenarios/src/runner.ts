@@ -103,6 +103,10 @@ export function runScenario(scenario: Scenario, deps: RunnerDeps): ScenarioResul
       const payment = engine.getPayment(aliases.resolve('payment', step.capture.payment));
       return `${engine.capturePayment(payment.id, { amount: payment.amount }).id} captured`;
     }
+    if ('late_authorize' in step) {
+      const payment = engine.lateAuthorize(aliases.resolve('payment', step.late_authorize.payment));
+      return `${payment.id} late → ${payment.status}`;
+    }
     if ('refund' in step) {
       const r = step.refund;
       const refund = engine.createRefund(aliases.resolve('payment', r.payment), { ...(r.amount !== undefined && { amount: r.amount }), ...(r.speed && { speed: r.speed }) });

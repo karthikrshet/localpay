@@ -59,6 +59,7 @@ and the record-fixture skill), so nothing below is marked supported.
 | Empty notes rendered as `[]` | partial | |
 | Auto-capture | partial | On by default; per order with `payment_capture` |
 | Fees | partial | 2% + 18% tax on the fee, set on capture |
+| Late authorization (failed → authorized) | partial | Triggered from the dashboard, the dashboard API or a scenario; captured only if the order is still due |
 | Capturing a second payment on a paid order | partial | Rejected with `order_already_paid`; real behaviour unverified |
 | Checkout `new Razorpay(options).open()` | partial | `handler`, `on('payment.failed')`, `modal.ondismiss`, `modal.escape`, `callback_url` + `redirect`; no card form; `theme` ignored |
 | Checkout signature `order_id\|payment_id` | partial | HMAC-SHA256 hex with the key secret |
