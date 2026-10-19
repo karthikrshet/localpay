@@ -22,3 +22,4 @@ playwright-report/
 __pycache__/
 .pytest_cache/
 .venv/
+docs/video/.work/

@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LocalPay video</title>
+<!--
+  The README video, 1920x1080. Every frame is a pure function of time: call
+  window.render(seconds). scripts/render-video.ts captures it and adds the audio.
+  The checkout scene uses the real popup stylesheet, injected by the render script.
+-->
+<style>
+  :root {
+    --primary: #2563EB; --primary-soft: #DBEAFE; --accent: #F59E0B; --ink: #0F172A;
+    --muted: #64748B; --canvas: #F8FAFC; --border: #E2E8F0; --success: #15803D; --danger: #B91C1C;
+    --sans: Inter, "Segoe UI", system-ui, sans-serif; --mono: "JetBrains Mono", Consolas, ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #FFFFFF; }
+  body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #FFFFFF; }
+  .bg-dots { position: absolute; inset: 0; background-image: radial-gradient(#E2E8F0 1.6px, transparent 1.6px); background-size: 40px 40px; opacity: 0.7; }
+  .bg-glow { position: absolute; width: 1400px; height: 1400px; left: 260px; top: -160px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.13), rgba(37, 99, 235, 0) 62%); }
+  .scene { position: absolute; inset: 0; opacity: 0; }
+  .center { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .eyebrow { font-size: 30px; font-weight: 600; color: var(--primary); letter-spacing: 0.04em; text-transform: uppercase; }
+  h1 { margin: 0; font-size: 104px; line-height: 1.05; font-weight: 800; letter-spacing: -0.035em; }
+  h2 { margin: 0; font-size: 72px; line-height: 1.08; font-weight: 800; letter-spacing: -0.03em; }
+  .muted { color: var(--muted); }
+  .blue { color: var(--primary); }
+  .amber { color: var(--accent); }
+  .mono { font-family: var(--mono); }
+
+  /* Scene 1: hook */
+  .needs { display: flex; gap: 32px; margin-top: 64px; }
+  .need { position: relative; font-size: 44px; font-weight: 600; padding: 22px 40px; border: 2px solid var(--border);
+    border-radius: 999px; background: #FFFFFF; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06); }
+  .need .strike { position: absolute; left: 24px; right: 24px; top: 50%; height: 6px; margin-top: -3px; border-radius: 3px;
+    background: var(--accent); transform-origin: left center; transform: scaleX(0); }
+
+  /* Terminal (light, like the rest of the brand) */
+  .term { width: 1240px; border: 2px solid var(--border); border-radius: 22px; background: #FFFFFF;
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.12); overflow: hidden; }
+  .term-bar { display: flex; align-items: center; gap: 10px; padding: 18px 24px; background: var(--canvas); border-bottom: 2px solid var(--border); }
+  .term-bar i { width: 16px; height: 16px; border-radius: 50%; background: #CBD5E1; display: block; }
+  .term-bar span { margin-left: 14px; font-size: 20px; color: var(--muted); font-family: var(--mono); }
+  .term-body { padding: 30px 40px 36px; font-family: var(--mono); font-size: 30px; line-height: 1.6; }
+  .term-body > div { white-space: pre; }
+  .prompt { color: var(--primary); }
+  .caret { display: inline-block; width: 16px; height: 34px; background: var(--primary); vertical-align: -6px; margin-left: 2px; }
+  .row { opacity: 0; }
+  .row .k { display: inline-block; width: 190px; color: var(--muted); }
+
+  /* Scene 3: checkout */
+  .split { position: absolute; inset: 0; display: grid; grid-template-columns: 820px 1fr; align-items: center; padding: 0 120px 0 150px; }
+  .lp-host { position: relative; justify-self: center; transform-origin: center center; }
+  .lp-host .lp-overlay { position: relative; inset: auto; padding: 0; background: transparent; z-index: auto; }
+  .lp-host .lp-sheet { width: 420px; max-height: none; overflow: visible; }
+  .lp-host .lp-scenario { transition: none; }
+  .lp-host .lp-scenario.lp-hover { border-color: #2563EB; }
+  .lp-host .lp-scenario.lp-primary.lp-hover { background: #1D4ED8; }
+  .lp-host .lp-scenario.lp-pressed { transform: scale(0.97); }
+  .lp-alert-wrap { overflow: hidden; }
+  .cursor { position: absolute; left: 0; top: 0; width: 26px; height: 38px; z-index: 5; filter: drop-shadow(0 2px 3px rgba(15, 23, 42, 0.35)); }
+  .click-ring { position: absolute; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; border: 3px solid var(--primary); opacity: 0; z-index: 4; }
+  .bullets { margin-top: 44px; display: grid; gap: 18px; font-size: 34px; }
+  .bullets div { display: flex; align-items: center; gap: 18px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--primary); flex: none; }
+
+  /* Scene 4: webhooks */
+  .hooks { width: 1380px; display: grid; gap: 18px; margin-top: 56px; }
+  .hook { display: grid; grid-template-columns: 70px 400px 1fr 150px; align-items: center; gap: 20px; padding: 22px 30px;
+    background: #FFFFFF; border: 2px solid var(--border); border-radius: 18px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06); font-size: 30px; }
+  .hook .ok { width: 46px; height: 46px; border-radius: 50%; background: #DCFCE7; color: var(--success); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 28px; }
+  .hook .ev { font-family: var(--mono); font-weight: 700; }
+  .hook .to { font-family: var(--mono); color: var(--muted); font-size: 24px; }
+  .hook .code { justify-self: end; font-family: var(--mono); font-weight: 700; color: var(--success); }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 22px; padding: 6px 14px; border-radius: 999px; margin-left: 12px;
+    background: #FEF3C7; color: #78350F; font-weight: 600; vertical-align: 4px; }
+  .faults { display: flex; gap: 20px; align-items: center; margin-top: 40px; font-size: 32px; }
+  .chip { font-family: var(--mono); font-size: 28px; font-weight: 600; padding: 12px 26px; border-radius: 999px; border: 2px solid #FCD34D; background: #FFFBEB; color: #78350F; }
+
+  /* Scene 5: time travel */
+  .clock { display: flex; align-items: baseline; gap: 26px; margin-top: 40px; }
+  .day-num { font-size: 230px; font-weight: 800; letter-spacing: -0.05em; color: var(--primary); line-height: 1; font-variant-numeric: tabular-nums; min-width: 300px; text-align: right; }
+  .day-label { font-size: 64px; font-weight: 700; }
+  .ticks { display: flex; gap: 22px; margin-top: 48px; }
+  .tick { font-size: 34px; font-weight: 600; padding: 16px 30px; border-radius: 16px; background: var(--primary-soft); color: #1E3A8A; display: flex; gap: 14px; align-items: center; }
+  .tick b { color: var(--success); }
+
+  /* Scene 6: outro */
+  .logo { display: flex; align-items: center; gap: 34px; }
+  .mark { width: 150px; height: 150px; border-radius: 38px; background: var(--primary); position: relative; box-shadow: 0 24px 60px rgba(37, 99, 235, 0.35); }
+  .mark::before { content: ""; position: absolute; left: 34px; top: 34px; width: 30px; height: 82px; border-radius: 8px; background: #FFFFFF; }
+  .mark::after { content: ""; position: absolute; left: 34px; top: 86px; width: 82px; height: 30px; border-radius: 8px; background: #FFFFFF; }
+  .mark i { position: absolute; right: 26px; top: 26px; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); }
+  .wordmark { font-size: 150px; font-weight: 800; letter-spacing: -0.045em; }
+  .tagline { margin-top: 40px; font-size: 52px; font-weight: 700; text-align: center; line-height: 1.25; }
+  .pill { margin-top: 46px; font-family: var(--mono); font-size: 40px; padding: 20px 40px; border-radius: 18px; background: var(--primary); color: #FFFFFF; box-shadow: 0 16px 40px rgba(37, 99, 235, 0.3); }
+  .pill .prompt { color: #BFDBFE; }
+  .fine { position: absolute; bottom: 56px; left: 0; right: 0; text-align: center; font-size: 26px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="bg-dots"></div>
+  <div class="bg-glow" id="glow"></div>
+
+  <!-- 1. Hook -->
+  <section class="scene center" id="s1">
+    <h1 id="s1-title">Testing Razorpay payments?</h1>
+    <div class="needs">
+      <div class="need" id="need-0">Test keys<div class="strike"></div></div>
+      <div class="need" id="need-1">ngrok tunnel<div class="strike"></div></div>
+      <div class="need" id="need-2">Internet<div class="strike"></div></div>
+    </div>
+  </section>
+
+  <!-- 2. Reveal: the CLI -->
+  <section class="scene center" id="s2">
+    <div class="term" id="s2-term">
+      <div class="term-bar"><i></i><i></i><i></i><span>~/my-shop</span></div>
+      <div class="term-body"><div><span class="prompt">$ </span><span id="typed"></span><span class="caret" id="caret"></span></div><div style="height:16px"></div><div class="row" id="b0"><span class="amber">●</span> <b>LocalPay</b> <span class="muted">— test mode, no real money moves</span></div><div class="row" id="b1">  <span class="k">API</span><span class="blue">http://127.0.0.1:4010/v1</span></div><div class="row" id="b2">  <span class="k">Checkout</span>http://127.0.0.1:4010/v1/checkout.js</div><div class="row" id="b3">  <span class="k">Dashboard</span><span class="blue">http://127.0.0.1:4010/dashboard</span></div><div class="row" id="b4">  <span class="k">Key</span>rzp_test_LocalPayDemo01  <span class="muted">secret</span> localpay_demo_secret</div><div class="row" id="b5">  <span class="k">Webhook</span>http://127.0.0.1:3000/webhooks  <span class="muted">all events</span></div></div>
+    </div>
+    <div style="margin-top:52px;text-align:center" id="s2-cap">
+      <h2>Behaves like the Razorpay API.<br><span class="blue">On your own machine.</span></h2>
+    </div>
+  </section>
+
+  <!-- 3. Checkout -->
+  <section class="scene" id="s3">
+    <div class="split">
+      <div id="s3-copy">
+        <div class="eyebrow">Checkout</div>
+        <h2 style="margin-top:18px">Every edge case,<br><span class="blue">one click away.</span></h2>
+        <div class="bullets">
+          <div><span class="dot"></span>Same <span class="mono">new Razorpay(options)</span></div>
+          <div><span class="dot"></span>Scenario buttons, no card form</div>
+          <div><span class="dot"></span>UPI · Card · Netbanking · Wallet</div>
+        </div>
+      </div>
+      <div class="lp-host" id="lp-host">
+        <div class="lp-overlay">
+          <div class="lp-sheet">
+            <div class="lp-banner">TEST MODE · LocalPay · no real money moves</div>
+            <div class="lp-header"><div><h2 class="lp-title">My shop</h2><p class="lp-desc">Test T-shirt</p></div><button class="lp-close" type="button">×</button></div>
+            <div class="lp-amount">₹499.00</div>
+            <div class="lp-id"><span>Order</span><span class="lp-mono">order_LpDemo7Hk2Qx9</span><button class="lp-copy" type="button">Copy</button></div>
+            <div class="lp-tabs"><button class="lp-tab" aria-selected="true">UPI</button><button class="lp-tab">Card</button><button class="lp-tab">Netbanking</button><button class="lp-tab">Wallet</button></div>
+            <div class="lp-body">
+              <div class="lp-alert-wrap" id="alert-wrap"><div class="lp-alert">Payment failed: Payment was not completed in time.</div></div>
+              <button class="lp-scenario lp-primary" id="sc-0" type="button"><span class="lp-label">Pay successfully</span><span class="lp-effect">Authorizes the payment; with auto-capture, fires payment.captured and order.paid.</span></button>
+              <button class="lp-scenario" id="sc-1" type="button"><span class="lp-label">Fail: insufficient funds</span><span class="lp-effect">Fires payment.failed with BAD_REQUEST_ERROR (insufficient_funds).</span></button>
+              <button class="lp-scenario" id="sc-2" type="button"><span class="lp-label">Fail: bank down</span><span class="lp-effect">Fires payment.failed with GATEWAY_ERROR (bank_technical_error).</span></button>
+              <button class="lp-scenario" id="sc-3" type="button"><span class="lp-label">UPI timeout</span><span class="lp-effect">Fires payment.failed with reason payment_timeout, as when a UPI request expires.</span></button>
+              <button class="lp-scenario" id="sc-4" type="button"><span class="lp-label">Authorize only (no capture)</span><span class="lp-effect">Fires payment.authorized only. Your server must capture it.</span></button>
+              <button type="button" class="lp-dismiss">Close without paying</button>
+            </div>
+            <div class="lp-footer">LocalPay is an independent test tool. It is not affiliated with Razorpay.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="click-ring" id="ring"></div>
+    <svg class="cursor" id="cursor" viewBox="0 0 26 38"><path d="M2 2 L2 31 L9 24 L14 36 L19 34 L14 22 L24 22 Z" fill="#0F172A" stroke="#FFFFFF" stroke-width="2.4" stroke-linejoin="round"/></svg>
+  </section>
+
+  <!-- 4. Webhooks -->
+  <section class="scene center" id="s4">
+    <div class="eyebrow">Webhooks</div>
+    <h2 style="margin-top:18px;text-align:center">Signed webhooks, <span class="blue">straight to localhost.</span></h2>
+    <div class="hooks">
+      <div class="hook" id="h0"><span class="ok">✓</span><span class="ev">payment.authorized</span><span class="to">POST 127.0.0.1:3000/webhooks · signed</span><span class="code">200</span></div>
+      <div class="hook" id="h1"><span class="ok">✓</span><span class="ev">payment.captured</span><span class="to">POST 127.0.0.1:3000/webhooks · signed</span><span class="code">200</span></div>
+      <div class="hook" id="h2"><span class="ok">✓</span><span class="ev">order.paid</span><span class="to">POST 127.0.0.1:3000/webhooks · signed</span><span class="code">200</span></div>
+      <div class="hook" id="h3"><span class="ok">✓</span><span class="ev">order.paid<span class="tag">duplicate</span></span><span class="to">POST 127.0.0.1:3000/webhooks · signed</span><span class="code">200</span></div>
+    </div>
+    <div class="faults" id="faults">
+      <span class="muted" style="font-weight:600">Fault injection</span>
+      <span class="chip" id="f0">duplicate</span><span class="chip" id="f1">out-of-order</span><span class="chip" id="f2">delayed</span><span class="chip" id="f3">unsigned</span>
+    </div>
+  </section>
+
+  <!-- 5. Time travel -->
+  <section class="scene center" id="s5">
+    <div class="eyebrow">Time travel</div>
+    <div class="term" style="width:900px;margin-top:30px" id="s5-term">
+      <div class="term-body" style="padding:26px 36px"><span class="prompt">$ </span><span id="typed2"></span><span class="caret" id="caret2"></span></div>
+    </div>
+    <div class="clock"><span class="day-num" id="day">0</span><span class="day-label">days later</span></div>
+    <div class="ticks">
+      <div class="tick" id="t0"><b>✓</b>Refunds</div>
+      <div class="tick" id="t1"><b>✓</b>Renewals</div>
+      <div class="tick" id="t2"><b>✓</b>Expiries</div>
+      <div class="tick" id="t3"><b>✓</b>Settlements</div>
+    </div>
+  </section>
+
+  <!-- 6. Outro -->
+  <section class="scene center" id="s6">
+    <div class="logo" id="logo"><div class="mark"><i></i></div><div class="wordmark">LocalPay</div></div>
+    <div class="tagline" id="tag">Test your Razorpay integration offline.<br><span class="blue">No keys, no ngrok, every edge case one click away.</span></div>
+    <div class="pill" id="pill"><span class="prompt">$ </span>npx localpay</div>
+    <div class="fine" id="fine">Free and open source · Apache-2.0 · Independent project, not affiliated with Razorpay</div>
+  </section>
+</div>
+
+<script>
+  'use strict';
+  // Timing helpers. p() is 0..1 progress of a tween starting at s lasting d seconds.
+  const clamp = (x) => Math.min(1, Math.max(0, x));
+  const p = (t, s, d) => clamp((t - s) / d);
+  const out3 = (x) => 1 - Math.pow(1 - x, 3);
+  const inOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const back = (x) => { const c = 1.70158; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+  const $ = (id) => document.getElementById(id);
+  const set = (el, opacity, transform) => { el.style.opacity = String(opacity); el.style.transform = transform ?? ''; };
+  // Fade in from below.
+  const rise = (el, t, s, d = 0.45, dist = 40) => { const k = out3(p(t, s, d)); set(el, k, `translateY(${(1 - k) * dist}px)`); };
+  const pop = (el, t, s, d = 0.4) => { const k = p(t, s, d); set(el, clamp(k * 2), `scale(${0.6 + 0.4 * back(k)})`); };
+
+  // Scene windows: [start, end]. Each scene fades in over 0.3s and out over 0.3s.
+  const SCENES = [['s1', 0, 3.4], ['s2', 3.4, 7.6], ['s3', 7.6, 11.0], ['s4', 11.0, 15.0], ['s5', 15.0, 19.0], ['s6', 19.0, 99]];
+  const BEAT0 = 0.02, BEAT = 0.5; // 120 BPM music grid
+
+  function sceneAlpha(t, s, e) {
+    const inK = s === 0 ? 1 : out3(p(t, s, 0.3));
+    const outK = 1 - p(t, e - 0.3, 0.3);
+    return Math.min(inK, outK);
+  }
+
+  function typed(t, start, text, perChar) {
+    const n = Math.max(0, Math.min(text.length, Math.floor((t - start) / perChar) + 1));
+    return t < start ? '' : text.slice(0, n);
+  }
+
+  // Cursor path for the checkout scene: [time, x, y] keyframes in stage pixels.
+  let cursorPath = [];
+  function lerpPath(t) {
+    if (t <= cursorPath[0][0]) return cursorPath[0].slice(1);
+    for (let i = 1; i < cursorPath.length; i++) {
+      const [t1, x1, y1] = cursorPath[i];
+      const [t0, x0, y0] = cursorPath[i - 1];
+      if (t <= t1) { const k = inOut((t - t0) / (t1 - t0)); return [x0 + (x1 - x0) * k, y0 + (y1 - y0) * k]; }
+    }
+    return cursorPath[cursorPath.length - 1].slice(1);
+  }
+  function centerOf(id) {
+    const r = $(id).getBoundingClientRect();
+    return [r.left + r.width * 0.32, r.top + r.height * 0.5];
+  }
+
+  const SHEET_SCALE = 1.22;
+  const CLICK_TIMEOUT = 9.52, CLICK_PAY = 10.52;
+
+  window.render = function render(t) {
+    // Background: the glow breathes on each beat of the music.
+    const beatPhase = t < BEAT0 ? 1 : ((t - BEAT0) % BEAT) / BEAT;
+    const pulse = Math.exp(-beatPhase * 5);
+    $('glow').style.opacity = String(0.75 + 0.25 * pulse);
+    $('glow').style.transform = `translateX(${Math.sin(t * 0.35) * 120}px) scale(${1 + 0.03 * pulse})`;
+
+    for (const [id, s, e] of SCENES) {
+      const a = t >= s - 0.01 && t <= e ? sceneAlpha(t, s, e) : 0;
+      $(id).style.opacity = String(a);
+      $(id).style.visibility = a > 0 ? 'visible' : 'hidden';
+    }
+
+    // 1. Hook: question, three needs, struck out on the beat.
+    rise($('s1-title'), t, 0.1, 0.55, 50);
+    [0.55, 0.7, 0.85].forEach((s, i) => rise($('need-' + i), t, s, 0.45, 30));
+    [1.52, 2.02, 2.52].forEach((s, i) => { // beat-grid: strikes at 1.52, 2.02, 2.52
+      const k = out3(p(t, s, 0.22));
+      const need = $('need-' + i);
+      need.querySelector('.strike').style.transform = `scaleX(${k})`;
+      need.style.color = k > 0.5 ? '#94A3B8' : '';
+      need.style.opacity = String(Math.min(Number(need.style.opacity), 1 - 0.25 * k));
+    });
+
+    // 2. Reveal: type the command, print the banner.
+    rise($('s2-term'), t, 3.45, 0.5, 60);
+    $('typed').textContent = typed(t, 3.8, 'npx localpay', 0.07);
+    $('caret').style.opacity = t < 4.75 ? (Math.floor(t * 3) % 2 === 0 || t < 4.65 ? '1' : '0') : '0';
+    for (let i = 0; i < 6; i++) rise($('b' + i), t, 4.9 + i * 0.09, 0.3, 14);
+    rise($('s2-cap'), t, 5.6, 0.5, 30);
+
+    // 3. Checkout: sheet slides up, cursor tries UPI timeout, then pays.
+    const host = $('lp-host');
+    const kIn = out3(p(t, 7.7, 0.6));
+    const kOut = p(t, 10.75, 0.25);
+    host.style.opacity = String(kIn * (1 - kOut));
+    host.style.transform = `translateY(${(1 - kIn) * 160}px) scale(${SHEET_SCALE * (1 - 0.06 * kOut)})`;
+    rise($('s3-copy'), t, 7.8, 0.5, 30);
+    const alertK = out3(p(t, CLICK_TIMEOUT + 0.12, 0.3));
+    const wrap = $('alert-wrap');
+    wrap.style.maxHeight = `${alertK * 60}px`;
+    wrap.style.opacity = String(alertK);
+    wrap.style.marginBottom = alertK > 0 ? '0' : '-8px';
+    // Measure button positions (render is called once per frame with the sheet laid out).
+    if (t >= 7.6 && t <= 11.0) {
+      const prev = host.style.transform;
+      host.style.transform = `scale(${SHEET_SCALE})`;
+      const tgt1 = centerOf('sc-3');
+      const tgt2 = centerOf('sc-0');
+      host.style.transform = prev;
+      cursorPath = [[8.6, 1700, 1000], [9.35, tgt1[0], tgt1[1]], [CLICK_TIMEOUT + 0.15, tgt1[0], tgt1[1]], [10.35, tgt2[0], tgt2[1] + (alertK > 0 ? 0 : 0)], [11.2, tgt2[0], tgt2[1]]];
+      const [cx, cy] = lerpPath(t);
+      const cur = $('cursor');
+      cur.style.transform = `translate(${cx}px, ${cy}px)`;
+      cur.style.opacity = String(p(t, 8.6, 0.2) * (1 - p(t, 10.75, 0.2)));
+      for (let i = 0; i < 5; i++) $('sc-' + i).classList.remove('lp-hover', 'lp-pressed');
+      if (t > 9.3 && t < 10.0) $('sc-3').classList.add('lp-hover');
+      if (t > 10.3) $('sc-0').classList.add('lp-hover');
+      if (t > CLICK_TIMEOUT && t < CLICK_TIMEOUT + 0.12) $('sc-3').classList.add('lp-pressed');
+      if (t > CLICK_PAY && t < CLICK_PAY + 0.12) $('sc-0').classList.add('lp-pressed');
+      const ring = $('ring');
+      const click = t >= CLICK_PAY ? CLICK_PAY : t >= CLICK_TIMEOUT ? CLICK_TIMEOUT : null;
+      if (click !== null) {
+        const r = p(t, click, 0.4);
+        const [rx, ry] = click === CLICK_PAY ? tgt2 : tgt1;
+        ring.style.left = `${rx}px`; ring.style.top = `${ry}px`;
+        ring.style.opacity = String((1 - r) * (r > 0 ? 1 : 0));
+        ring.style.transform = `scale(${0.4 + r * 1.2})`;
+      } else ring.style.opacity = '0';
+    }
+
+    // 4. Webhooks: deliveries land on the beat, then the faults.
+    // beat-grid: rows at 11.52, 12.02, 12.52; duplicate at 13.52
+    [11.52, 12.02, 12.52, 13.52].forEach((s, i) => { const k = out3(p(t, s - 0.05, 0.4)); set($('h' + i), k, `translateX(${(1 - k) * -120}px)`); });
+    rise($('faults'), t, 13.6, 0.4, 20);
+    [13.7, 13.82, 13.94, 14.06].forEach((s, i) => pop($('f' + i), t, s, 0.35));
+
+    // 5. Time travel: type the command, count to 30 days, tick off what ran.
+    rise($('s5-term'), t, 15.05, 0.45, 40);
+    $('typed2').textContent = typed(t, 15.3, 'localpay time advance 30d', 0.035);
+    $('caret2').style.opacity = t < 16.2 ? '1' : '0';
+    const days = Math.round(30 * inOut(p(t, 16.1, 0.9)));
+    $('day').textContent = String(days);
+    const land = p(t, 17.02, 0.35); // lands with the 17.02 strong cue
+    $('day').style.transform = `scale(${1 + 0.08 * Math.sin(Math.PI * land)})`;
+    [17.02, 17.52, 18.02, 18.52].forEach((s, i) => pop($('t' + i), t, s - 0.04, 0.4)); // beat-grid
+
+    // 6. Outro: logo lands on the 20.02 strong cue.
+    const lk = p(t, 19.72, 0.3); // beat-locked: 20.02s (logo settled)
+    set($('logo'), clamp(lk * 2), `scale(${0.7 + 0.3 * back(lk)})`);
+    rise($('tag'), t, 20.45, 0.5, 30);
+    rise($('pill'), t, 21.0, 0.45, 24);
+    rise($('fine'), t, 21.3, 0.5, 10);
+  };
+
+  window.render(0);
+</script>
+</body>
+</html>
