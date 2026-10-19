@@ -37,6 +37,7 @@ localpay help | --version
 | `--allowed-origin <url>` | localhost only | Let checkout run on another origin, repeatable. |
 | `--config <file>` | `./localpay.config.json` | JSON config file. |
 | `--open` | off | Open the dashboard in a browser. |
+| `--log` | off | One line per request: method, path, status, time, truncated key id. Never secrets, headers or bodies. |
 
 ## Environment variables
 

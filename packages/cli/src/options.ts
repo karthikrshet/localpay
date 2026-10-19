@@ -31,6 +31,7 @@ export const START_FLAGS = {
   fault: { type: 'string', multiple: true },
   config: { type: 'string' },
   open: { type: 'boolean' },
+  log: { type: 'boolean' },
   help: { type: 'boolean', short: 'h' },
 } as const;
 
@@ -123,6 +124,7 @@ export function parseStartOptions(argv: string[], env: NodeJS.ProcessEnv = {}, c
   if (v['refund-delay'] !== undefined) config.refundDelaySeconds = int('refund-delay', v['refund-delay']);
   if (v['settlement-days'] !== undefined) config.settlementDays = int('settlement-days', v['settlement-days']);
   if (v['allowed-origin']?.length) config.allowedOrigins = v['allowed-origin'];
+  if (v.log) config.log = true;
   for (const fault of (v.fault ?? []).map(parseFault)) {
     config[fault.target] = { ...config[fault.target], [fault.key]: fault.number };
   }

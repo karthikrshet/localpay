@@ -63,6 +63,7 @@ Start options
       --allowed-origin <url>  allow checkout on a non-localhost origin, repeatable
       --config <file>         JSON config (default ./localpay.config.json if present)
       --open                  open the dashboard in a browser
+      --log                   print one line per request (no secrets, headers or bodies)
 
 Environment: LOCALPAY_PORT, LOCALPAY_HOST, LOCALPAY_SEED, LOCALPAY_PERSIST,
 LOCALPAY_KEY_ID + LOCALPAY_KEY_SECRET, LOCALPAY_WEBHOOK_URL + LOCALPAY_WEBHOOK_SECRET.
