@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useApi } from '../api.ts';
-import { Badge, Card, Empty, ErrorBox, formatMoney, formatTime, Id, JsonView, Table, Timeline } from '../components/ui.tsx';
+import { api, useApi } from '../api.ts';
+import { Badge, Button, Card, Empty, ErrorBox, formatMoney, formatTime, Id, JsonView, Table, Timeline } from '../components/ui.tsx';
 import { Link } from '../router.tsx';
-import type { LocalPayEvent, WirePayment, WireRefund } from '../types.ts';
+import type { LocalPayEvent, WireDispute, WirePayment, WireRefund } from '../types.ts';
 import { PaymentRow, RefundRow, SearchBox } from './Orders.tsx';
 
 export function PaymentsPage() {
@@ -24,11 +24,61 @@ export function PaymentsPage() {
   );
 }
 
+function DisputesCard({ payment, disputes, onChange }: { payment: WirePayment; disputes: WireDispute[]; onChange: () => void }) {
+  const [error, setError] = useState<string | null>(null);
+  const act = (path: string, body?: unknown) => {
+    setError(null);
+    api(path, { method: 'POST', ...(body !== undefined && { body }) }).then(onChange, (e: unknown) => setError(e instanceof Error ? e.message : String(e)));
+  };
+  return (
+    <Card
+      title="Disputes"
+      actions={payment.captured && <Button onClick={() => act(`/payments/${payment.id}/dispute`, {})}>Raise dispute (as the bank)</Button>}
+    >
+      {error && <ErrorBox message={error} />}
+      {disputes.length === 0 ? (
+        <Empty>No disputes. Raising one sends payment.dispute.created to your webhook targets.</Empty>
+      ) : (
+        <Table head={['Dispute', 'Amount', 'Status', 'Respond by', '']}>
+          {disputes.map((d) => (
+            <tr key={d.id}>
+              <td className="px-3 py-2 font-mono">{d.id}</td>
+              <td className="whitespace-nowrap px-3 py-2">{formatMoney(d.amount, d.currency)}</td>
+              <td className="px-3 py-2">
+                <Badge status={d.status} />
+              </td>
+              <td className="whitespace-nowrap px-3 py-2 text-lp-muted">{formatTime(d.respond_by)}</td>
+              <td className="space-x-2 whitespace-nowrap px-3 py-2">
+                {d.status === 'open' && (
+                  <>
+                    <Button onClick={() => act(`/disputes/${d.id}/submit`)}>Submit evidence</Button>
+                    <Button variant="danger" onClick={() => act(`/disputes/${d.id}/accept`)}>
+                      Accept
+                    </Button>
+                  </>
+                )}
+                {d.status === 'under_review' && (
+                  <>
+                    <Button onClick={() => act(`/disputes/${d.id}/resolve`, { outcome: 'won' })}>Bank: won</Button>
+                    <Button variant="danger" onClick={() => act(`/disputes/${d.id}/resolve`, { outcome: 'lost' })}>
+                      Bank: lost
+                    </Button>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))}
+        </Table>
+      )}
+    </Card>
+  );
+}
+
 export function PaymentDetail({ id }: { id: string }) {
-  const { data, error, reload } = useApi<{ payment: WirePayment; refunds: WireRefund[]; events: LocalPayEvent[] }>(`/payments/${encodeURIComponent(id)}`);
+  const { data, error, reload } = useApi<{ payment: WirePayment; refunds: WireRefund[]; disputes: WireDispute[]; events: LocalPayEvent[] }>(`/payments/${encodeURIComponent(id)}`);
   if (error) return <ErrorBox message={error} />;
   if (!data) return <Empty>Loading…</Empty>;
-  const { payment, refunds, events } = data;
+  const { payment, refunds, disputes, events } = data;
   return (
     <div className="grid gap-4">
       <Card title={<Id value={payment.id} />} actions={<Badge status={payment.status} />}>
@@ -78,6 +128,7 @@ export function PaymentDetail({ id }: { id: string }) {
           </Table>
         </Card>
       )}
+      <DisputesCard payment={payment} disputes={disputes} onChange={reload} />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Event timeline">
           <Timeline events={events} />

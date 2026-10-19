@@ -93,6 +93,19 @@ describe('App', () => {
     expect(JSON.parse(calls.find((c) => c.url.endsWith('/scenarios/run'))?.init?.body as string)).toEqual({ id: '01-happy-path' });
   });
 
+  it('raises a dispute from a payment page', async () => {
+    const payment = { id: 'pay_1', amount: 50000, currency: 'INR', status: 'captured', order_id: 'order_1', method: 'card', captured: true, amount_refunded: 0, refund_status: null, fee: 1180, tax: 180, email: null, contact: null, error_code: null, error_description: null, error_reason: null, created_at: 1 };
+    const calls = mockApi({
+      '/session': SESSION,
+      '/payments/pay_1': { payment, refunds: [], disputes: [], events: [] },
+      '/payments/pay_1/dispute': { dispute: {} },
+    });
+    window.history.replaceState(null, '', '/payments/pay_1');
+    render(<App />);
+    fireEvent.click(await screen.findByText('Raise dispute (as the bank)'));
+    await waitFor(() => expect(calls.some((c) => c.url.endsWith('/payments/pay_1/dispute') && c.init?.method === 'POST')).toBe(true));
+  });
+
   it('shows the API error when the session is missing', async () => {
     mockApi({});
     render(<App />);

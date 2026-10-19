@@ -45,6 +45,17 @@ export interface WireRefund {
   created_at: number;
 }
 
+export interface WireDispute {
+  id: string;
+  payment_id: string;
+  amount: number;
+  currency: string;
+  amount_deducted: number;
+  reason_code: string;
+  respond_by: number;
+  status: string;
+}
+
 export interface LocalPayEvent {
   seq: number;
   id: string;
