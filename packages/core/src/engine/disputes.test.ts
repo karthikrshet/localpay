@@ -32,6 +32,8 @@ describe('disputes', () => {
     const dispute = engine.raiseDispute(payment.id, { amount: 30000 });
     expect(engine.acceptDispute(dispute.id)).toMatchObject({ status: 'lost', amountDeducted: 30000 });
     expect(engine.events.at(-1)?.type).toBe('payment.dispute.lost');
+    // Found by the API test: accepting twice must not emit a second payment.dispute.lost.
+    expect(() => engine.acceptDispute(dispute.id)).toThrow(expect.objectContaining({ reason: 'dispute_not_open' }) as Error);
   });
 
   it('drafts and submits evidence, then the bank decides', () => {

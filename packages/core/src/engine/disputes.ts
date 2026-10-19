@@ -69,7 +69,9 @@ export function createDisputeOps(ctx: EngineContext, payments: PaymentOps) {
 
     /** The merchant gives up: the dispute is lost and the amount deducted. */
     acceptDispute(id: string): Dispute {
-      return settle(getDispute(id), 'lost');
+      const current = getDispute(id);
+      if (current.status !== 'open') throw new EngineError('dispute_not_open', `only open disputes can be accepted; ${id} is ${current.status}`);
+      return settle(current, 'lost');
     },
 
     /** Saves evidence; with submit, the dispute goes to the bank for review. */
