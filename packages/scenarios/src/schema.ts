@@ -82,6 +82,13 @@ const cancelSubscriptionStep = z.strictObject({
   cancel_subscription: z.strictObject({ subscription: ref, at_cycle_end: z.boolean().optional() }),
 });
 
+const disputeStep = z.strictObject({
+  dispute: z.strictObject({ payment: ref, amount: amount.optional(), reason: z.string().optional(), respond_in_days: z.number().int().min(1).optional(), as: alias.optional() }),
+});
+const acceptDisputeStep = z.strictObject({ accept_dispute: z.strictObject({ dispute: ref }) });
+const contestDisputeStep = z.strictObject({ contest_dispute: z.strictObject({ dispute: ref, summary: z.string().optional(), submit: z.boolean().default(true) }) });
+const resolveDisputeStep = z.strictObject({ resolve_dispute: z.strictObject({ dispute: ref, outcome: z.enum(['won', 'lost']) }) });
+
 const faultsStep = z.strictObject({
   webhook_faults: z.strictObject({
     duplicate: z.number().min(0).max(1).optional(),
@@ -107,6 +114,10 @@ export type Step =
   | z.output<typeof subscriptionStep>
   | z.output<typeof authenticateStep>
   | z.output<typeof cancelSubscriptionStep>
+  | z.output<typeof disputeStep>
+  | z.output<typeof acceptDisputeStep>
+  | z.output<typeof contestDisputeStep>
+  | z.output<typeof resolveDisputeStep>
   | { repeat: { times: number; steps: Step[] } };
 
 const stepSchema: z.ZodType<Step> = z.lazy(() =>
@@ -126,6 +137,10 @@ const stepSchema: z.ZodType<Step> = z.lazy(() =>
     subscriptionStep,
     authenticateStep,
     cancelSubscriptionStep,
+    disputeStep,
+    acceptDisputeStep,
+    contestDisputeStep,
+    resolveDisputeStep,
     z.strictObject({ repeat: z.strictObject({ times: z.number().int().min(1).max(1000), steps: z.array(stepSchema).min(1) }) }),
   ]),
 );
@@ -148,6 +163,7 @@ export const scenarioSchema = z.strictObject({
       refunds: counts.optional(),
       payment_links: counts.optional(),
       subscriptions: counts.optional(),
+      disputes: counts.optional(),
     })
     .optional(),
 });

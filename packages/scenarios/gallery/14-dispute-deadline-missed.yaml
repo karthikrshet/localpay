@@ -1,0 +1,11 @@
+name: A dispute lost by missing the deadline
+description: Nobody responds to a chargeback before respond_by. Time travel passes the deadline and the dispute is lost automatically, with the amount deducted.
+seed: dispute-missed
+steps:
+  - order: { amount: 99900, as: o }
+  - pay: { order: o, method: card, scenario: success, as: p }
+  - dispute: { payment: p, respond_in_days: 3, as: d }
+  - advance: 4d
+expect:
+  events_include: [payment.dispute.created, payment.dispute.lost]
+  disputes: { lost: 1 }

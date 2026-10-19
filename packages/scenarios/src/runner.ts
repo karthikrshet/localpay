@@ -31,10 +31,10 @@ export interface ScenarioResult {
   steps: StepResult[];
   checks: Check[];
   /** Status counts for entities created by this run. */
-  summary: Record<'orders' | 'payments' | 'refunds' | 'payment_links' | 'subscriptions', Record<string, number>>;
+  summary: Record<'orders' | 'payments' | 'refunds' | 'payment_links' | 'subscriptions' | 'disputes', Record<string, number>>;
 }
 
-type Kind = 'order' | 'payment' | 'refund' | 'link' | 'customer' | 'plan' | 'subscription';
+type Kind = 'order' | 'payment' | 'refund' | 'link' | 'customer' | 'plan' | 'subscription' | 'dispute';
 
 class Aliases {
   private readonly named = new Map<string, string>();
@@ -162,6 +162,26 @@ export function runScenario(scenario: Scenario, deps: RunnerDeps): ScenarioResul
       const c = step.cancel_subscription;
       return `${engine.cancelSubscription(aliases.resolve('subscription', c.subscription), { atCycleEnd: c.at_cycle_end ?? false }).status}`;
     }
+    if ('dispute' in step) {
+      const d = step.dispute;
+      const dispute = engine.raiseDispute(aliases.resolve('payment', d.payment), {
+        ...(d.amount !== undefined && { amount: d.amount }),
+        ...(d.reason && { reasonCode: d.reason }),
+        ...(d.respond_in_days !== undefined && { respondInDays: d.respond_in_days }),
+      });
+      aliases.record('dispute', dispute.id, d.as);
+      return `${dispute.id} open`;
+    }
+    if ('accept_dispute' in step) return `${engine.acceptDispute(aliases.resolve('dispute', step.accept_dispute.dispute)).id} lost`;
+    if ('contest_dispute' in step) {
+      const c = step.contest_dispute;
+      const dispute = engine.contestDispute(aliases.resolve('dispute', c.dispute), c.summary ? { summary: c.summary } : {}, { submit: c.submit });
+      return `${dispute.id} ${dispute.status}`;
+    }
+    if ('resolve_dispute' in step) {
+      const r = step.resolve_dispute;
+      return `${engine.resolveDispute(aliases.resolve('dispute', r.dispute), r.outcome).id} ${r.outcome}`;
+    }
     if ('webhook_faults' in step) {
       const f = step.webhook_faults;
       if (!deps.setFaults) return 'skipped: no webhook dispatcher in this run';
@@ -219,6 +239,7 @@ function summarise(engine: Engine, aliases: Aliases): ScenarioResult['summary'] 
     refunds: countBy(engine.listRefunds().filter((r) => paymentIds.has(r.paymentId))),
     payment_links: countBy(ids('link').map((id) => engine.getPaymentLink(id))),
     subscriptions: countBy(subscriptions),
+    disputes: countBy(ids('dispute').map((id) => engine.getDispute(id))),
   };
 }
 
@@ -241,7 +262,7 @@ function checkExpectations(scenario: Scenario, events: AnyEvent[], summary: Scen
     const ok = isSubsequence(expect.events_include, types);
     checks.push({ name: 'events_include', ok, detail: ok ? 'all present in order' : `missing or out of order in ${types.join(', ')}` });
   }
-  for (const key of ['orders', 'payments', 'refunds', 'payment_links', 'subscriptions'] as const) {
+  for (const key of ['orders', 'payments', 'refunds', 'payment_links', 'subscriptions', 'disputes'] as const) {
     const wanted = expect[key];
     if (!wanted) continue;
     for (const [status, count] of Object.entries(wanted)) {

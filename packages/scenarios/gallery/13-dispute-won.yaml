@@ -1,0 +1,12 @@
+name: A chargeback contested and won
+description: A customer disputes a captured card payment. The merchant submits delivery proof and the bank rules in the merchant's favour. Your app should freeze the order while the dispute is open.
+seed: dispute-won
+steps:
+  - order: { amount: 249900, as: tv }
+  - pay: { order: tv, method: card, scenario: success, as: p }
+  - dispute: { payment: p, reason: product_not_received, as: d }
+  - contest_dispute: { dispute: d, summary: Delivered and signed for }
+  - resolve_dispute: { dispute: d, outcome: won }
+expect:
+  events_include: [payment.dispute.created, payment.dispute.under_review, payment.dispute.won]
+  disputes: { won: 1 }
