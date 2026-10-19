@@ -117,9 +117,9 @@ export function Table({ head, children }: { head: string[]; children: ReactNode 
       <table className="w-full text-left text-sm">
         <thead className="text-xs uppercase tracking-wide text-lp-muted">
           <tr>
-            {head.map((h) => (
-              <th key={h} scope="col" className="whitespace-nowrap px-3 py-2 font-semibold">
-                {h}
+            {head.map((h, index) => (
+              <th key={h || `actions-${index}`} scope="col" className="whitespace-nowrap px-3 py-2 font-semibold">
+                {h || <span className="sr-only">Actions</span>}
               </th>
             ))}
           </tr>
