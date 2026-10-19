@@ -61,6 +61,16 @@ The [quickstart](docs/site/src/content/docs/quickstart.md) walks through a whole
   duplicates, reordering, delays and missing signatures. [Guide](docs/site/src/content/docs/guides/webhooks.md)
 - **Dashboard** — orders, payments, event timelines, the webhook log with replay, time
   travel and settings.
+- **Payment links and customers** — hosted test pages, signed callbacks, partial payments, expiry.
+- **Subscriptions** — plans, checkout with `subscription_id`, renewals that follow the clock,
+  failed-renewal retries and halting. [Guide](docs/site/src/content/docs/guides/subscriptions.md)
+- **Disputes and settlements** — raise chargebacks as the bank, contest or accept them;
+  T+N settlements net of fees, refunds and lost disputes.
+- **Scenarios** — script whole payment stories in YAML and run them in CI:
+  `localpay scenario run busy-day.yaml`. [Guide](docs/site/src/content/docs/guides/scenarios.md)
+- **Record and replay** — `--record` a session, `localpay replay` its webhooks against your handler.
+- **Time travel** — `localpay time advance 30d` runs every refund, renewal, expiry and settlement in between.
+- **CI-ready** — a GitHub Action, a distroless Docker image and no secrets or network.
 - **Deterministic** — seeded ids, an injectable clock and an event log you can persist.
 - **Magic values** — `failure@razorpay`, or amounts ending in paise `13` to force a bank
   timeout. [Table](docs/site/src/content/docs/guides/test-values.md)
