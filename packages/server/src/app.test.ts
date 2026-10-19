@@ -68,6 +68,25 @@ describe('createLocalPay', () => {
     }
   });
 
+  it('keeps the webhook delivery log across restarts with persist', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'localpay-deliveries-'));
+    try {
+      const file = join(dir, 'events.jsonl');
+      const send = () => Promise.resolve({ statusCode: 200, responseBody: 'ok', latencyMs: 1 });
+      const first = await start({ persist: file, webhooks: [{ url: 'http://127.0.0.1:9/hook', secret: 's' }] }, { send, dashboardDir: null });
+      const order = first.engine.createOrder({ amount: 100 });
+      first.engine.attemptPayment({ orderId: order.id, method: 'upi', outcome: { kind: 'success' } });
+      await first.tick();
+      expect(first.dispatcher.list()).toHaveLength(3);
+      await first.close();
+      const second = await start({ persist: file, webhooks: [{ url: 'http://127.0.0.1:9/hook', secret: 's' }] }, { send, dashboardDir: null });
+      expect(second.dispatcher.list().map((d) => d.event)).toEqual(['order.paid', 'payment.captured', 'payment.authorized']);
+      expect(second.dispatcher.list().every((d) => d.status === 'delivered')).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 5 });
+    }
+  });
+
   it('supports time travel on a running server', async () => {
     const { engine } = await start({ refundDelaySeconds: 3600 });
     const order = engine.createOrder({ amount: 100 });

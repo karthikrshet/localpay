@@ -52,6 +52,8 @@ signature.
 
 A delivery succeeds on any `2xx`. Redirects are not followed and count as failures.
 Failed deliveries are retried after 5 s, 30 s, 2 min and 10 min, then marked failed.
+With `--persist`, the delivery log and pending retries are kept in `<file>.deliveries.json`
+and survive restarts.
 
 ## Breaking things on purpose
 

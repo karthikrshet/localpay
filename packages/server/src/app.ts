@@ -3,7 +3,7 @@ import { createEngine, createFileEventStore, createMemoryEventStore, createOffse
 import { razorpayProvider } from '@localpay/provider-razorpay';
 import { createDispatcher, type Dispatcher, type Sender, type WebhookTarget } from '@localpay/webhooks';
 import Fastify, { type FastifyInstance } from 'fastify';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createAdminAuth, type AdminAuth } from './admin/auth.ts';
@@ -98,6 +98,29 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
     ...(deps.send && { send: deps.send }),
   });
 
+  // With --persist, the delivery log (and open retries) survives restarts too.
+  const deliveriesFile = config.persist ? `${config.persist}.deliveries.json` : null;
+  if (deliveriesFile && existsSync(deliveriesFile)) {
+    try {
+      dispatcher.restore(JSON.parse(readFileSync(deliveriesFile, 'utf8')) as Parameters<Dispatcher['restore']>[0]);
+    } catch {
+      // A corrupt delivery log is not worth refusing to start over; it is rebuilt from now on.
+    }
+  }
+  let saveTimer: NodeJS.Timeout | null = null;
+  const saveDeliveries = (): void => {
+    if (!deliveriesFile) return;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = null;
+    writeFileSync(`${deliveriesFile}.tmp`, JSON.stringify(dispatcher.snapshot()));
+    renameSync(`${deliveriesFile}.tmp`, deliveriesFile);
+  };
+  if (deliveriesFile) {
+    dispatcher.subscribe(() => {
+      saveTimer ??= setTimeout(saveDeliveries, 200);
+    });
+  }
+
   const tick = async (): Promise<void> => {
     engine.tick();
     await dispatcher.tick();
@@ -129,6 +152,7 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
   app.addHook('onClose', (_instance, done) => {
     if (timer) clearInterval(timer);
     timer = null;
+    if (saveTimer) saveDeliveries();
     done();
   });
 
