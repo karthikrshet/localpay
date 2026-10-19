@@ -13,11 +13,12 @@ remaining gates and launch steps need the maintainer (see Blockers).
 - 2026-10-20 Extras: late authorization, API fault injection (429/500/latency), redacted request log (--log), Django and Next.js examples, billing property tests
 - 2026-10-20 Quality gates: 90% coverage gate (core + provider at 98.7% lines), axe on every dashboard screen, checkout under a strict CSP, OpenSSF Scorecard, Renovate, docs published to GitHub Pages
 - 2026-10-20 Verified locally: lint, typecheck, 507 unit/contract tests, coverage gate, 6 Playwright tests, package smoke test (7 checks), secret scan, docs build (18 pages), Python SDK spike, FastAPI/Django/Next.js example tests; all 200 commit messages pass scripts/check-commit-msg.ts
+- 2026-10-20 README rewritten to explain the whole repo; 23s README video (docs/assets/localpay-demo.mp4 + GIF preview + poster) with music and sound effects, rebuilt by scripts/render-video.ts
 
 ## Next
-1. Maintainer: create the GitHub repo (URLs assume github.com/localpay/localpay), push, check CI (Docker, Action, docs, examples jobs have only run locally or not at all)
+1. Pushed to github.com/karthikrshet/localpay; badges, Action and docs URLs still assume github.com/localpay/localpay. Check CI (Docker, Action, docs, examples jobs have only run locally or not at all)
 2. Maintainer: record fixtures with `pnpm record-fixtures fixtures/requests/core.json` from your own test account, scrub, review, replace the hand-written stand-ins
-3. Maintainer: register the npm scope, add NPM_TOKEN, publish v0.1.0 via the release workflow; record the README GIF; run the 5-minute friend test
+3. Maintainer: register the npm scope, add NPM_TOKEN, publish v0.1.0 via the release workflow; run the 5-minute friend test
 
 ## Blockers
 - Phase 1 gate (recorded fixtures pass) needs the maintainer's own Razorpay test account
