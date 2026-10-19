@@ -25,3 +25,4 @@ Razorpay and SDK quirks found in testing. One dated line each, with where it was
 - 2026-10-19 · Shell gotcha in our own tooling: a `$C ... && \` chain followed by a heredoc and another `$C` line runs the last line even if the chain failed. Use `set -e` in multi-commit shell blocks.
 - 2026-10-19 · Bundling `yaml` into the ESM CLI breaks on `require('process')`; packages/cli/build.ts adds a createRequire banner. The package smoke test caught it.
 - 2026-10-19 · Our Bash tool rejects some large heredoc blocks containing apostrophes with "unexpected EOF"; write patch scripts to the scratchpad with the file tool and run them instead.
+- 2026-10-19 · In this agent's Bash tool, `set -e` did not stop a multi-line block after a failed python patch, and a later commit ran with a wrong message. Chain steps with `|| exit 1` instead. The commit helper now unstages on failed checks and commits only the given paths.

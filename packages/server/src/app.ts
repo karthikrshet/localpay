@@ -1,6 +1,6 @@
-// Wires core, the Razorpay provider, checkout and webhooks into one Fastify app.
-import { createEngine, createFileEventStore, createMemoryEventStore, createOffsetClock, createRandom, type Engine } from '@localpay/core';
-import { allRoutes, checkoutApi, paymentLinkPages, razorpayApi, razorpayWebhookFormat } from '@localpay/provider-razorpay';
+// Wires core, a provider (Razorpay by default), checkout and webhooks into one Fastify app.
+import { createEngine, createFileEventStore, createMemoryEventStore, createOffsetClock, createRandom, type Engine, type Provider, type ProviderContext } from '@localpay/core';
+import { razorpayProvider } from '@localpay/provider-razorpay';
 import { createDispatcher, type Dispatcher, type Sender, type WebhookTarget } from '@localpay/webhooks';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { existsSync } from 'node:fs';
@@ -40,6 +40,8 @@ export interface LocalPayDependencies {
   adminToken?: string;
   /** Directory of gallery scenarios; the scenarios package's own gallery when omitted. */
   galleryDir?: string;
+  /** The gateway to emulate. Razorpay when omitted. */
+  provider?: Provider<FastifyInstance>;
 }
 
 /** Finds the built dashboard next to the @localpay/dashboard package, if installed and built. */
@@ -72,8 +74,16 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
   // Known once listening; used for payment link short_url values inside webhooks.
   let publicUrl = `http://${config.host}:${config.port}`;
   const webhookTargets: WebhookTarget[] = config.webhooks.map((w, i) => ({ id: `wh_${i + 1}`, url: w.url, secret: w.secret, events: w.events ?? null }));
+  const provider = deps.provider ?? razorpayProvider;
+  const providerContext: ProviderContext = {
+    engine,
+    keys: config.keys,
+    accountId: config.accountId,
+    publicUrl: () => publicUrl,
+    allowedOrigins: config.allowedOrigins,
+  };
   const dispatcher = createDispatcher({
-    format: razorpayWebhookFormat(config.accountId, () => publicUrl),
+    format: provider.webhookFormat(providerContext),
     targets: () => webhookTargets,
     clock: engine.clock,
     random: createRandom(config.seed === null ? undefined : `${config.seed}:webhooks`),
@@ -93,9 +103,7 @@ export async function createLocalPay(overrides: Partial<LocalPayConfig> = {}, de
 
   // No request logging by default: requests carry keys, and users run this on their laptops.
   const app = Fastify({ logger: false });
-  await app.register(razorpayApi, { prefix: '/v1', engine, keys: config.keys, routes: allRoutes });
-  await app.register(paymentLinkPages, { engine, keys: config.keys });
-  await app.register(checkoutApi, { prefix: `${INTERNAL_PREFIX}/checkout`, engine, keys: config.keys, allowedOrigins: config.allowedOrigins });
+  await provider.register(app, providerContext);
 
   let checkoutScript: Promise<string> | null = null;
   const loadScript = deps.checkoutScript ?? defaultCheckoutScript;
