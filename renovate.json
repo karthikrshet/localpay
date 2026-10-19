@@ -1,0 +1,13 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits", ":pinDevDependencies"],
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "minimumReleaseAge": "7 days",
+  "packageRules": [
+    { "matchUpdateTypes": ["minor", "patch"], "matchDepTypes": ["devDependencies"], "groupName": "dev dependencies (minor and patch)" },
+    { "matchPackageNames": ["razorpay"], "groupName": "Razorpay SDK", "description": "The Node shim relies on SDK internals; review the nightly compat job before merging." },
+    { "matchPackageNames": ["typescript"], "allowedVersions": "<6.1", "description": "typescript-eslint 8 supports TypeScript < 6.1." },
+    { "matchPackageNames": ["astro", "@astrojs/starlight"], "matchFileNames": ["docs/site/package.json"], "enabled": false, "description": "Pinned: Astro 7 needs Node 22.22+." }
+  ]
+}
