@@ -1,0 +1,22 @@
+{
+  "name": "localpay-example-nextjs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "test": "node --experimental-strip-types --no-warnings --test test/routes.test.ts"
+  },
+  "dependencies": {
+    "@localpay/shim-node": "file:../../packages/shims",
+    "next": "^15.5.0",
+    "razorpay": "^2.9.8",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.1.0",
+    "typescript": "~5.9.3"
+  }
+}

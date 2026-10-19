@@ -2,6 +2,8 @@ packages:
   - packages/*
   - scripts/spike
   - examples/*
+  # The Next.js example installs its own (large) dependencies with npm.
+  - '!examples/nextjs'
   - docs/site
 # Dependency install scripts stay off. esbuild and sharp ship prebuilt binaries as
 # optional platform packages, so their install scripts are not needed.

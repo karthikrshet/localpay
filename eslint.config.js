@@ -6,7 +6,8 @@ import tseslint from 'typescript-eslint';
 const OTHER_PACKAGES = ['@localpay/*', '../../*/src/**'];
 
 export default tseslint.config(
-  { ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', 'docs/site/**'] },
+  // The Next.js example is a standalone npm app; next build typechecks it.
+  { ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', 'docs/site/**', 'examples/nextjs/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {
