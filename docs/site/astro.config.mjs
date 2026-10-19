@@ -30,7 +30,7 @@ export default defineConfig({
             { slug: 'guides/record-replay' },
           ],
         },
-        { label: 'Reference', items: [{ slug: 'reference/cli' }, { slug: 'reference/compatibility' }, { slug: 'reference/security' }] },
+        { label: 'Reference', items: [{ slug: 'reference/cli' }, { slug: 'reference/compatibility' }, { slug: 'reference/security' }, { slug: 'reference/providers' }] },
       ],
     }),
   ],
