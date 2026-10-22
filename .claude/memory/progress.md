@@ -15,6 +15,8 @@ remaining gates and launch steps need the maintainer (see Blockers).
 - 2026-10-20 Verified locally: lint, typecheck, 507 unit/contract tests, coverage gate, 6 Playwright tests, package smoke test (7 checks), secret scan, docs build (18 pages), Python SDK spike, FastAPI/Django/Next.js example tests; all 200 commit messages pass scripts/check-commit-msg.ts
 - 2026-10-20 README rewritten to explain the whole repo; 23s README video (docs/assets/localpay-demo.mp4 + GIF preview + poster) with music and sound effects, rebuilt by scripts/render-video.ts
 
+- 2026-10-22 Fixed CodeQL (regex, rate limiting) and Scorecard (pinning, permissions) alerts; docs on Astro 7.3 with zero audit advisories
+
 ## Next
 1. Pushed to github.com/karthikrshet/localpay; all repo URLs point there (the npm scope is still @localpay). Check CI (Docker, Action, docs, examples jobs have only run locally or not at all)
 2. Maintainer: record fixtures with `pnpm record-fixtures fixtures/requests/core.json` from your own test account, scrub, review, replace the hand-written stand-ins
