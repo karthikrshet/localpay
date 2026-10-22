@@ -1,6 +1,6 @@
 {
   "name": "@localpay/shim-node",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Point the official Razorpay Node SDK at a local LocalPay server. Independent project, not affiliated with Razorpay.",
   "private": false,
   "type": "module",
